@@ -1,2 +1,2 @@
 # Static Sites
-A place to house all the static pages
+A place to house the static pages.
