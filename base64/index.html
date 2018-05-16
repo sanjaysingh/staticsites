@@ -2,20 +2,11 @@
 <html>
 
 <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js" integrity="sha256-u6BamZiW5tCemje2nrteKC2KoLIKX9lKPSpvCkOhamw="
-            crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js" integrity="sha256-1Gusk8p9CX01j8sefIYUiC7gBoAryX7+YUUU3iIOvts="
-            crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js" integrity="sha256-7Sn/1Y1J1unxaPqhjNPy5qTKqv9c2rocYsfCzgkwEOc="
-            crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-            crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-            crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-            crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-          crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/core.min.js" integrity="sha256-hV6Ff1ZbnLObO8BWHPZs1oA3aPZkX4bnnEKO4nX1sm0=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js" integrity="sha256-7Sn/1Y1J1unxaPqhjNPy5qTKqv9c2rocYsfCzgkwEOc=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Base64 Encoder/Decoder">
@@ -36,26 +27,11 @@
             transition: all 0.5s ease;
         }
 
-            #wrapper.toggled {
-                padding-left: 250px;
-            }
-
-        #sidebar-wrapper {
-            z-index: 1000;
-            position: fixed;
-            left: 250px;
-            width: 0;
-            height: 100%;
-            margin-left: -250px;
-            overflow-y: auto;
-            background: #000;
-            -webkit-transition: all 0.5s ease;
-            -moz-transition: all 0.5s ease;
-            -o-transition: all 0.5s ease;
-            transition: all 0.5s ease;
+        #wrapper.toggled {
+            padding-left: 250px;
         }
 
-        #wrapper.toggled #sidebar-wrapper {
+        #wrapper.toggled {
             width: 250px;
         }
 
@@ -76,15 +52,11 @@
                 padding-left: 0;
             }
 
-                #wrapper.toggled {
-                    padding-left: 250px;
-                }
-
-            #sidebar-wrapper {
-                width: 0;
+            #wrapper.toggled {
+                padding-left: 250px;
             }
 
-            #wrapper.toggled #sidebar-wrapper {
+            #wrapper.toggled {
                 width: 250px;
             }
 
@@ -109,13 +81,13 @@
             <div class="container-fluid">
                 <div class="d-flex justify-content-end">
                     <div class="mr-auto p-2"><h3>Offline Base64 Encoder / Decoder</h3></div>
-                    <div class="p-2"><span><a href="https://github.com/sanjaysingh/sastokengenerator/blob/master/SasTokenGenerator/index.html">Edit this page</a></span></div>
+                    <div class="p-2"><span><a href="https://github.com/sanjaysingh/staticsites/blob/master/base64/index.html">Edit this page</a></span></div>
                   </div>
                 
                 <form id="base64-form" onsubmit="return false;">
                     <div class="form-group">
                         <label for="inputText">Text to encode/decode</label>
-                        <input type="text" class="form-control" id="inputText" required>
+                        <textarea class="form-control" id="inputText" rows="10" required></textarea>
                     </div>
                     
                     <button type="submit" id="encode" class="btn btn-primary">Encode</button>
@@ -124,7 +96,7 @@
 
                     <div class="form-group">
                         <label for="outputText">Encoded/Decoded Text</label>
-                        <input class="form-control" type="text" id="outputText" readonly>
+                        <textarea class="form-control" rows="10" id="outputText" readonly/></textarea>
                     </div>
 
                 </form>
@@ -143,18 +115,28 @@
             }
             
             function decode(inputText) {
-                return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(inputText));
+                CryptoJS.enc.Base64
+                return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse(inputText));
             }
 
-            window.base64Util = {
-                encode: encode,
-                decode: decode
-            };
+            function performEncodingOrDecoding(e, encoderFunc){
+                if(document.getElementById("base64-form").checkValidity()) {
+                    $('#outputText').val('');
+                    let inputText = $('#inputText').val();
+                    $('#outputText').val(encoderFunc(inputText));
+                }
+            }
 
             $('#base64-form').on("submit", function (e) {
-                let inputText = $('#inputText').val();
-                $('#outputText').val(base64Util.encode(inputText));
                 e.preventDefault();
+            });
+
+            $('#encode').on("click", function (e) {
+               performEncodingOrDecoding(e, encode);
+            });
+
+             $('#decode').on("click", function (e) {
+                performEncodingOrDecoding(e, decode);
             });
 
         })();
