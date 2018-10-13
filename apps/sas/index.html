@@ -6,6 +6,8 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/solid.css" integrity="sha384-osqezT+30O6N/vsMqwW8Ch6wKlMofqueuia2H7fePy42uC05rm1G+BUPSd2iBSJL" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/fontawesome.css" integrity="sha384-BzCy2fixOYd0HObpx3GMefNqdbA7Qjcc91RgYeDjrHTIEXqiF00jKvgQG0+zY/7I" crossorigin="anonymous">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Azure SAS Generator">
@@ -72,42 +74,52 @@
             list-style: none;
         }
 
-            .sidebar-nav li {
-                text-indent: 20px;
-                line-height: 40px;
-            }
+        .sidebar-nav li {
+            text-indent: 20px;
+            line-height: 40px;
+        }
 
-                .sidebar-nav li a {
-                    display: block;
-                    text-decoration: none;
-                    color: #999999;
-                }
+        .sidebar-nav li a {
+            display: block;
+            text-decoration: none;
+            color: #999999;
+        }
 
-                    .sidebar-nav li a:hover {
-                        text-decoration: none;
-                        color: #fff;
-                        background: rgba(255, 255, 255, 0.2);
-                    }
+        .sidebar-nav li a:hover {
+            text-decoration: none;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+        }
 
-                    .sidebar-nav li a:active,
-                    .sidebar-nav li a:focus {
-                        text-decoration: none;
-                    }
+        .sidebar-nav li a:active,
+        .sidebar-nav li a:focus {
+            text-decoration: none;
+        }
 
-            .sidebar-nav > .sidebar-brand {
-                height: 65px;
-                font-size: 18px;
-                line-height: 60px;
-            }
+        .sidebar-nav > .sidebar-brand {
+            height: 65px;
+            font-size: 18px;
+            line-height: 60px;
+        }
 
-                .sidebar-nav > .sidebar-brand a {
-                    color: #999999;
-                }
+        .sidebar-nav > .sidebar-brand a {
+            color: #999999;
+        }
 
-                    .sidebar-nav > .sidebar-brand a:hover {
-                        color: #fff;
-                        background: none;
-                    }
+        .sidebar-nav > .sidebar-brand a:hover {
+            color: #fff;
+            background: none;
+        }
+
+        a.home-icon {
+            text-decoration: none;
+            margin-right: 5px;
+        }
+
+        .title-text {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
 
         @media(min-width:768px) {
             #wrapper {
@@ -136,6 +148,8 @@
                 margin-right: 0;
             }
         }
+
+
     </style>
 
 </head>
@@ -162,7 +176,14 @@
         <div id="asb-sas">
             <div class="container-fluid">
                 <div class="d-flex justify-content-end">
-                    <div class="mr-auto p-2"><h3>Offline Azure Service Bus SAS Generator</h3></div>
+                <div class="mr-auto p-2">
+                        <a href="/" class="home-icon">
+                            <span class="home-image">
+                                <i class="fa fa-home fa-2x"></i>
+                            </span>
+                        </a>
+                        <span class="title-text">Offline Azure Service Bus SAS Generator</span>
+                    </div>
                     <div class="p-2"><span><a href="https://github.com/sanjaysingh/sastokengenerator/blob/master/apps/SasTokenGenerator/index.html">Edit this page</a></span></div>
                   </div>
                 
