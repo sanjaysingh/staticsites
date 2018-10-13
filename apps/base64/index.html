@@ -6,6 +6,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js" integrity="sha256-7Sn/1Y1J1unxaPqhjNPy5qTKqv9c2rocYsfCzgkwEOc=" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/solid.css" integrity="sha384-osqezT+30O6N/vsMqwW8Ch6wKlMofqueuia2H7fePy42uC05rm1G+BUPSd2iBSJL" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/fontawesome.css" integrity="sha384-BzCy2fixOYd0HObpx3GMefNqdbA7Qjcc91RgYeDjrHTIEXqiF00jKvgQG0+zY/7I" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -46,6 +48,15 @@
             margin-right: -250px;
         }
 
+        a.home-icon {
+            text-decoration: none;
+            margin-right: 5px;
+        }
+
+        .title-text {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
 
         @media(min-width:768px) {
             #wrapper {
@@ -69,7 +80,8 @@
                 position: relative;
                 margin-right: 0;
             }
-        }
+
+
     </style>
 
 </head>
@@ -80,7 +92,14 @@
         <div id="base64-container">
             <div class="container-fluid">
                 <div class="d-flex justify-content-end">
-                    <div class="mr-auto p-2"><h3>Offline Base64 Encoder / Decoder</h3></div>
+                    <div class="mr-auto p-2">
+                        <a href="/" class="home-icon">
+                            <span class="home-image">
+                                <i class="fa fa-home fa-2x"></i>
+                            </span>
+                        </a>
+                        <span class="title-text">Offline Base64 Encoder / Decoder</span>
+                    </div>
                     <div class="p-2"><span><a href="https://github.com/sanjaysingh/staticsites/blob/master/apps/base64/index.html">Edit this page</a></span></div>
                   </div>
                 
