@@ -97,7 +97,7 @@ const app = new Vue({
                     this.getLockedValuesForBeneficiary(this.userAddress);
                 }
             } else {
-                this.showErrorMessage('Please install MetaMask!');
+                this.showErrorMessage('Please install an Ethereum wallet like Metamask!');
             }
         },
         async connectToMetamask() {
