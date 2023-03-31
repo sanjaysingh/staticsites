@@ -42,6 +42,12 @@ const app = new Vue({
                 window.ethereum.on('accountsChanged', async (newAccounts) => {
                     await this.connectInternal();
                 });
+                window.ethereum.on('chainChanged', async (newAccounts) => {
+                    await this.connectInternal();
+                });
+                setInterval(async () => {
+                    await this.refreshLockedValuesForBeneficiary();
+                }, 10000);
             }
             document.getElementById('connect-button').addEventListener('click', async () => {
                 await this.connectToMetamask();
@@ -54,7 +60,10 @@ const app = new Vue({
         },
         buildErrorMessage(error) {
             var errorMessage = "";
-            if (error.data && error.data.message) {
+            if(error.error && error.error.message) {
+                errorMessage = error.error.message;
+            }
+            else if (error.data && error.data.message) {
                 errorMessage = error.data.message;
             } else if (error.message) {
                 errorMessage = error.message;
@@ -89,12 +98,16 @@ const app = new Vue({
                     if (requestedAccounts.length > 0) {
                         this.userAddress = requestedAccounts[0];
                         this.contract = new ethers.Contract(TimedLockerV4Address, TimedLockerV4ABI, this.signer);
-                        this.getLockedValuesForBeneficiary(this.userAddress);
+                        this.refreshLockedValuesForBeneficiary();
                     }
                 } else {
                     this.userAddress = accounts[0];
                     this.contract = new ethers.Contract(TimedLockerV4Address, TimedLockerV4ABI, this.signer);
-                    this.getLockedValuesForBeneficiary(this.userAddress);
+                    this.refreshLockedValuesForBeneficiary();
+                }
+
+                if (!this.beneficiary) {
+                    this.beneficiary = this.userAddress;
                 }
             } else {
                 this.showErrorMessage('Please install an Ethereum wallet like Metamask!');
@@ -194,9 +207,11 @@ const app = new Vue({
                 this.showErrorMessage(this.buildErrorMessage(error));
             }
         },
-        async getLockedValuesForBeneficiary(address) {
-            this.lockedFundsByBeneficiary = await this.contract.getLockedValuesForBeneficiary(address);
-            this.isAnyEligibleFundsToWithdraw = this.lockedFundsByBeneficiary.filter(lock => lock.unlockTimestamp <= Date.now() / 1000).length > 0;
+        async refreshLockedValuesForBeneficiary() {
+            if (this.userAddress) {
+                this.lockedFundsByBeneficiary = await this.contract.getLockedValuesForBeneficiary(this.userAddress);
+                this.isAnyEligibleFundsToWithdraw = this.lockedFundsByBeneficiary.filter(lock => lock.unlockTimestamp <= Date.now() / 1000).length > 0;
+            }
         }
     },
 });
