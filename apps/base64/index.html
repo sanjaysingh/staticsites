@@ -1,145 +1,75 @@
-
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/core.min.js" integrity="sha256-hV6Ff1ZbnLObO8BWHPZs1oA3aPZkX4bnnEKO4nX1sm0=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js" integrity="sha256-7Sn/1Y1J1unxaPqhjNPy5qTKqv9c2rocYsfCzgkwEOc=" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/solid.css" integrity="sha384-osqezT+30O6N/vsMqwW8Ch6wKlMofqueuia2H7fePy42uC05rm1G+BUPSd2iBSJL" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/fontawesome.css" integrity="sha384-BzCy2fixOYd0HObpx3GMefNqdbA7Qjcc91RgYeDjrHTIEXqiF00jKvgQG0+zY/7I" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/solid.css"
+        integrity="sha384-osqezT+30O6N/vsMqwW8Ch6wKlMofqueuia2H7fePy42uC05rm1G+BUPSd2iBSJL" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/fontawesome.css"
+        integrity="sha384-BzCy2fixOYd0HObpx3GMefNqdbA7Qjcc91RgYeDjrHTIEXqiF00jKvgQG0+zY/7I" crossorigin="anonymous">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Base64 Encoder/Decoder">
-    <meta name="author" content="Sanjay Singh">
-
     <title>Base64 Encoder and Decoder</title>
-
-    <style>
-        body {
-            overflow-x: hidden;
-        }
-
-        #wrapper {
-            padding-left: 0;
-            -webkit-transition: all 0.5s ease;
-            -moz-transition: all 0.5s ease;
-            -o-transition: all 0.5s ease;
-            transition: all 0.5s ease;
-        }
-
-        #wrapper.toggled {
-            padding-left: 250px;
-        }
-
-        #wrapper.toggled {
-            width: 250px;
-        }
-
-        #base64-container {
-            width: 100%;
-            position: absolute;
-            padding: 15px;
-        }
-
-        #wrapper.toggled #base64-container {
-            position: absolute;
-            margin-right: -250px;
-        }
-
-        a.home-icon {
-            text-decoration: none;
-            margin-right: 5px;
-        }
-
-        .title-text {
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-
-        @media(min-width:768px) {
-            #wrapper {
-                padding-left: 0;
-            }
-
-            #wrapper.toggled {
-                padding-left: 250px;
-            }
-
-            #wrapper.toggled {
-                width: 250px;
-            }
-
-            #base64-container {
-                padding: 20px;
-                position: relative;
-            }
-
-            #wrapper.toggled #base64-container {
-                position: relative;
-                margin-right: 0;
-            }
-
-
-    </style>
-
 </head>
-
-<body>
-
-    <div id="wrapper">
-        <div id="base64-container">
-            <div class="container-fluid">
-                <div class="d-flex justify-content-end">
-                    <div class="mr-auto p-2">
-                        <a href="/" class="home-icon">
-                            <span class="home-image">
-                                <i class="fa fa-home fa-2x"></i>
-                            </span>
-                        </a>
-                        <span class="title-text">Offline Base64 Encoder / Decoder</span>
-                    </div>
-                    <div class="p-2"><span><a href="https://github.com/sanjaysingh/staticsites/blob/master/apps/base64/index.html">Edit this page</a></span></div>
-                  </div>
-                
-                <form id="base64-form" onsubmit="return false;">
-                    <div class="form-group">
-                        <label for="inputText">Text to encode/decode</label>
-                        <textarea class="form-control" id="inputText" rows="10" required></textarea>
-                    </div>
-                    
-                    <button type="submit" id="encode" class="btn btn-primary">Encode</button>
-                    <button type="submit" id="decode" class="btn btn-primary">Decode</button>
-                    <hr />
-
-                    <div class="form-group">
-                        <label for="outputText">Encoded/Decoded Text</label>
-                        <textarea class="form-control" rows="10" id="outputText" readonly/></textarea>
-                    </div>
-
-                </form>
+<body class="bg-gray-900">
+    <div class="container mx-auto px-4 py-12">
+        <div class="bg-gray-800 shadow-md p-8 rounded-lg">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="/" class="mr-4">
+                        <span class="home-image">
+                            <i class="fa fa-home fa-2x text-gray-200"></i>
+                        </span>
+                    </a>
+                    <span class="text-2xl font-bold text-gray-200">Offline Base64 Encoder / Decoder</span>
+                </div>
+                <div>
+                    <span><a href="https://github.com/sanjaysingh/staticsites/blob/master/apps/base64/index.html"
+                            class="text-blue-300 hover:text-blue-500">Edit this page</a></span>
+                </div>
             </div>
+
+            <form id="base64-form" onsubmit="return false;" class="mt-8">
+                <div class="form-group">
+                    <label for="inputText" class="block text-gray-300">Text to encode/decode</label>
+                    <textarea
+                        class="form-control mt-2 w-full p-2 bg-gray-700 text-gray-200 border border-gray-600 rounded"
+                        id="inputText" rows="10" required></textarea>
+                </div>
+
+                <div class="flex justify-start mt-4">
+                    <button type="submit" id="encode"
+                        class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">Encode</button>
+                    <button type="submit" id="decode"
+                        class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Decode
+                    </button>
+                </div>
+                <hr class="my-8 border-gray-600" />
+
+                <div class="form-group">
+                    <label for="outputText" class="block text-gray-300">Encoded/Decoded Text</label>
+                    <textarea
+                        class="form-control mt-2 w-full p-2 bg-gray-700 text-gray-200 border border-gray-600 rounded"
+                        rows="10" id="outputText" readonly></textarea>
+                </div>
+            </form>
         </div>
-
-
     </div>
-
     <script>
-
         (function () {
-
             function encode(inputText) {
-                return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(inputText));
-            }
-            
-            function decode(inputText) {
-                CryptoJS.enc.Base64
-                return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse(inputText));
+                return btoa(unescape(encodeURIComponent(inputText)));
             }
 
-            function performEncodingOrDecoding(e, encoderFunc){
-                if(document.getElementById("base64-form").checkValidity()) {
+            function decode(inputText) {
+                return decodeURIComponent(escape(atob(inputText)));
+            }
+
+            function performEncodingOrDecoding(e, encoderFunc) {
+                if (document.getElementById("base64-form").checkValidity()) {
                     $('#outputText').val('');
                     let inputText = $('#inputText').val();
                     $('#outputText').val(encoderFunc(inputText));
@@ -151,19 +81,13 @@
             });
 
             $('#encode').on("click", function (e) {
-               performEncodingOrDecoding(e, encode);
+                performEncodingOrDecoding(e, encode);
             });
 
-             $('#decode').on("click", function (e) {
+            $('#decode').on("click", function (e) {
                 performEncodingOrDecoding(e, decode);
             });
-
         })();
-
-
     </script>
-
-
 </body>
-
 </html>
