@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/solid.css"
+        integrity="sha384-osqezT+30O6N/vsMqwW8Ch6wKlMofqueuia2H7fePy42uC05rm1G+BUPSd2iBSJL" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/fontawesome.css"
+        integrity="sha384-BzCy2fixOYd0HObpx3GMefNqdbA7Qjcc91RgYeDjrHTIEXqiF00jKvgQG0+zY/7I" crossorigin="anonymous">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Sha256 Encoder">
+    <title>SHA256 Encoder</title>
+</head>
+<body class="bg-gray-900">
+    <div class="container mx-auto px-4 py-12">
+        <div class="bg-gray-800 shadow-md p-8 rounded-lg">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="/" class="mr-4">
+                        <span class="home-image">
+                            <i class="fa fa-home fa-2x text-gray-200"></i>
+                        </span>
+                    </a>
+                    <span class="text-2xl font-bold text-gray-200">Offline Sha256 Encoder</span>
+                </div>
+                <div>
+                    <span><a href="https://github.com/sanjaysingh/staticsites/blob/master/apps/sha256/index.html"
+                            class="text-blue-300 hover:text-blue-500">Edit this page</a></span>
+                </div>
+            </div>
+
+            <form id="sha256-form" onsubmit="return false;" class="mt-8">
+                <div class="form-group">
+                    <label for="inputText" class="block text-gray-300">Text to Sha256 encode</label>
+                    <textarea
+                        class="form-control mt-2 w-full p-2 bg-gray-700 text-gray-200 border border-gray-600 rounded"
+                        id="inputText" rows="10" required></textarea>
+                </div>
+
+                <div class="flex justify-start mt-4">
+                    <button type="submit" id="encode"
+                        class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">Sha256 Encode</button>
+                </div>
+                <hr class="my-8 border-gray-600" />
+
+                <div class="form-group">
+                    <label for="outputText" class="block text-gray-300">Sha256 Text</label>
+                    <textarea
+                        class="form-control mt-2 w-full p-2 bg-gray-700 text-gray-200 border border-gray-600 rounded"
+                        rows="10" id="outputText" readonly></textarea>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        (function () {
+            async function computeSHA256HashAsHexString(input) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(input);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = '0x' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                return hashHex;
+            }
+
+            $('#sha256-form').on("submit", function (e) {
+                e.preventDefault();
+            });
+
+            $('#encode').on("click", async function (e) {
+                var encodedString = await computeSHA256HashAsHexString($('#inputText').val());
+                $('#outputText').val(encodedString);
+            });
+
+        })();
+    </script>
+</body>
+</html>
