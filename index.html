@@ -68,6 +68,10 @@
 </head>
 
 <body>
+    {% for page in site.pages %}
+  <a href="{{ page.url | relative_url }}">{{ page.title }}</a><br>
+{% endfor %}
+
     <div id="wrapper">
         <div id="base64-container">
             <div class="container-fluid">
