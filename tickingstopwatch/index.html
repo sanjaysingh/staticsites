@@ -3,81 +3,40 @@
 
 <head>
   <title>Ticking Stopwatch App</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-
-    .stopwatch {
-      font-size: 8em;
-      margin-top: 20px;
-      margin-bottom: 20px;
-    }
-
-    .button-group {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    button {
-      font-size: 2em;
-      padding: 10px;
-      margin-right: 10px;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    #reset {
-      background-color: #993737;
-    }
-
-    button:last-child {
-      margin-right: 0;
-    }
-
-    button:hover {
-      background-color: #0069d9;
-    }
-
-    @media (max-width: 600px) {
-      .stopwatch {
-        font-size: 2em;
+    @media (prefers-color-scheme: dark) {
+      .bg-auto {
+        background-color: #1a202c;
       }
 
-      .button-group {
-        flex-wrap: wrap;
+      .text-auto {
+        color: #e5e7eb;
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      .bg-auto {
+        background-color: #ffffff;
       }
 
-      button {
-        width: 100%;
-        margin-bottom: 10px;
+      .text-auto {
+        color: #1a202c;
       }
     }
   </style>
 </head>
 
-<body>
+<body class="h-screen flex flex-col justify-center items-center bg-auto text-auto">
 
-  <div id="app" class="container">
-    <div id="elapsed" class="stopwatch">{{ formattedTime }}</div>
-    <div class="button-group">
-      <button id="start" @click="startStop">{{ buttonLabel }}</button>
-      <button id="reset" @click="reset">Reset</button>
+  <div id="app" class="container text-center">
+    <div id="elapsed" class="stopwatch text-9xl mb-5 font-mono inline-block">{{ formattedTime }}</div>
+    <div class="button-group flex justify-center mb-5">
+      <button id="start" @click="startStop"
+        class="text-4xl px-5 py-3 mr-4 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-500">{{ buttonLabel
+        }}</button>
+      <button id="reset" @click="reset"
+        class="text-4xl px-5 py-3 bg-red-600 text-white rounded cursor-pointer hover:bg-red-500">Reset</button>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
