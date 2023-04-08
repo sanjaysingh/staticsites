@@ -68,10 +68,6 @@
 </head>
 
 <body>
-    {% for page in site.pages %}
-  <a href="{{ page.url | relative_url }}">{{ page.title }}</a><br>
-{% endfor %}
-
     <div id="wrapper">
         <div id="base64-container">
             <div class="container-fluid">
@@ -88,12 +84,12 @@
                 <hr />
                 <div id="pages">
                     <ol>
-                        <li><a href="/apps/sas/index.html">Offline SAS Generator</a></li>
-                        <li><a href="/apps/base64/index.html">Offline Base64 Encoder /  Decoder</a></li>
-                        <li><a href="/apps/sha256/index.html">Offline Sha256 Encoder</a></li>
-                        <li><a href="/apps/xmlencode/index.html">Offline XML Encoder /  Decoder</a></li>
-                        <li><a href="/apps/tickingstopwatch/index.html">Ticking Stop Watch</a></li>
-                        <li><a href="/apps/timelock/index.html">Time Lock (dapp)</a></li>
+                        <li><a href="/sas">Offline SAS Generator</a></li>
+                        <li><a href="/base64">Offline Base64 Encoder /  Decoder</a></li>
+                        <li><a href="/sha256">Offline Sha256 Encoder</a></li>
+                        <li><a href="/xmlencode">Offline XML Encoder /  Decoder</a></li>
+                        <li><a href="/tickingstopwatch">Ticking Stop Watch</a></li>
+                        <li><a href="/timelock">Time Lock (dapp)</a></li>
                     </ol>
                 </div>
             </div>
