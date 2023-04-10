@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Unit Converter</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bignumber.js@9.0.2/bignumber.min.js"></script>
+    <style>
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                --tw-bg-opacity: 1;
+                background-color: rgba(17, 24, 39, var(--tw-bg-opacity));
+                --tw-text-opacity: 1;
+                color: rgba(229, 231, 235, var(--tw-text-opacity));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container mx-auto py-12">
+        <h1 class="text-4xl text-center mb-8">Ethereum Unit Converter</h1>
+        <div class="grid grid-cols-1 gap-8 justify-items-center">
+            <div class="flex flex-row items-center">
+                <input id="ether" type="text" v-model="ether" class="text-gray-900 w-auto md:w-96 border rounded p-2"
+                    @input="convert('ether')">
+                <label for="ether" class="ml-2 mt-0">Ether</label>
+            </div>
+            <div class="flex flex-row items-center">
+                <input id="gwei" type="text" v-model="gwei" class="text-gray-900 w-auto md:w-96 border rounded p-2"
+                    @input="convert('gwei')">
+                <label for="gwei" class="ml-2 mt-0">Gwei</label>
+            </div>
+            <div class="flex flex-row items-center">
+                <input id="wei" type="text" v-model="wei" class="text-gray-900 w-auto md:w-96 border rounded p-2"
+                    @input="convert('wei')">
+                <label for="wei" class="ml-2 mt-0">Wei</label>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                ether: '',
+                gwei: '',
+                wei: ''
+            },
+            methods: {
+                convert(unit) {
+                    const etherToWei = 1e18;
+                    const gweiToWei = 1e9;
+                    let wei;
+
+                    if (this.ether.endsWith(".")) {
+                        return;
+                    }
+
+                    // Filter out non-numeric and non-decimal values
+                    const filteredValue = (value) => value.replace(/[^0-9.]/g, '');
+
+                    if (unit === 'ether') {
+                        this.ether = filteredValue(this.ether);
+                        wei = new BigNumber(this.ether || 0).times(etherToWei);
+                    } else if (unit === 'gwei') {
+                        this.gwei = filteredValue(this.gwei);
+                        wei = new BigNumber(this.gwei || 0).times(gweiToWei);
+                    } else {
+                        this.wei = filteredValue(this.wei);
+                        wei = new BigNumber(this.wei || 0);
+                    }
+
+                    this.ether = wei.dividedBy(etherToWei).toString();
+                    this.gwei = wei.dividedBy(gweiToWei).toString();
+                    this.wei = wei.toString();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
