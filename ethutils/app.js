@@ -14,12 +14,20 @@ const app = new Vue({
             { label: 'Convert to Byte32', value: 'formatBytes32String("Hello")' },
             { label: 'Parse Byte32', value: 'parseBytes32String("0x48656c6c6f000000000000000000000000000000000000000000000000000000")' },
             { label: 'Keccack256', value: 'keccak256(toUtf8Bytes("Hello"))' },
+            { label: 'Base64 Encode', value: 'base64.encode(toUtf8Bytes("Hello"))' },
+            { label: 'Base64 Decode', value: 'toUtf8String(base64.decode("SGVsbG8="))' },
+            { label: 'Sha256', value: 'sha256(toUtf8Bytes("Hello"))' },
           ],
     },
     watch: {
         selectedTemplate(newVal) {
             this.statement = newVal;
         }
+    },
+    mounted() {
+        this.$nextTick(() => {
+            this.init();
+        });
     },
     computed: {
         connectButtonText() {
@@ -118,7 +126,7 @@ const app = new Vue({
 
 function loadEthUtilsToGlobalScope() {
     for (const methodName in ethers.utils) {
-        if (typeof ethers.utils[methodName] === 'function') {
+        if (typeof ethers.utils[methodName] === 'function' || typeof ethers.utils[methodName] === 'object') {
             window[methodName] = ethers.utils[methodName];
         }
     }
