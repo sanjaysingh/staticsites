@@ -17,6 +17,10 @@ const app = new Vue({
             { label: 'Base64 Encode', value: 'base64.encode(toUtf8Bytes("Hello"))' },
             { label: 'Base64 Decode', value: 'toUtf8String(base64.decode("SGVsbG8="))' },
             { label: 'Sha256', value: 'sha256(toUtf8Bytes("Hello"))' },
+            { label: 'Eth To Wei', value: 'parseEther("1").toString()' },
+            { label: 'Eth To Gwei', value: 'parseEther("1").div(1e9).toString()' },
+            { label: 'Wei To Eth', value: 'formatEther("1000000000000000000")' },
+            { label: 'Gwei To Eth', value: 'formatUnits("1000000000", "gwei")' },
           ],
     },
     watch: {
