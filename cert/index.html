@@ -15,6 +15,7 @@
         }
         .navbar-custom .navbar-brand, .navbar-custom .nav-link {
             color: #333; /* Darker text for contrast */
+            padding-left: 10px;
         }
         .nav-tabs .nav-link.active {
             border-color: #b8daff #b8daff transparent;
@@ -68,7 +69,7 @@
             <div class="form-group">
                 <textarea class="form-control" id="certText" rows="10" v-model="certText" placeholder="Paste your cert here or select a file..."></textarea>
             </div>
-            <button class="btn btn-primary" @click="parseCert">Parse</button>
+            <button class="btn btn-primary mt-2" @click="parseCert">Parse</button>
 
             <div class="form-group mt-3">
                 <textarea class="form-control" id="parsedCert" rows="10" v-model="parsedCertText" placeholder="Parsed cert will appear here..." readonly></textarea>
