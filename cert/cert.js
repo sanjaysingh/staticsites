@@ -5,8 +5,8 @@ function readCertificateProperties(certPem) {
 
     let certProperties = {
         serialNumber: cert.serialNumber,
-        issuer: cert.issuer.attributes.map(attr => `${attr.name}=${attr.value}`).join(', '),
-        subject: cert.subject.attributes.map(attr => `${attr.name}=${attr.value}`).join(', '),
+        issuer: cert.issuer.attributes.map(attr => `${attr.shortName}=${attr.value}`).join(', '),
+        subject: cert.subject.attributes.map(attr => `${attr.shortName}=${attr.value}`).join(', '),
         validFrom: cert.validity.notBefore,
         validTo: cert.validity.notAfter,
         thumbprintSHA1: "",
