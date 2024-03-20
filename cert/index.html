@@ -95,18 +95,16 @@
                 <label for="pfxPassword">PFX Password</label>
                 <input type="password" class="form-control" v-model="pfxPassword" placeholder="Enter PFX password">
             </div>
-            <button class="btn btn-primary mt-2" @click="splitPfxFile">Split PFX</button>
+            <button class="btn btn-primary mt-2" @click="splitPfx">Split PFX</button>
             <div class="form-group mt-3">
-                <label>Public Key PEM</label>
+                <label>Public Key</label>
                 <textarea class="form-control" rows="5" v-model="publicPem" readonly></textarea>
-                <button class="btn btn-primary mt-2" @click="downloadFile('public.pem', publicPem)">Download Public
-                    Key</button>
+                <button class="btn btn-primary mt-2" @click="downloadFile('public', publicPem)">Download Public Key</button>
             </div>
             <div class="form-group mt-3">
-                <label>Private Key PEM</label>
+                <label>Private Key</label>
                 <textarea class="form-control" rows="5" v-model="privatePem" readonly></textarea>
-                <button class="btn btn-primary mt-2" @click="downloadFile('private.pem', privatePem)">Download Private
-                    Key</button>
+                <button class="btn btn-primary mt-2" @click="downloadFile('private', privatePem)">Download Private Key</button>
             </div>
         </div>
     </div>
@@ -123,7 +121,9 @@
                 showSplitPfx: false,
                 pfxPassword: '',
                 publicPem: '',
-                privatePem: ''
+                privatePem: '',
+                pfxFileContent: null,
+                originalFileName: ''
             },
             methods: {
                 selectTab(selectedTab) {
@@ -150,11 +150,23 @@
                 loadPfxFile(event) {
                     const file = event.target.files[0];
                     if (file) {
+                        // Extract and store the base name of the file, without its extension
+                        this.originalFileName = file.name.replace(/\.[^/.]+$/, "");
+
                         const reader = new FileReader();
                         reader.onload = (e) => {
-                            this.splitPfxFile(e.target.result);
+                            this.pfxFileContent = e.target.result;
                         };
                         reader.readAsArrayBuffer(file);
+                    }
+                },
+
+                splitPfx() {
+                    if (this.pfxFileContent) {
+                        // Now use the stored file content here
+                        this.splitPfxFile(this.pfxFileContent);
+                    } else {
+                        alert('Please select a PFX file first.');
                     }
                 },
                 splitPfxFile(arrayBuffer) {
@@ -168,7 +180,8 @@
                     this.publicPem = pemFiles.certificate;
                     this.privatePem = pemFiles.privateKey;
                 },
-                downloadFile(filename, content) {
+                downloadFile(fileType, content) {
+                    let filename = `${this.originalFileName}-${fileType}.pem`;
                     const element = document.createElement('a');
                     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
                     element.setAttribute('download', filename);
