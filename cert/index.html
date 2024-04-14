@@ -51,12 +51,10 @@
 </head>
 
 <body>
-
     <div id="app" class="container mt-3">
         <nav class="navbar navbar-expand navbar-custom mb-4">
             <a class="navbar-brand" href="#">Cert Utils</a>
         </nav>
-
         <ul class="nav nav-tabs">
             <li class="nav-item">
                 <a class="nav-link" href="#" v-bind:class="{ active: showCertViewer }"
@@ -66,129 +64,103 @@
                 <a class="nav-link" href="#" v-bind:class="{ active: showSplitPfx }"
                     @click="selectTab('splitPfx')">Split Pfx</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" v-bind:class="{ active: showGenerateCert }"
+                    @click="selectTab('generateCert')">Generate Cert</a>
+            </li>
         </ul>
-
-        <div v-if="showCertViewer" class="tab-content p-3">
-            <!-- Cert Viewer content -->
+        <div v-if="showGenerateCert" class="tab-content p-3">
             <div class="form-group">
-                <label for="certFile" class="text-secondary">Input Cert text</label>
-                <input type="file" class="form-control-file" id="certFile" @change="loadCertFile">
+                <label for="commonName">Common Name</label>
+                <input type="text" class="form-control" v-model="commonName" placeholder="example.com">
             </div>
             <div class="form-group">
-                <textarea class="form-control" id="certText" rows="10" v-model="certText"
-                    placeholder="Paste your cert here or select a file..."></textarea>
+                <label for="countryName">Country Name</label>
+                <input type="text" class="form-control" v-model="countryName" placeholder="US">
             </div>
-            <button class="btn btn-primary mt-2" @click="parseCert">Parse</button>
-            <div class="form-group mt-3">
-                <textarea class="form-control" id="parsedCert" rows="10" v-model="parsedCertText"
-                    placeholder="Parsed cert will appear here..." readonly></textarea>
-            </div>
-        </div>
-
-        <div v-if="showSplitPfx" class="tab-content p-3">
-            <!-- Split Pfx content -->
             <div class="form-group">
-                <label for="pfxFile">PFX File Input</label>
-                <input type="file" class="form-control-file" id="pfxFile" @change="loadPfxFile">
+                <label for="stateName">State Name</label>
+                <input type="text" class="form-control" v-model="stateName" placeholder="California">
             </div>
-            <div class="form-group mt-3">
+            <div class="form-group">
+                <label for="localityName">Locality Name</label>
+                <input type="text" class="form-control" v-model="localityName" placeholder="Mountain View">
+            </div>
+            <div class="form-group">
+                <label for="organizationName">Organization Name</label>
+                <input type="text" class="form-control" v-model="organizationName" placeholder="Example, Inc.">
+            </div>
+            <div class="form-group">
+                <label for="organizationalUnitName">Organizational Unit Name</label>
+                <input type="text" class="form-control" v-model="organizationalUnitName" placeholder="IT Department">
+            </div>
+            <div class="form-group">
+                <label for="expirationYears">Expiration Years</label>
+                <input type="number" class="form-control" v-model="expirationYears" placeholder="1">
+            </div>
+            <div class="form-group">
                 <label for="pfxPassword">PFX Password</label>
                 <input type="password" class="form-control" v-model="pfxPassword" placeholder="Enter PFX password">
             </div>
-            <button class="btn btn-primary mt-2" @click="splitPfx">Split PFX</button>
-            <div class="form-group mt-3">
-                <label>Public Key</label>
-                <textarea class="form-control" rows="5" v-model="publicPem" readonly></textarea>
-                <button class="btn btn-primary mt-2" @click="downloadFile('public', publicPem)">Download Public Key</button>
-            </div>
-            <div class="form-group mt-3">
-                <label>Private Key</label>
-                <textarea class="form-control" rows="5" v-model="privatePem" readonly></textarea>
-                <button class="btn btn-primary mt-2" @click="downloadFile('private', privatePem)">Download Private Key</button>
-            </div>
+            <button class="btn btn-primary mt-2" @click="generateCert">Generate and Download PFX</button>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/node-forge@0.10.0/dist/forge.min.js"></script>
     <script src="cert-browser.js"></script>
     <script>
         new Vue({
             el: '#app',
             data: {
-                certText: '',
-                parsedCertText: '',
-                showCertViewer: true, // Default to showing the Cert Viewer
+                showCertViewer: false,
                 showSplitPfx: false,
+                showGenerateCert: true,
+                commonName: '',
+                countryName: '',
+                stateName: '',
+                localityName: '',
+                organizationName: '',
+                organizationalUnitName: '',
+                expirationYears: 1,
                 pfxPassword: '',
-                publicPem: '',
-                privatePem: '',
-                pfxFileContent: null,
-                originalFileName: ''
             },
             methods: {
                 selectTab(selectedTab) {
                     this.showCertViewer = selectedTab === 'certViewer';
                     this.showSplitPfx = selectedTab === 'splitPfx';
+                    this.showGenerateCert = selectedTab === 'generateCert';
                 },
-                loadCertFile(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => this.certText = e.target.result;
-                        reader.readAsText(file);
+                generateCert() {
+                    const pfxBase64 = generateSelfSignedCertWithPFX({
+                        commonName: this.commonName,
+                        countryName: this.countryName,
+                        stateName: this.stateName,
+                        localityName: this.localityName,
+                        organizationName: this.organizationName,
+                        organizationalUnitName: this.organizationalUnitName,
+                        expirationYears: this.expirationYears,
+                        pfxPassword: this.pfxPassword,
+                    });
+                    this.downloadPFX(pfxBase64, `${this.commonName}.pfx`);
+                },
+                downloadPFX(base64Data, filename) {
+                    const binaryString = window.atob(base64Data);
+                    const len = binaryString.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
                     }
-                },
-                parseCert() {
-                    try {
-                        const certProps = readCertificateProperties(this.certText);
-                        this.parsedCertText = JSON.stringify(certProps, null, 2);
-                    } catch (error) {
-                        console.error('Error parsing certificate:', error);
-                        this.parsedCertText = 'Failed to parse certificate.';
-                    }
-                },
-                loadPfxFile(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        // Extract and store the base name of the file, without its extension
-                        this.originalFileName = file.name.replace(/\.[^/.]+$/, "");
+                    const blob = new Blob([bytes], { type: 'application/x-pkcs12' });
+                    const url = window.URL.createObjectURL(blob);
 
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.pfxFileContent = e.target.result;
-                        };
-                        reader.readAsArrayBuffer(file);
-                    }
-                },
-
-                splitPfx() {
-                    if (this.pfxFileContent) {
-                        // Now use the stored file content here
-                        this.splitPfxFile(this.pfxFileContent);
-                    } else {
-                        alert('Please select a PFX file first.');
-                    }
-                },
-                splitPfxFile(arrayBuffer) {
-                    const pfxData = new Uint8Array(arrayBuffer);
-                    let binary = '';
-                    for (let i = 0; i < pfxData.length; i++) {
-                        binary += String.fromCharCode(pfxData[i]);
-                    }
-                    // Assuming splitPfxToPem is correctly implemented and available in your cert-browser.js
-                    const pemFiles = splitPfxToPem(binary, this.pfxPassword);
-                    this.publicPem = pemFiles.certificate;
-                    this.privatePem = pemFiles.privateKey;
-                },
-                downloadFile(fileType, content) {
-                    let filename = `${this.originalFileName}-${fileType}.pem`;
                     const element = document.createElement('a');
-                    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+                    element.setAttribute('href', url);
                     element.setAttribute('download', filename);
                     document.body.appendChild(element);
                     element.click();
                     document.body.removeChild(element);
-                }
+                    window.URL.revokeObjectURL(url);
+                },
             }
         });
     </script>
