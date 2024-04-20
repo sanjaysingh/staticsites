@@ -70,7 +70,8 @@ Vue.component('people', {
     <div>
         <input v-model="newPerson" required
                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-               placeholder="Enter person's name">
+               placeholder="Enter person's name"
+               @keyup.enter="addPerson"> <!-- Added @keyup.enter here -->
         <button @click="addPerson"
                 class="mt-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
             Add Person
@@ -100,13 +101,14 @@ Vue.component('people', {
                 return;
             }
             this.store.addPerson(this.newPerson.trim());
-            this.newPerson = '';
+            this.newPerson = ''; // Clear the input after adding the person
         },
         removePerson(index) {
             this.store.removePerson(index);
         }
     }
 });
+
 
 Vue.component('expenses', {
     template: `
