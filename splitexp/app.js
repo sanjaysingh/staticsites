@@ -1,18 +1,82 @@
+const store = {
+    state: {
+        people: [],
+        expenses: [],
+        currentTab: 'People'
+    },
+    addPerson(name) {
+        this.state.people.push(name);
+        this.saveState();
+    },
+    removePerson(index) {
+        const person = this.state.people[index];
+        this.state.expenses = this.state.expenses.filter(exp => exp.payer !== person && !exp.sharers.includes(person));
+        this.state.people.splice(index, 1);
+        this.saveState();
+    },
+    addExpense(expense) {
+        this.state.expenses.push(expense);
+        this.saveState();
+    },
+    removeExpense(index) {
+        this.state.expenses.splice(index, 1);
+        this.saveState();
+    },
+    getCurrentTab() {
+        return this.state.currentTab;
+    },
+    setCurrentTab(tab) {
+        this.state.currentTab = tab;
+        this.saveState();
+    },
+    saveState() {
+        const peopleString = this.state.people.join('|');
+        const expenseString = this.state.expenses.map(exp => [
+            this.state.people.indexOf(exp.payer),
+            exp.amount,
+            exp.description,
+            exp.sharers.map(sharer => this.state.people.indexOf(sharer)).join(',')
+        ].join(':')).join('|');
+        const stateString = `${peopleString}#${expenseString}#${this.state.currentTab}`;
+        const compressed = LZString.compressToEncodedURIComponent(stateString);
+        window.location.hash = compressed;
+    },
+    loadState() {
+        if (window.location.hash) {
+            const compressed = window.location.hash.substr(1);
+            const decompressed = LZString.decompressFromEncodedURIComponent(compressed);
+            const [peoplePart, expensePart, currentTab] = decompressed.split('#');
+            const people = peoplePart.split('|');
+            const expenses = expensePart.split('|').map(exp => {
+                const [payerIndex, amount, description, sharers] = exp.split(':');
+                return {
+                    payer: people[parseInt(payerIndex)],
+                    amount: parseFloat(amount),
+                    description,
+                    sharers: sharers.split(',').map(index => people[parseInt(index)])
+                };
+            });
+
+            this.state.people = people;
+            this.state.expenses = expenses;
+            this.state.currentTab = currentTab || 'People';
+        }
+    }
+};
+
+// Vue Components
 Vue.component('people', {
-    props: ['people'],
     template: `
     <div>
         <input v-model="newPerson" required
                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-               placeholder="Enter person's name"
-               @input="validationError = ''">
+               placeholder="Enter person's name">
         <button @click="addPerson"
                 class="mt-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
             Add Person
         </button>
-        <p v-if="validationError" class="text-red-500 text-xs italic mt-2">{{ validationError }}</p>
         <ul class="mt-4">
-            <li v-for="(person, index) in people" :key="person"
+            <li v-for="(person, index) in store.state.people" :key="person"
                 class="py-2 px-4 border-b border-gray-300 flex justify-between">
                 {{ person }}
                 <button @click="removePerson(index)"
@@ -26,35 +90,32 @@ Vue.component('people', {
     data() {
         return {
             newPerson: '',
-            validationError: ''
+            store
         };
     },
     methods: {
         addPerson() {
             if (!this.newPerson.trim()) {
-                this.validationError = 'Please enter a name.';
+                alert('Please enter a name.');
                 return;
             }
-            this.$emit('update:people', [...this.people, this.newPerson.trim()]);
-            this.newPerson = ''; // Clear the input field after adding the person
-            this.validationError = ''; // Clear the error message
+            this.store.addPerson(this.newPerson.trim());
+            this.newPerson = '';
         },
         removePerson(index) {
-            this.people.splice(index, 1);
-            this.$emit('update:people', [...this.people]);
+            this.store.removePerson(index);
         }
     }
 });
 
 Vue.component('expenses', {
-    props: ['expenses', 'people'],
     template: `
     <div>
         <h2 class="text-lg font-semibold">Add Expenses</h2>
         <select v-model="payer" required
                 class="mt-2 block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline">
             <option disabled value="">Select payer</option>
-            <option v-for="person in people" :value="person">{{ person }}</option>
+            <option v-for="person in store.state.people" :value="person">{{ person }}</option>
         </select>
         <input v-model.number="amount" type="number" placeholder="Amount" required
                class="mt-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -62,12 +123,12 @@ Vue.component('expenses', {
                class="mt-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         <h3 class="mt-4 text-lg font-semibold">Paid For</h3>
         <label class="flex items-center mt-4">
-            <input type="checkbox" :checked="selectAll" 
-                   @change="toggleSelectAll"
-                   class="form-checkbox h-5 w-5 text-blue-600">
+            <input type="checkbox" v-model="selectAll"
+                @change="toggleSelectAll($event)"
+                class="form-checkbox h-5 w-5 text-blue-600">
             <span class="ml-2 text-gray-700">{{ selectAll ? 'Deselect All' : 'Select All' }}</span>
         </label>
-        <div class="mt-2 ml-6" v-for="person in people" :key="person">
+        <div class="mt-2 ml-6" v-for="person in store.state.people" :key="person">
             <label class="flex items-center">
                 <input type="checkbox" :value="person" v-model="sharers"
                        class="form-checkbox h-5 w-5 text-blue-600">
@@ -79,11 +140,13 @@ Vue.component('expenses', {
             Add Expense
         </button>
         <ul class="mt-4">
-            <li v-for="(expense, index) in expenses" :key="expense.id"
+            <li v-for="(expense, index) in store.state.expenses" :key="expense.id"
                 class="py-2 px-4 border-b border-gray-300 flex justify-between">
                 {{ expense.payer }} paid {{ expense.amount }} for {{ expense.description }} among {{ expense.sharers.join(', ') }}
                 <button @click="removeExpense(index)"
-                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline">Delete</button>
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline">
+                    Delete
+                </button>
             </li>
         </ul>
     </div>
@@ -93,15 +156,14 @@ Vue.component('expenses', {
             amount: 0,
             payer: '',
             description: '',
-            sharers: this.people.slice(), // initialize with all people selected
-            selectAll: true
+            sharers: [],
+            selectAll: true,
+            store
         };
     },
-    watch: {
-        people(newPeople) {
-            this.sharers = newPeople.slice();
-            this.selectAll = true;
-        }
+    mounted() {
+        this.selectAllSharers(); 
+        this.resetInputs();
     },
     methods: {
         addExpense() {
@@ -110,32 +172,38 @@ Vue.component('expenses', {
                 return;
             }
             const newExpense = {
-                id: this.expenses.length + 1,
+                id: store.state.expenses.length + 1,
                 payer: this.payer,
                 amount: this.amount,
                 description: this.description,
                 sharers: this.sharers
             };
-            this.$emit('update:expenses', [...this.expenses, newExpense]);
+            this.store.addExpense(newExpense);
             this.resetInputs();
         },
-        resetInputs() {
-            this.amount = 0;
-            this.payer = '';
-            this.description = '';
-            this.sharers = this.people.slice();
-            this.selectAll = true;
+        removeExpense(index) {
+            this.store.removeExpense(index);
         },
-        toggleSelectAll() {
-            this.selectAll = !this.selectAll; // toggle state
-            this.sharers = this.selectAll ? this.people.slice() : [];
+        selectAllSharers() {
+            this.selectAll = true;
+            this.sharers = this.store.state.people.slice();
+        },
+        resetInputs() {
+            if(this.payer == '' && store.state.people.length > 0) {
+                this.payer = store.state.people[0];
+            }
+
+            this.amount = 0;
+            this.description = '';
+        },
+        toggleSelectAll(event) {
+            this.selectAll = event.target.checked;  // Directly bind the checkbox's state
+            this.sharers = this.selectAll ? store.state.people.slice() : [];
         }
     }
 });
 
-
 Vue.component('settlements', {
-    props: ['expenses', 'people'],
     template: `
     <div>
         <h2 class="text-lg font-semibold">Settlements</h2>
@@ -147,47 +215,33 @@ Vue.component('settlements', {
     </div>
     `,
     computed: {
-        balances() {
-            const balanceMap = this.people.reduce((acc, person) => {
-                acc[person] = 0;
-                return acc;
-            }, {});
-
-            this.expenses.forEach(expense => {
+        payments() {
+            const balances = {};
+            store.state.people.forEach(person => {
+                balances[person] = 0;
+            });
+            store.state.expenses.forEach(expense => {
                 const amountPerPerson = expense.amount / expense.sharers.length;
                 expense.sharers.forEach(person => {
-                    balanceMap[person] -= amountPerPerson;
+                    balances[person] -= amountPerPerson;
                 });
-                balanceMap[expense.payer] += expense.amount;
+                balances[expense.payer] += expense.amount;
             });
 
-            return balanceMap;
-        },
-        payments() {
-            let debtors = Object.keys(this.balances)
-                .filter(person => this.balances[person] < 0)
-                .map(person => ({ name: person, amount: -this.balances[person] }));
+            const debtors = Object.keys(balances)
+                .filter(person => balances[person] < 0)
+                .map(person => ({ name: person, amount: -balances[person] }));
+            const creditors = Object.keys(balances)
+                .filter(person => balances[person] > 0)
+                .map(person => ({ name: person, amount: balances[person] }));
 
-            let creditors = Object.keys(this.balances)
-                .filter(person => this.balances[person] > 0)
-                .map(person => ({ name: person, amount: this.balances[person] }));
-
-            return this.settleDebts(debtors, creditors);
-        }
-    },
-    methods: {
-        settleDebts(debtors, creditors) {
-            const transactions = [];
-            debtors.sort((a, b) => a.amount - b.amount);
-            creditors.sort((a, b) => a.amount - b.amount);
-
+            let transactions = [];
             while (debtors.length && creditors.length) {
-                const debtor = debtors[0];
-                const creditor = creditors[0];
-                const amount = Math.min(debtor.amount, creditor.amount);
+                let debtor = debtors[0];
+                let creditor = creditors[0];
+                let amount = Math.min(debtor.amount, creditor.amount);
 
-                transactions.push({ from: debtor.name, to: creditor.name, amount: amount });
-
+                transactions.push({ from: debtor.name, to: creditor.name, amount });
                 debtor.amount -= amount;
                 creditor.amount -= amount;
 
@@ -200,50 +254,27 @@ Vue.component('settlements', {
     }
 });
 
-
+// Vue instance
 new Vue({
     el: '#app',
     data: {
-        currentTab: 'People',
         tabs: ['People', 'Expenses', 'Settlements'],
-        people: [],
-        expenses: [],
+        store
     },
     computed: {
         currentTabComponent() {
-            return this.currentTab.toLowerCase();
+            return this.store.getCurrentTab().toLowerCase();
+        },
+        currentTab() {
+            return this.store.getCurrentTab();
         }
     },
     methods: {
-        updatePeople(people) {
-            this.people = people;
-            this.updateUrl();
-        },
-        updateExpenses(expenses) {
-            this.expenses = expenses;
-            this.updateUrl();
-        },
-        updateUrl() {
-            const state = {
-                people: this.people,
-                expenses: this.expenses
-            };
-            const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(state));
-            window.location.hash = compressed;
-        },
-        
-        loadState() {
-            if (window.location.hash) {
-                const compressed = window.location.hash.substr(1);
-                const decompressed = LZString.decompressFromEncodedURIComponent(compressed);
-                const state = JSON.parse(decompressed);
-                this.people = state.people || [];
-                this.expenses = state.expenses || [];
-            }
+        setCurrentTab(tab) {
+            this.store.setCurrentTab(tab);
         }
-        
     },
     created() {
-        this.loadState();
+        this.store.loadState();
     }
 });
