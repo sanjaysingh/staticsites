@@ -20,19 +20,19 @@
       <form @submit.prevent="generateToken" class="space-y-4">
         <div>
           <label for="clientId" class="block text-sm font-medium text-gray-700">Client ID</label>
-          <input type="text" v-model="clientId" id="clientId" placeholder="12345678-1234-1234-1234-123456789abc" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+          <input type="text" v-model="clientId" id="clientId" placeholder="e.g., 12345678-1234-1234-1234-123456789abc" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
         </div>
         <div>
           <label for="tenantId" class="block text-sm font-medium text-gray-700">Tenant ID</label>
-          <input type="text" v-model="tenantId" id="tenantId" placeholder="87654321-4321-4321-4321-987654321cba" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+          <input type="text" v-model="tenantId" id="tenantId" placeholder="e.g., 87654321-4321-4321-4321-987654321cba" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
         </div>
         <div>
           <label for="clientSecret" class="block text-sm font-medium text-gray-700">Client Secret</label>
-          <input type="password" v-model="clientSecret" id="clientSecret" placeholder="your-client-secret" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+          <input type="password" v-model="clientSecret" id="clientSecret" placeholder="e.g., your-client-secret" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
         </div>
         <div>
           <label for="resource" class="block text-sm font-medium text-gray-700">Resource</label>
-          <input type="text" v-model="resource" id="resource" placeholder="https://management.azure.com/" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+          <input type="text" v-model="resource" id="resource" placeholder="e.g., https://management.azure.com/" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
         </div>
         <div>
           <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-md">Generate Token</button>
@@ -59,26 +59,27 @@
           params.append('client_secret', this.clientSecret);
           params.append('resource', this.resource);
 
-          // Create a new tab
-          const newTab = window.open('', '_blank');
+          // Open a new tab
+          const newTab = window.open('about:blank', '_blank');
 
-          // Create a form in the new tab
-          const form = newTab.document.createElement('form');
-          form.method = 'POST';
-          form.action = tokenUrl;
-
-          // Append hidden input fields with parameters to the form
-          params.forEach((value, key) => {
-            const input = newTab.document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = value;
-            form.appendChild(input);
-          });
-
-          // Append the form to the body and submit it
-          newTab.document.body.appendChild(form);
-          form.submit();
+          // Ensure the new tab is ready before writing to it
+          setTimeout(() => {
+            // Write a form into the new tab and submit it
+            newTab.document.write(`
+              <html>
+                <body>
+                  <form id="tokenForm" action="${tokenUrl}" method="POST">
+                    ${Array.from(params.entries()).map(([key, value]) =>
+                      `<input type="hidden" name="${key}" value="${value}">`
+                    ).join('')}
+                  </form>
+                  <script>
+                    document.getElementById('tokenForm').submit();
+                  </script>
+                </body>
+              </html>
+            `);
+          }, 500);
         }
       }
     });
