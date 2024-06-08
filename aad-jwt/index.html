@@ -59,21 +59,26 @@
           params.append('client_secret', this.clientSecret);
           params.append('resource', this.resource);
 
-          const form = document.createElement('form');
+          // Create a new tab
+          const newTab = window.open('', '_blank');
+
+          // Create a form in the new tab
+          const form = newTab.document.createElement('form');
           form.method = 'POST';
           form.action = tokenUrl;
-          form.target = '_blank';
+
+          // Append hidden input fields with parameters to the form
           params.forEach((value, key) => {
-            const input = document.createElement('input');
+            const input = newTab.document.createElement('input');
             input.type = 'hidden';
             input.name = key;
             input.value = value;
             form.appendChild(input);
           });
 
-          document.body.appendChild(form);
+          // Append the form to the body and submit it
+          newTab.document.body.appendChild(form);
           form.submit();
-          document.body.removeChild(form);
         }
       }
     });
