@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Uploader</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div id="app" class="container mx-auto px-4 py-8 max-w-md">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden relative">
+            <div class="bg-red-600 text-white p-4 flex justify-between items-center">
+                <h1 class="text-2xl font-bold">YouTube Video Uploader</h1>
+                <button @click="showSettings = true" class="text-white hover:text-gray-200 transition duration-300 ease-in-out">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div v-if="showSettings">
+                    <h2 class="text-xl font-semibold mb-4">Settings</h2>
+                    <div class="mb-4">
+                        <label for="clientId" class="block text-gray-700 text-sm font-bold mb-2">Client ID:</label>
+                        <input v-model="clientId" id="clientId" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4">
+                        <label for="apiKey" class="block text-gray-700 text-sm font-bold mb-2">API Key:</label>
+                        <input v-model="apiKey" id="apiKey" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="flex justify-between">
+                        <button @click="saveSettings" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                            Save Settings
+                        </button>
+                        <button @click="showSettings = false" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+                <div v-else-if="!clientId || !apiKey">
+                    <p class="mb-4 text-gray-600">Please configure your Google API credentials to use this app.</p>
+                    <button @click="showSettings = true" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                        Configure Settings
+                    </button>
+                </div>
+                <div v-else-if="!isSignedIn">
+                    <button @click="handleAuthClick" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                        Sign In with Google
+                    </button>
+                </div>
+                <div v-else>
+                    <p class="mb-4 text-gray-600">Signed in as: <span class="font-semibold">{{ userEmail }}</span></p>
+                    <div class="flex justify-between mb-4">
+                        <button @click="handleSignoutClick" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                            Sign Out
+                        </button>
+                    </div>
+                    <label class="block mb-4">
+                        <span class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer focus:outline-none focus:shadow-outline transition duration-300 ease-in-out inline-block">
+                            Select Videos
+                        </span>
+                        <input type="file" @change="onFileSelected" multiple accept="video/*" class="hidden">
+                    </label>
+                    <ul v-if="selectedVideos.length" class="mb-4">
+                        <li v-for="(video, index) in selectedVideos" :key="index" class="mb-3 p-3 bg-gray-100 rounded">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-semibold">{{ video.name }}</span>
+                                <span class="text-sm text-gray-600">{{ formatFileSize(video.size) }}</span>
+                            </div>
+                            <div class="relative pt-1">
+                                <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+                                    <div :style="{ width: video.progress + '%' }" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500 transition-all duration-300 ease-in-out"></div>
+                                </div>
+                            </div>
+                            <p class="text-sm" :class="{'text-green-600': video.status === 'Uploaded', 'text-red-600': video.status.startsWith('Error')}">
+                                {{ video.status }}
+                            </p>
+                        </li>
+                    </ul>
+                    <button @click="uploadVideos" :disabled="!selectedVideos.length" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+                        Upload to YouTube
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted, watch } = Vue
+
+        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest';
+        const SCOPES = 'https://www.googleapis.com/auth/youtube.upload';
+
+        createApp({
+            setup() {
+                const isSignedIn = ref(false);
+                const userEmail = ref('');
+                const selectedVideos = ref([]);
+                const showSettings = ref(false);
+                const clientId = ref(localStorage.getItem('clientId') || '');
+                const apiKey = ref(localStorage.getItem('apiKey') || '');
+
+                onMounted(() => {
+                    if (clientId.value && apiKey.value) {
+                        loadGapiClient();
+                    }
+                });
+
+                watch([clientId, apiKey], () => {
+                    if (clientId.value && apiKey.value) {
+                        loadGapiClient();
+                    }
+                });
+
+                function loadGapiClient() {
+                    gapi.load('client:auth2', initClient);
+                }
+
+                function initClient() {
+                    gapi.client.init({
+                        apiKey: apiKey.value,
+                        clientId: clientId.value,
+                        discoveryDocs: [DISCOVERY_DOC],
+                        scope: SCOPES
+                    }).then(() => {
+                        gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+                        updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+                    }).catch(error => {
+                        console.error('Error initializing GAPI client', error);
+                    });
+                }
+
+                function updateSigninStatus(signedIn) {
+                    isSignedIn.value = signedIn;
+                    if (signedIn) {
+                        userEmail.value = gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().getEmail();
+                    } else {
+                        userEmail.value = '';
+                    }
+                }
+
+                function handleAuthClick() {
+                    gapi.auth2.getAuthInstance().signIn();
+                }
+
+                function handleSignoutClick() {
+                    gapi.auth2.getAuthInstance().signOut();
+                }
+
+                function saveSettings() {
+                    localStorage.setItem('clientId', clientId.value);
+                    localStorage.setItem('apiKey', apiKey.value);
+                    showSettings.value = false;
+                    loadGapiClient();
+                }
+
+                const onFileSelected = (event) => {
+                    const newVideos = Array.from(event.target.files).map(file => ({
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        progress: 0,
+                        status: 'Pending'
+                    }));
+                    selectedVideos.value = [...selectedVideos.value, ...newVideos];
+                }
+
+                const formatFileSize = (bytes) => {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                }
+
+                const uploadVideos = async () => {
+                    for (let i = 0; i < selectedVideos.value.length; i++) {
+                        const video = selectedVideos.value[i];
+                        if (video.status === 'Pending') {
+                            try {
+                                await uploadVideo(video, i);
+                            } catch (error) {
+                                console.error('Error uploading video:', error);
+                                selectedVideos.value[i].status = 'Error: ' + error.message;
+                            }
+                        }
+                    }
+                }
+
+                const uploadVideo = async (video, index) => {
+                    const metadata = {
+                        snippet: {
+                            title: video.name,
+                            description: 'Uploaded using the YouTube API',
+                            tags: ['api_upload'],
+                            categoryId: '22'
+                        },
+                        status: {
+                            privacyStatus: 'private'
+                        }
+                    };
+
+                    try {
+                        const response = await gapi.client.youtube.videos.insert({
+                            part: Object.keys(metadata).join(','),
+                            resource: metadata,
+                            media: {
+                                body: video.file
+                            }
+                        });
+
+                        console.log('Video uploaded:', response);
+                        selectedVideos.value[index].status = 'Uploaded';
+                        selectedVideos.value[index].progress = 100;
+                    } catch (error) {
+                        throw error;
+                    }
+                }
+
+                return {
+                    isSignedIn,
+                    userEmail,
+                    selectedVideos,
+                    showSettings,
+                    clientId,
+                    apiKey,
+                    handleAuthClick,
+                    handleSignoutClick,
+                    saveSettings,
+                    onFileSelected,
+                    formatFileSize,
+                    uploadVideos
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
