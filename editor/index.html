@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Code Editor</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #1e1e1e;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        #top-panel {
+            position: relative;
+            background: #2d2d2d;
+            height: 50px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        #title {
+            color: white;
+            font-size: 18px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+
+        #toolbar {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        #editor-container {
+            width: 100vw;
+            height: calc(100vh - 50px);
+            position: relative;
+        }
+
+        select,
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            background: #333;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        select:hover,
+        button:hover {
+            background: #444;
+        }
+
+        @media (max-width: 600px) {
+            #top-panel {
+                height: auto;
+                padding: 10px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            #title {
+                position: relative;
+                left: 0;
+                transform: none;
+                margin-bottom: 10px;
+                text-align: center;
+                width: 100%;
+            }
+
+            #toolbar {
+                width: 100%;
+                justify-content: center;
+                margin: 0;
+            }
+
+            select,
+            button {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            #editor-container {
+                height: calc(100vh - 90px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="top-panel">
+        <div id="title">Offline Code Editor</div>
+        <div id="toolbar">
+            <select id="language-select">
+                <option value="">Auto-detect</option>
+                <option value="xml">XML</option>
+                <option value="html">HTML</option>
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="css">CSS</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="csharp">C#</option>
+                <option value="cpp">C++</option>
+                <option value="ruby">Ruby</option>
+                <option value="go">Go</option>
+                <option value="php">PHP</option>
+                <option value="sql">SQL</option>
+                <option value="markdown">Markdown</option>
+                <option value="json">JSON</option>
+            </select>
+            <button onclick="formatCode()">Format Code</button>
+        </div>
+    </div>
+    <div id="editor-container"></div>
+
+    <script>
+        window.addEventListener('load', () => {
+            window.fetch = () => Promise.reject(new Error('Network requests are disabled'));
+            window.XMLHttpRequest = function () {
+                throw new Error('Network requests are disabled');
+            };
+            window.WebSocket = function () {
+                throw new Error('Network requests are disabled');
+            };
+
+            const originalCreateElement = document.createElement;
+            document.createElement = function (tag) {
+                const element = originalCreateElement.call(document, tag);
+                if (tag.toLowerCase() === 'script') {
+                    Object.defineProperty(element, 'src', {
+                        set: function () {
+                            throw new Error('Dynamic script loading is disabled');
+                        }
+                    });
+                }
+                return element;
+            };
+        });
+
+        const loadMonaco = () => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.js';
+            script.onload = () => {
+                require.config({
+                    paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }
+                });
+                require(['vs/editor/editor.main'], initializeEditor);
+            };
+            document.body.appendChild(script);
+        };
+
+        let editor;
+
+        function detectLanguage(content) {
+            // Only detect as HTML if it has explicit HTML signatures
+            if (/<!DOCTYPE\s+html>|<html[\s>]/i.test(content)) {
+                return 'html';
+            }
+
+            // Treat all other XML-like content as XML by default
+            if (/<[^>]+>/.test(content)) {
+                return 'xml';
+            }
+
+            // Rest of the language detection for non-markup languages
+            const signatures = {
+                javascript: {
+                    keywords: ['const', 'let', 'var', 'function', '=>', 'console.log', 'require', 'module.exports'],
+                    patterns: [/^[\s\n]*(?:const|let|var)\s+\w+\s*=/, /\bfunction\s*\w*\s*\(.*\)\s*{/, /=>\s*{/]
+                },
+                typescript: {
+                    keywords: ['interface', 'type', 'namespace', 'readonly', 'private', 'public', 'protected'],
+                    patterns: [/:\s*(?:string|number|boolean|any)\b/, /interface\s+\w+\s*{/]
+                },
+                css: {
+                    keywords: ['margin:', 'padding:', 'border:', 'background-color:', '@media'],
+                    patterns: [/[.#][\w-]+\s*{/, /@media\s*/, /:\s*(?:hover|active|focus)\s*{/]
+                },
+                python: {
+                    keywords: ['def', 'class', 'import', 'from', 'if __name__', 'print('],
+                    patterns: [/def\s+\w+\s*\(.*\):/, /class\s+\w+[:\s]/]
+                },
+                java: {
+                    keywords: ['public class', 'private', 'protected', 'void', 'static'],
+                    patterns: [/public\s+class\s+\w+/, /public\s+static\s+void\s+main/]
+                },
+                json: {
+                    patterns: [/^[\s\n]*[{\[][\s\n]*"[^"]+"\s*:/, /^[\s\n]*{[\s\n]*$/, /^[\s\n]*\[[\s\n]*$/]
+                },
+                sql: {
+                    keywords: ['SELECT', 'INSERT INTO', 'UPDATE', 'DELETE FROM', 'WHERE', 'JOIN'],
+                    patterns: [/SELECT\s+[\w\s,*]+\s+FROM/i, /INSERT\s+INTO\s+\w+/i]
+                }
+            };
+
+            function countMatches(text, items) {
+                return items.filter(item => text.includes(item)).length;
+            }
+
+            function matchesPatterns(text, patterns) {
+                return patterns.some(pattern => pattern.test(text));
+            }
+
+            let maxScore = 0;
+            let detectedLang = '';
+
+            for (const [lang, tests] of Object.entries(signatures)) {
+                let score = 0;
+
+                if (tests.keywords) {
+                    score += countMatches(content, tests.keywords) * 2;
+                }
+
+                if (tests.patterns) {
+                    if (matchesPatterns(content, tests.patterns)) {
+                        score += 5;
+                    }
+                }
+
+                if (score > maxScore) {
+                    maxScore = score;
+                    detectedLang = lang;
+                }
+            }
+
+            return maxScore > 0 ? detectedLang : '';
+        }
+
+        function initializeEditor() {
+            monaco.languages.registerDocumentFormattingEditProvider('xml', {
+                provideDocumentFormattingEdits: function (model) {
+                    const text = model.getValue();
+                    let formatted = '';
+                    let indent = 0;
+                    const lines = text.split(/[\r\n]+/);
+
+                    lines.forEach(line => {
+                        line = line.trim();
+                        // Handle self-closing tags
+                        if (line.endsWith('/>')) {
+                            formatted += '  '.repeat(indent) + line + '\n';
+                        }
+                        // Handle closing tags
+                        else if (line.startsWith('</')) {
+                            indent--;
+                            formatted += '  '.repeat(Math.max(0, indent)) + line + '\n';
+                        }
+                        // Handle opening tags
+                        else if (line.startsWith('<') && !line.startsWith('<?')) {
+                            formatted += '  '.repeat(indent) + line + '\n';
+                            if (!line.includes('</')) {
+                                indent++;
+                            }
+                        }
+                        // Handle processing instructions and other content
+                        else {
+                            formatted += '  '.repeat(indent) + line + '\n';
+                        }
+                    });
+
+                    return [{
+                        range: model.getFullModelRange(),
+                        text: formatted.trim()
+                    }];
+                }
+            });
+
+            editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: '',
+                language: 'plaintext',
+                theme: 'vs-dark',
+                minimap: { enabled: false },
+                automaticLayout: true,
+                fontSize: 14,
+                tabSize: 2,
+                renderWhitespace: 'selection',
+                scrollBeyondLastLine: false,
+                lineNumbers: 'on',
+                folding: true,
+                renderIndentGuides: true,
+                contextmenu: true,
+                autoClosingBrackets: 'always',
+                autoClosingQuotes: 'always',
+                formatOnPaste: true,
+                snippetSuggestions: 'inline',
+                wordWrap: 'on',
+                lineDecorationsWidth: 0,
+                lineNumbersMinChars: 3,
+                fixedOverflowWidgets: true
+            });
+
+            window.addEventListener('resize', () => editor.layout());
+
+            editor.onDidPaste(() => {
+                setTimeout(() => {
+                    const content = editor.getValue();
+                    const detectedLanguage = detectLanguage(content);
+                    if (detectedLanguage) {
+                        document.getElementById('language-select').value = detectedLanguage;
+                        monaco.editor.setModelLanguage(editor.getModel(), detectedLanguage);
+                    }
+                }, 100);
+            });
+
+            editor.onDidChangeModelContent((e) => {
+                if (e.isFlush) {
+                    const content = editor.getValue();
+                    const detectedLanguage = detectLanguage(content);
+                    if (detectedLanguage) {
+                        document.getElementById('language-select').value = detectedLanguage;
+                        monaco.editor.setModelLanguage(editor.getModel(), detectedLanguage);
+                    }
+                }
+            });
+
+            document.getElementById('language-select').addEventListener('change', (e) => {
+                if (e.target.value) {
+                    monaco.editor.setModelLanguage(editor.getModel(), e.target.value);
+                }
+            });
+
+            if ('ontouchstart' in window) {
+                editor.updateOptions({
+                    fontSize: 16,
+                    lineHeight: 24,
+                    padding: { top: 10, bottom: 10 }
+                });
+            }
+        }
+
+        async function formatCode() {
+            try {
+                await editor.getAction('editor.action.formatDocument').run();
+            } catch (error) {
+                console.error('Formatting failed:', error);
+                const currentModel = editor.getModel();
+                if (currentModel) {
+                    const edits = await monaco.languages.getFormattingEditsForDocument(currentModel, {
+                        insertSpaces: true,
+                        tabSize: 2
+                    });
+                    if (edits) {
+                        currentModel.pushEditOperations([], edits, null);
+                    }
+                }
+            }
+        }
+
+        loadMonaco();
+    </script>
+</body>
+
+</html>
