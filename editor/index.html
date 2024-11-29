@@ -20,25 +20,32 @@
             height: 50px;
             width: 100%;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
             padding: 0 20px;
             box-sizing: border-box;
+            align-items: center;
+            gap: 20px;
         }
 
         #title {
             color: white;
             font-size: 18px;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
             white-space: nowrap;
+        }
+
+        #file-path {
+            color: #aaa;
+            font-size: 14px;
+            text-align: center;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 20px;
         }
 
         #toolbar {
             display: flex;
             gap: 10px;
-            margin-left: auto;
         }
 
         #editor-container {
@@ -63,6 +70,35 @@
             background: #444;
         }
 
+        #drop-zone {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #drop-zone.active {
+            display: flex;
+        }
+
+        #drop-zone-text {
+            color: white;
+            font-size: 24px;
+            padding: 20px;
+            border: 2px dashed white;
+            border-radius: 10px;
+        }
+
+        #file-input {
+            display: none;
+        }
+
         @media (max-width: 600px) {
             #top-panel {
                 height: auto;
@@ -71,19 +107,13 @@
                 gap: 10px;
             }
 
-            #title {
-                position: relative;
-                left: 0;
-                transform: none;
-                margin-bottom: 10px;
-                text-align: center;
-                width: 100%;
+            #file-path {
+                display: none;
             }
 
             #toolbar {
                 width: 100%;
                 justify-content: center;
-                margin: 0;
             }
 
             select,
@@ -102,7 +132,10 @@
 <body>
     <div id="top-panel">
         <div id="title">Offline Code Editor</div>
+        <div id="file-path">No file opened</div>
         <div id="toolbar">
+            <button onclick="document.getElementById('file-input').click()">Open File</button>
+            <input type="file" id="file-input">
             <select id="language-select">
                 <option value="">Auto-detect</option>
                 <option value="xml">XML</option>
@@ -125,8 +158,13 @@
         </div>
     </div>
     <div id="editor-container"></div>
+    <div id="drop-zone">
+        <div id="drop-zone-text">Drop file here to open</div>
+    </div>
 
     <script>
+        let editor;
+
         window.addEventListener('load', () => {
             window.fetch = () => Promise.reject(new Error('Network requests are disabled'));
             window.XMLHttpRequest = function () {
@@ -162,20 +200,15 @@
             document.body.appendChild(script);
         };
 
-        let editor;
-
         function detectLanguage(content) {
-            // Only detect as HTML if it has explicit HTML signatures
             if (/<!DOCTYPE\s+html>|<html[\s>]/i.test(content)) {
                 return 'html';
             }
 
-            // Treat all other XML-like content as XML by default
             if (/<[^>]+>/.test(content)) {
                 return 'xml';
             }
 
-            // Rest of the language detection for non-markup languages
             const signatures = {
                 javascript: {
                     keywords: ['const', 'let', 'var', 'function', '=>', 'console.log', 'require', 'module.exports'],
@@ -239,6 +272,49 @@
             return maxScore > 0 ? detectedLang : '';
         }
 
+        async function handleFile(file) {
+            try {
+                const text = await file.text();
+                editor.setValue(text);
+
+                const extension = file.name.split('.').pop().toLowerCase();
+                const extensionToLanguage = {
+                    'js': 'javascript',
+                    'ts': 'typescript',
+                    'html': 'html',
+                    'xml': 'xml',
+                    'css': 'css',
+                    'py': 'python',
+                    'java': 'java',
+                    'cs': 'csharp',
+                    'cpp': 'cpp',
+                    'rb': 'ruby',
+                    'go': 'go',
+                    'php': 'php',
+                    'sql': 'sql',
+                    'md': 'markdown',
+                    'json': 'json'
+                };
+
+                let language = extensionToLanguage[extension] || '';
+
+                if (!language) {
+                    language = detectLanguage(text);
+                }
+
+                if (language) {
+                    document.getElementById('language-select').value = language;
+                    monaco.editor.setModelLanguage(editor.getModel(), language);
+                }
+
+                document.getElementById('file-path').textContent = file.name;
+                document.title = `${file.name} - Offline Code Editor`;
+            } catch (error) {
+                console.error('Error reading file:', error);
+                alert('Error reading file. Please try again.');
+            }
+        }
+
         function initializeEditor() {
             monaco.languages.registerDocumentFormattingEditProvider('xml', {
                 provideDocumentFormattingEdits: function (model) {
@@ -249,23 +325,19 @@
 
                     lines.forEach(line => {
                         line = line.trim();
-                        // Handle self-closing tags
                         if (line.endsWith('/>')) {
                             formatted += '  '.repeat(indent) + line + '\n';
                         }
-                        // Handle closing tags
                         else if (line.startsWith('</')) {
                             indent--;
                             formatted += '  '.repeat(Math.max(0, indent)) + line + '\n';
                         }
-                        // Handle opening tags
                         else if (line.startsWith('<') && !line.startsWith('<?')) {
                             formatted += '  '.repeat(indent) + line + '\n';
                             if (!line.includes('</')) {
                                 indent++;
                             }
                         }
-                        // Handle processing instructions and other content
                         else {
                             formatted += '  '.repeat(indent) + line + '\n';
                         }
@@ -300,6 +372,37 @@
                 lineDecorationsWidth: 0,
                 lineNumbersMinChars: 3,
                 fixedOverflowWidgets: true
+            });
+
+            const dropZone = document.getElementById('drop-zone');
+
+            document.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('active');
+            });
+
+            document.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                if (e.target === dropZone) {
+                    dropZone.classList.remove('active');
+                }
+            });
+
+            dropZone.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('active');
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    await handleFile(file);
+                }
+            });
+
+            document.getElementById('file-input').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await handleFile(file);
+                }
+                e.target.value = '';
             });
 
             window.addEventListener('resize', () => editor.layout());
