@@ -137,7 +137,7 @@
             <button onclick="document.getElementById('file-input').click()">Open File</button>
             <input type="file" id="file-input">
             <select id="language-select">
-                <option value="">Auto-detect</option>
+                <option value="plaintext">Plain Text</option>
                 <option value="xml">XML</option>
                 <option value="html">HTML</option>
                 <option value="javascript">JavaScript</option>
@@ -153,6 +153,7 @@
                 <option value="sql">SQL</option>
                 <option value="markdown">Markdown</option>
                 <option value="json">JSON</option>
+                <option value="powershell">PowerShell</option>
             </select>
             <button onclick="formatCode()">Format Code</button>
         </div>
@@ -236,6 +237,10 @@
                 sql: {
                     keywords: ['SELECT', 'INSERT INTO', 'UPDATE', 'DELETE FROM', 'WHERE', 'JOIN'],
                     patterns: [/SELECT\s+[\w\s,*]+\s+FROM/i, /INSERT\s+INTO\s+\w+/i]
+                },
+                powershell: {
+                    keywords: ['function', 'param', '$PSScriptRoot', 'Write-Host', 'Get-Process', 'Set-Location'],
+                    patterns: [/\$\w+/, /function\s+\w+-\w+/, /\[Parameter\(.*\)\]/, /\[CmdletBinding\(\)\]/]
                 }
             };
 
@@ -269,7 +274,7 @@
                 }
             }
 
-            return maxScore > 0 ? detectedLang : '';
+            return maxScore > 0 ? detectedLang : 'plaintext';
         }
 
         async function handleFile(file) {
@@ -293,19 +298,22 @@
                     'php': 'php',
                     'sql': 'sql',
                     'md': 'markdown',
-                    'json': 'json'
+                    'json': 'json',
+                    'ps1': 'powershell',
+                    'psm1': 'powershell',
+                    'psd1': 'powershell',
+                    'txt': 'plaintext'
                 };
 
-                let language = extensionToLanguage[extension] || '';
+                let language = extensionToLanguage[extension] || 'plaintext';
 
-                if (!language) {
-                    language = detectLanguage(text);
+                if (language === 'plaintext') {
+                    const detectedLang = detectLanguage(text);
+                    language = detectedLang || 'plaintext';
                 }
 
-                if (language) {
-                    document.getElementById('language-select').value = language;
-                    monaco.editor.setModelLanguage(editor.getModel(), language);
-                }
+                document.getElementById('language-select').value = language;
+                monaco.editor.setModelLanguage(editor.getModel(), language);
 
                 document.getElementById('file-path').textContent = file.name;
                 document.title = `${file.name} - Offline Code Editor`;
