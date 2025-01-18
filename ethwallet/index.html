@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Offline Ethereum Wallet</title>
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js" integrity="sha512-dj/EbePKIJrkhHMePgJ6ACP0v5whCZi+A8ot7WP+L0a3sPafqqWRiRhBBlGprs5hs5JjOYuTDlOic+qKc/s3mw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            margin: 10px 0;
+        }
+        .address-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .toggle-visibility {
+            position: relative;
+            display: inline-block;
+            margin-left: -30px;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Offline Ethereum Wallet</h1>
+    <h2 style="text-align: center; color: red;">For Testing Only</h2>
+    
+    <div class="container">
+        <h2>Configuration</h2>
+        <label for="rpc">RPC Endpoint:</label>
+        <input type="text" id="rpc" placeholder="Enter RPC endpoint URL">
+        
+        <label for="seed">Seed Phrase or Private Key:</label>
+        <div style="display: flex; align-items: center;">
+            <input type="password" id="seed" placeholder="Enter seed phrase or private key">
+            <span class="toggle-visibility" onclick="toggleSeedVisibility()">👁️</span>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <button onclick="initializeWallet()">Initialize Wallet</button>
+            <button onclick="refreshAccounts()">Refresh</button>
+        </div>
+        <div id="walletStatus" class="success"></div>
+        <div id="error" class="error"></div>
+    </div>
+
+    <div class="container">
+        <h2>Accounts</h2>
+        <div id="accounts"></div>
+    </div>
+
+    <div class="container">
+        <h2>Transfer</h2>
+        <select id="fromAddress" onchange="updateTokenBalance()">
+            <option value="">Select sending address</option>
+        </select>
+        
+        <select id="tokenType">
+            <option value="eth">ETH</option>
+            <option value="erc20">ERC20 Token</option>
+        </select>
+
+        <div id="erc20Details" style="display: none;">
+            <input type="text" id="tokenAddress" placeholder="ERC20 Token Contract Address">
+        </div>
+
+        <input type="text" id="toAddress" placeholder="To Address">
+        <input type="number" id="amount" placeholder="Amount (in ETH/Token units, e.g. 0.01)" step="any">
+        <button onclick="sendTransaction()">Send Transaction</button>
+        <div id="txStatus" class="success"></div>
+    </div>
+
+    <script>
+        let provider;
+        let wallets = [];
+        let allowedRpcEndpoint = null;
+        const ERC20_ABI = [
+            "function balanceOf(address owner) view returns (uint256)",
+            "function decimals() view returns (uint8)",
+            "function symbol() view returns (string)",
+            "function transfer(address to, uint amount) returns (bool)",
+            "function allowance(address owner, address spender) view returns (uint256)",
+            "function approve(address spender, uint256 amount) returns (bool)"
+        ];
+
+        // Restrict network access after page load
+        window.addEventListener('load', function() {
+            // Override fetch to only allow RPC endpoint
+            const originalFetch = window.fetch;
+            window.fetch = async function(url, options) {
+                if (allowedRpcEndpoint && url !== allowedRpcEndpoint) {
+                    throw new Error('Network access blocked for security: Only RPC endpoint allowed');
+                }
+                return originalFetch(url, options);
+            };
+
+            // Override XMLHttpRequest
+            const originalXHROpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function(method, url, ...args) {
+                if (allowedRpcEndpoint && url !== allowedRpcEndpoint) {
+                    throw new Error('Network access blocked for security: Only RPC endpoint allowed');
+                }
+                return originalXHROpen.call(this, method, url, ...args);
+            };
+
+            // Disable WebSocket
+            window.WebSocket = function() {
+                throw new Error('WebSocket connections are disabled for security');
+            };
+        });
+
+        function toggleSeedVisibility() {
+            const seedInput = document.getElementById('seed');
+            if (seedInput.type === 'password') {
+                seedInput.type = 'text';
+            } else {
+                seedInput.type = 'password';
+            }
+        }
+
+        document.getElementById('tokenType').addEventListener('change', function() {
+            document.getElementById('erc20Details').style.display = 
+                this.value === 'erc20' ? 'block' : 'none';
+        });
+
+        async function initializeWallet() {
+            try {
+                const rpcUrl = document.getElementById('rpc').value;
+                const seedPhrase = document.getElementById('seed').value;
+
+                if (!rpcUrl || !seedPhrase) {
+                    showError('Please provide both RPC endpoint and seed phrase');
+                    return;
+                }
+
+                // Set allowed RPC endpoint
+                allowedRpcEndpoint = rpcUrl;
+
+                // Initialize provider
+                provider = new ethers.JsonRpcProvider(rpcUrl);
+
+                // Generate wallets from seed phrase or private key
+                wallets = [];
+                
+                // Check if input is a private key or seed phrase
+                try {
+                    if (seedPhrase.includes(' ')) {
+                        // Input is a seed phrase
+                        // Derive first 5 addresses
+                        for (let i = 0; i < 5; i++) {
+                            const path = `m/44'/60'/0'/0/${i}`;
+                            const derivedWallet = ethers.HDNodeWallet.fromMnemonic(
+                                ethers.Mnemonic.fromPhrase(seedPhrase),
+                                path
+                            );
+                            const wallet = derivedWallet.connect(provider);
+                            wallets.push(wallet);
+                        }
+                    } else {
+                        // Input is a private key
+                        const wallet = new ethers.Wallet(seedPhrase, provider);
+                        wallets.push(wallet);
+                    }
+                } catch (error) {
+                    showError('Invalid seed phrase or private key format');
+                    return;
+                }
+
+                await displayAccounts();
+                document.getElementById('error').textContent = '';
+                document.getElementById('walletStatus').textContent = 'Wallet successfully initialized!';
+                
+                // Clear seed phrase from input after initialization
+                document.getElementById('seed').value = '';
+                
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Rest of the functions remain the same
+        // Function to show error message with auto-hide after 5 seconds
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            setTimeout(() => {
+                errorDiv.textContent = '';
+            }, 5000);
+        }
+
+        async function refreshAccounts() {
+            if (!provider || wallets.length === 0) {
+                showError('Please initialize wallet first');
+                return;
+            }
+            await displayAccounts();
+        }
+
+        async function displayAccounts() {
+            const accountsDiv = document.getElementById('accounts');
+            const fromAddressSelect = document.getElementById('fromAddress');
+            accountsDiv.innerHTML = '';
+            fromAddressSelect.innerHTML = '<option value="">Select sending address</option>';
+
+            const walletsWithBalance = [];
+            for (const wallet of wallets) {
+                const balance = await provider.getBalance(wallet.address);
+                walletsWithBalance.push({
+                    wallet,
+                    balance,
+                    formattedBalance: ethers.formatEther(balance)
+                });
+            }
+
+            walletsWithBalance.sort((a, b) => {
+                if (b.balance > a.balance) return 1;
+                if (b.balance < a.balance) return -1;
+                return 0;
+            });
+            const top3Wallets = walletsWithBalance.slice(0, 3);
+
+            for (const { wallet, formattedBalance } of top3Wallets) {
+                const addressDiv = document.createElement('div');
+                addressDiv.className = 'address-container';
+                addressDiv.innerHTML = `
+                    <strong>Address:</strong> ${wallet.address}<br>
+                    <strong>Balance:</strong> ${formattedBalance} ETH
+                `;
+                accountsDiv.appendChild(addressDiv);
+
+                const option = document.createElement('option');
+                option.value = wallet.address;
+                option.textContent = `${wallet.address} (${formattedBalance} ETH)`;
+                fromAddressSelect.appendChild(option);
+            }
+        }
+
+        async function updateTokenBalance() {
+            const fromAddress = document.getElementById('fromAddress').value;
+            const tokenType = document.getElementById('tokenType').value;
+            const tokenAddress = document.getElementById('tokenAddress').value;
+
+            if (!fromAddress) return;
+
+            if (tokenType === 'erc20' && tokenAddress) {
+                try {
+                    const contract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+                    const balance = await contract.balanceOf(fromAddress);
+                    const decimals = await contract.decimals();
+                    const symbol = await contract.symbol();
+                    const formattedBalance = ethers.formatUnits(balance, decimals);
+                    document.getElementById('txStatus').textContent = 
+                        `Token Balance: ${formattedBalance} ${symbol}`;
+                } catch (error) {
+                    document.getElementById('txStatus').textContent = 
+                        'Error fetching token balance: ' + error.message;
+                }
+            }
+        }
+
+        async function sendTransaction() {
+            try {
+                const fromAddress = document.getElementById('fromAddress').value;
+                const toAddress = document.getElementById('toAddress').value;
+                const amount = document.getElementById('amount').value;
+                const tokenType = document.getElementById('tokenType').value;
+                const tokenAddress = document.getElementById('tokenAddress').value;
+
+                if (!fromAddress || !toAddress || !amount) {
+                    throw new Error('Please fill in all fields');
+                }
+
+                const wallet = wallets.find(w => w.address === fromAddress);
+                if (!wallet) throw new Error('Sender wallet not found');
+
+                let tx;
+                if (tokenType === 'eth') {
+                    tx = await wallet.sendTransaction({
+                        to: toAddress,
+                        value: ethers.parseEther(amount)
+                    });
+                } else {
+                    if (!tokenAddress) throw new Error('Please provide token address');
+                    const contract = new ethers.Contract(tokenAddress, ERC20_ABI, wallet);
+                    const decimals = await contract.decimals();
+                    tx = await contract.transfer(
+                        toAddress, 
+                        ethers.parseUnits(amount, decimals)
+                    );
+                }
+
+                document.getElementById('txStatus').textContent = 
+                    `Transaction sent! Hash: ${tx.hash}`;
+                
+                await tx.wait();
+                document.getElementById('txStatus').textContent += ' (Confirmed)';
+                
+                await displayAccounts();
+
+            } catch (error) {
+                document.getElementById('txStatus').textContent = 
+                    'Transaction failed: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
