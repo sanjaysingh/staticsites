@@ -33,7 +33,7 @@
         }
         
         input, select {
-            width: 100%;
+            width: calc(100% - 24px);  /* Subtract padding from width */
             padding: 12px;
             margin: 8px 0;
             border: 1px solid #ddd;
@@ -41,6 +41,7 @@
             font-size: 16px;
             -webkit-appearance: none;
             appearance: none;
+            box-sizing: border-box;  /* Include padding in width calculation */
         }
         
         select {
@@ -343,9 +344,9 @@
                 if (b.balance < a.balance) return -1;
                 return 0;
             });
-            const top3Wallets = walletsWithBalance.slice(0, 3);
+            const displayWallets = walletsWithBalance.slice(0, 3);
 
-            for (const { wallet, formattedBalance } of top3Wallets) {
+            for (const { wallet, formattedBalance } of displayWallets) {
                 const addressDiv = document.createElement('div');
                 addressDiv.className = 'address-container';
                 addressDiv.innerHTML = `
@@ -358,6 +359,12 @@
                 option.value = wallet.address;
                 option.textContent = `${wallet.address} (${formattedBalance} ETH)`;
                 fromAddressSelect.appendChild(option);
+            }
+
+            // If only one wallet (private key case), select it automatically
+            if (wallets.length === 1) {
+                fromAddressSelect.value = wallets[0].address;
+                await updateTokenBalance();
             }
         }
 
