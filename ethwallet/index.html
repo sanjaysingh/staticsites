@@ -1,206 +1,133 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Offline Ethereum Wallet</title>
+    <title>Ethereum Wallet (Testing Only)</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js" integrity="sha512-dj/EbePKIJrkhHMePgJ6ACP0v5whCZi+A8ot7WP+L0a3sPafqqWRiRhBBlGprs5hs5JjOYuTDlOic+qKc/s3mw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 15px;
-            font-size: 16px;
-        }
-        
-        h1 {
-            font-size: 1.8em;
-            margin-bottom: 10px;
-        }
-        
-        h2 {
-            font-size: 1.4em;
-            margin-bottom: 15px;
-        }
-        
-        .container {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        input, select {
-            width: calc(100% - 24px);  /* Subtract padding from width */
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            -webkit-appearance: none;
-            appearance: none;
-            box-sizing: border-box;  /* Include padding in width calculation */
-        }
-        
-        select {
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 12px auto;
-            padding-right: 30px;
-        }
-        
-        button {
-            background: #4CAF50;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 10px 0;
-            font-size: 16px;
-            font-weight: 500;
-            min-width: 100px;
-            transition: background-color 0.2s;
-        }
-        
-        button:hover {
-            background: #45a049;
-        }
-        
-        button:active {
-            transform: translateY(1px);
-        }
-        
-        .error {
-            color: #d32f2f;
-            margin: 10px 0;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        .success {
-            color: #2e7d32;
-            margin: 10px 0;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        .address-container {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            background: white;
-            word-break: break-all;
-        }
-        
-        .toggle-visibility {
-            position: relative;
-            display: inline-block;
-            margin-left: -40px;
-            cursor: pointer;
-            vertical-align: middle;
-            padding: 8px;
-            font-size: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-            
-            .container {
-                padding: 15px;
-            }
-            
-            input, select, button {
-                font-size: 16px;
-                padding: 15px;
-            }
-            
-            .address-container {
-                font-size: 14px;
-            }
-            
-            button {
-                width: 100%;
-                margin: 5px 0;
-            }
-            
-            .button-group {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-        }
-        
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.prod.min.js" integrity="sha512-66fV4MXSQdGN0KQxZ0Bw627HalhTQYQbOoF24EtMXN2FaAoKMgAZ7nDi77d9xWwrRjEEUfE+7rxjTt+cA2IuJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" integrity="sha512-wnea99uKIC3TJF7v4eKk4Y+lMz2Mklv18+r4na2Gn1abDRPPOeef95xTzdwGD9e6zXJBteMIhZ1+68QC5byJZw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
-<body>
-    <h1 style="text-align: center;">Offline Ethereum Wallet</h1>
-    <h2 style="text-align: center; color: red;">For Testing Only</h2>
-    
-    <div class="container">
-        <h2>Configuration</h2>
-        <label for="rpc">RPC Endpoint:</label>
-        <input type="text" id="rpc" placeholder="Enter RPC endpoint URL">
-        
-        <label for="seed">Seed Phrase or Private Key:</label>
-        <div style="display: flex; align-items: center;">
-            <input type="password" id="seed" placeholder="Enter seed phrase or private key">
-            <span class="toggle-visibility" onclick="toggleSeedVisibility()">👁️</span>
-        </div>
-        
-        <div class="button-group">
-            <button onclick="initializeWallet()">Initialize Wallet</button>
-            <button onclick="refreshAccounts()">Refresh</button>
-        </div>
-        <div id="walletStatus" class="success"></div>
-        <div id="error" class="error"></div>
-    </div>
 
-    <div class="container">
-        <h2>Accounts</h2>
-        <div id="accounts"></div>
-    </div>
-
-    <div class="container">
-        <h2>Transfer</h2>
-        <select id="fromAddress" onchange="updateTokenBalance()">
-            <option value="">Select sending address</option>
-        </select>
-        
-        <select id="tokenType">
-            <option value="eth">ETH</option>
-            <option value="erc20">ERC20 Token</option>
-        </select>
-
-        <div id="erc20Details" style="display: none;">
-            <input type="text" id="tokenAddress" placeholder="ERC20 Token Contract Address">
+<body class="bg-gray-50">
+    <div id="app" class="min-h-screen">
+        <!-- Top Bar -->
+        <div class="bg-blue-100 py-2 shadow-md">
+            <h1 class="text-2xl font-bold text-center text-gray-800">Ethereum Wallet (Testing Only)</h1>
         </div>
 
-        <input type="text" id="toAddress" placeholder="To Address">
-        <input type="number" id="amount" placeholder="Amount (in ETH/Token units, e.g. 0.01)" step="any">
-        <button onclick="sendTransaction()">Send Transaction</button>
-        <div id="txStatus" class="success"></div>
+        <!-- Main Content -->
+        <div class="max-w-3xl mx-auto p-4">
+            <!-- Tabs -->
+            <div class="mb-4 border-b border-gray-200">
+                <nav class="flex space-x-4" aria-label="Tabs">
+                    <button v-for="tab in tabs" :key="tab" @click="currentTab = tab" :class="[
+                            'py-2 px-4 text-sm font-medium rounded-t-lg',
+                            currentTab === tab
+                                ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+                                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ]">
+                        {{ tab }}
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <!-- Configuration Tab -->
+                <div v-if="currentTab === 'Configuration'" class="space-y-4">
+                    <div class="space-y-2">
+                        <label for="rpc" class="block text-sm font-medium text-gray-700">RPC Endpoint:</label>
+                        <input type="text" id="rpc" v-model="rpcEndpoint"
+                            class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="seed" class="block text-sm font-medium text-gray-700">Seed Phrase or Private
+                            Key:</label>
+                        <div class="relative">
+                            <input :type="seedVisible ? 'text' : 'password'" id="seed" v-model="seedPhrase"
+                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            <button @click="toggleSeedVisibility"
+                                class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                👁️
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-4">
+                        <button @click="initializeWallet"
+                            class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
+                            Initialize Wallet
+                        </button>
+                        <button @click="refreshAccounts"
+                            class="flex-1 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">
+                            Refresh
+                        </button>
+                    </div>
+
+                    <div v-if="walletStatus" class="text-green-600 mt-2">{{ walletStatus }}</div>
+                    <div v-if="error" class="text-red-600 mt-2">{{ error }}</div>
+                </div>
+
+                <!-- Accounts Tab -->
+                <div v-if="currentTab === 'Accounts'" class="space-y-4">
+                    <div v-for="account in accounts" :key="account.address"
+                        class="p-4 border border-gray-200 rounded-lg">
+                        <div class="font-medium text-gray-700 break-all">Address: {{ account.address }}</div>
+                        <div class="text-gray-600">Balance: {{ Number(account.balance).toFixed(5) }} {{
+                            chainInfo?.nativeSymbol }}</div>
+                    </div>
+                </div>
+
+                <!-- Transfer Tab -->
+                <div v-if="currentTab === 'Transfer'" class="space-y-4">
+                    <select v-model="selectedFromAddress" @change="updateTokenBalance"
+                        class="w-full p-2 border border-gray-300 rounded-md">
+                        <option value="">Select sending address</option>
+                        <option v-for="account in accounts" :key="account.address" :value="account.address">
+                            {{ account.address }} ({{ Number(account.balance).toFixed(5) }} {{chainInfo.nativeSymbol}})
+                        </option>
+                    </select>
+
+                    <select v-model="tokenType" class="w-full p-2 border border-gray-300 rounded-md">
+                        <option :value="'native'">{{ chainInfo?.nativeSymbol || 'Native Token' }}</option>
+                        <option value="erc20">ERC20 Token</option>
+                    </select>
+
+                    <div v-if="tokenType === 'erc20'">
+                        <input v-model="tokenAddress" type="text" placeholder="ERC20 Token Contract Address"
+                            class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+
+                    <input v-model="toAddress" type="text" placeholder="To Address"
+                        class="w-full p-2 border border-gray-300 rounded-md">
+
+                    <input v-model="amount" type="number" step="any" placeholder="Amount"
+                        class="w-full p-2 border border-gray-300 rounded-md">
+
+                    <div class="p-3 bg-gray-50 rounded-md">
+                        <div class="text-sm text-gray-600">
+                            <div v-if="estimatedGas" class="text-xs text-gray-500">
+                                Gas Cost: {{ estimatedGas.ethCost }} {{ chainInfo?.nativeSymbol }}
+                                <div>(Including 20% buffer for safety)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button @click="sendTransaction"
+                        class="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
+                        Send Transaction
+                    </button>
+
+                    <div v-if="txStatus" class="text-green-600 mt-2 break-all">{{ txStatus }}</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        let provider;
-        let wallets = [];
-        let allowedRpcEndpoint = null;
         const ERC20_ABI = [
             "function balanceOf(address owner) view returns (uint256)",
             "function decimals() view returns (uint8)",
@@ -210,231 +137,321 @@
             "function approve(address spender, uint256 amount) returns (bool)"
         ];
 
-        // Restrict network access after page load
-        window.addEventListener('load', function() {
-            // Override fetch to only allow RPC endpoint
-            const originalFetch = window.fetch;
-            window.fetch = async function(url, options) {
-                if (allowedRpcEndpoint && url !== allowedRpcEndpoint) {
-                    throw new Error('Network access blocked for security: Only RPC endpoint allowed');
-                }
-                return originalFetch(url, options);
-            };
+        const { createApp, ref, watch, onMounted } = Vue;
 
-            // Override XMLHttpRequest
-            const originalXHROpen = XMLHttpRequest.prototype.open;
-            XMLHttpRequest.prototype.open = function(method, url, ...args) {
-                if (allowedRpcEndpoint && url !== allowedRpcEndpoint) {
-                    throw new Error('Network access blocked for security: Only RPC endpoint allowed');
-                }
-                return originalXHROpen.call(this, method, url, ...args);
-            };
+        createApp({
+            setup() {
+                const currentTab = ref('Configuration');
+                const tabs = ['Configuration', 'Accounts', 'Transfer'];
+                const rpcEndpoint = ref('');
+                const seedPhrase = ref('');
+                const seedVisible = ref(false);
+                const walletStatus = ref('');
+                const error = ref('');
+                const accounts = ref([]);
+                const selectedFromAddress = ref('');
+                const tokenType = ref('native');  // Changed from 'eth'
+                const chainInfo = ref(null);
+                const tokenAddress = ref('');
+                const toAddress = ref('');
+                const amount = ref('');
+                const txStatus = ref('');
+                const estimatedGas = ref('');
 
-            // Disable WebSocket
-            window.WebSocket = function() {
-                throw new Error('WebSocket connections are disabled for security');
-            };
-        });
+                let provider = null;
+                let wallets = [];
+                let allowedRpcEndpoint = null;
 
-        function toggleSeedVisibility() {
-            const seedInput = document.getElementById('seed');
-            if (seedInput.type === 'password') {
-                seedInput.type = 'text';
-            } else {
-                seedInput.type = 'password';
-            }
-        }
-
-        document.getElementById('tokenType').addEventListener('change', function() {
-            document.getElementById('erc20Details').style.display = 
-                this.value === 'erc20' ? 'block' : 'none';
-        });
-
-        async function initializeWallet() {
-            try {
-                const rpcUrl = document.getElementById('rpc').value;
-                const seedPhrase = document.getElementById('seed').value;
-
-                if (!rpcUrl || !seedPhrase) {
-                    showError('Please provide both RPC endpoint and seed phrase');
-                    return;
-                }
-
-                // Set allowed RPC endpoint
-                allowedRpcEndpoint = rpcUrl;
-
-                // Initialize provider
-                provider = new ethers.JsonRpcProvider(rpcUrl);
-
-                // Generate wallets from seed phrase or private key
-                wallets = [];
-                
-                // Check if input is a private key or seed phrase
-                try {
-                    if (seedPhrase.includes(' ')) {
-                        // Input is a seed phrase
-                        // Derive first 5 addresses
-                        for (let i = 0; i < 5; i++) {
-                            const path = `m/44'/60'/0'/0/${i}`;
-                            const derivedWallet = ethers.HDNodeWallet.fromMnemonic(
-                                ethers.Mnemonic.fromPhrase(seedPhrase),
-                                path
-                            );
-                            const wallet = derivedWallet.connect(provider);
-                            wallets.push(wallet);
-                        }
-                    } else {
-                        // Input is a private key
-                        const wallet = new ethers.Wallet(seedPhrase, provider);
-                        wallets.push(wallet);
-                    }
-                } catch (error) {
-                    showError('Invalid seed phrase or private key format');
-                    return;
-                }
-
-                await displayAccounts();
-                document.getElementById('error').textContent = '';
-                document.getElementById('walletStatus').textContent = 'Wallet successfully initialized!';
-                
-                // Clear seed phrase from input after initialization
-                document.getElementById('seed').value = '';
-                
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-
-        // Rest of the functions remain the same
-        // Function to show error message with auto-hide after 5 seconds
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            setTimeout(() => {
-                errorDiv.textContent = '';
-            }, 5000);
-        }
-
-        async function refreshAccounts() {
-            if (!provider || wallets.length === 0) {
-                showError('Please initialize wallet first');
-                return;
-            }
-            await displayAccounts();
-        }
-
-        async function displayAccounts() {
-            const accountsDiv = document.getElementById('accounts');
-            const fromAddressSelect = document.getElementById('fromAddress');
-            accountsDiv.innerHTML = '';
-            fromAddressSelect.innerHTML = '<option value="">Select sending address</option>';
-
-            const walletsWithBalance = [];
-            for (const wallet of wallets) {
-                const balance = await provider.getBalance(wallet.address);
-                walletsWithBalance.push({
-                    wallet,
-                    balance,
-                    formattedBalance: ethers.formatEther(balance)
+                onMounted(() => {
+                    // No security restrictions needed
                 });
-            }
 
-            walletsWithBalance.sort((a, b) => {
-                if (b.balance > a.balance) return 1;
-                if (b.balance < a.balance) return -1;
-                return 0;
-            });
-            const displayWallets = walletsWithBalance.slice(0, 3);
+                const detectChainInfo = async () => {
+                    try {
+                        if (!provider) return;
 
-            for (const { wallet, formattedBalance } of displayWallets) {
-                const addressDiv = document.createElement('div');
-                addressDiv.className = 'address-container';
-                addressDiv.innerHTML = `
-                    <strong>Address:</strong> ${wallet.address}<br>
-                    <strong>Balance:</strong> ${formattedBalance} ETH
-                `;
-                accountsDiv.appendChild(addressDiv);
+                        const network = await provider.getNetwork();
+                        const chainId = Number(network.chainId);
 
-                const option = document.createElement('option');
-                option.value = wallet.address;
-                option.textContent = `${wallet.address} (${formattedBalance} ETH)`;
-                fromAddressSelect.appendChild(option);
-            }
+                        // Map chain IDs to their native symbols
+                        const chainToSymbol = {
+                            1: 'ETH',      // Ethereum Mainnet
+                            137: 'MATIC',  // Polygon
+                            56: 'BNB',     // BSC
+                            43114: 'AVAX', // Avalanche
+                            42161: 'ETH',  // Arbitrum
+                            10: 'ETH',     // Optimism
+                            8453: 'ETH',   // Base
+                            324: 'ETH',    // zkSync Era
+                            59144: 'ETH',  // Linea
+                            100: 'XDAI',   // Gnosis Chain
+                            42220: 'CELO', // Celo
+                        };
 
-            // If only one wallet (private key case), select it automatically
-            if (wallets.length === 1) {
-                fromAddressSelect.value = wallets[0].address;
-                await updateTokenBalance();
-            }
-        }
+                        chainInfo.value = {
+                            name: network.name,
+                            chainId: chainId,
+                            nativeSymbol: chainToSymbol[chainId] || 'ETH' // Default to ETH if chain unknown
+                        };
+                    } catch (err) {
+                        console.error('Error detecting chain:', err);
+                        chainInfo.value = {
+                            name: 'Unknown Chain',
+                            chainId: 0,
+                            nativeSymbol: 'ETH'
+                        };
+                    }
+                };
 
-        async function updateTokenBalance() {
-            const fromAddress = document.getElementById('fromAddress').value;
-            const tokenType = document.getElementById('tokenType').value;
-            const tokenAddress = document.getElementById('tokenAddress').value;
+                const showError = (message) => {
+                    error.value = message;
+                    setTimeout(() => {
+                        error.value = '';
+                    }, 5000);
+                };
 
-            if (!fromAddress) return;
+                const toggleSeedVisibility = () => {
+                    seedVisible.value = !seedVisible.value;
+                };
 
-            if (tokenType === 'erc20' && tokenAddress) {
-                try {
-                    const contract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
-                    const balance = await contract.balanceOf(fromAddress);
-                    const decimals = await contract.decimals();
-                    const symbol = await contract.symbol();
-                    const formattedBalance = ethers.formatUnits(balance, decimals);
-                    document.getElementById('txStatus').textContent = 
-                        `Token Balance: ${formattedBalance} ${symbol}`;
-                } catch (error) {
-                    document.getElementById('txStatus').textContent = 
-                        'Error fetching token balance: ' + error.message;
-                }
-            }
-        }
+                const initializeWallet = async () => {
+                    try {
+                        if (!rpcEndpoint.value || !seedPhrase.value) {
+                            throw new Error('Please provide both RPC endpoint and seed phrase');
+                        }
 
-        async function sendTransaction() {
-            try {
-                const fromAddress = document.getElementById('fromAddress').value;
-                const toAddress = document.getElementById('toAddress').value;
-                const amount = document.getElementById('amount').value;
-                const tokenType = document.getElementById('tokenType').value;
-                const tokenAddress = document.getElementById('tokenAddress').value;
+                        allowedRpcEndpoint = rpcEndpoint.value;
+                        provider = new ethers.JsonRpcProvider(rpcEndpoint.value);
+                        wallets = [];
 
-                if (!fromAddress || !toAddress || !amount) {
-                    throw new Error('Please fill in all fields');
-                }
+                        if (seedPhrase.value.includes(' ')) {
+                            // Seed phrase
+                            for (let i = 0; i < 5; i++) {
+                                const path = `m/44'/60'/0'/0/${i}`;
+                                const derivedWallet = ethers.HDNodeWallet.fromMnemonic(
+                                    ethers.Mnemonic.fromPhrase(seedPhrase.value),
+                                    path
+                                );
+                                wallets.push(derivedWallet.connect(provider));
+                            }
+                        } else {
+                            // Private key
+                            wallets.push(new ethers.Wallet(seedPhrase.value, provider));
+                        }
+                        await detectChainInfo();
+                        await refreshAccounts();
+                        error.value = '';
+                        walletStatus.value = 'Wallet successfully initialized!';
+                        currentTab.value = 'Accounts';
 
-                const wallet = wallets.find(w => w.address === fromAddress);
-                if (!wallet) throw new Error('Sender wallet not found');
+                    } catch (err) {
+                        showError(err.message);
+                    }
+                };
 
-                let tx;
-                if (tokenType === 'eth') {
-                    tx = await wallet.sendTransaction({
-                        to: toAddress,
-                        value: ethers.parseEther(amount)
-                    });
-                } else {
-                    if (!tokenAddress) throw new Error('Please provide token address');
-                    const contract = new ethers.Contract(tokenAddress, ERC20_ABI, wallet);
-                    const decimals = await contract.decimals();
-                    tx = await contract.transfer(
-                        toAddress, 
-                        ethers.parseUnits(amount, decimals)
+                const refreshAccounts = async () => {
+                    if (!provider || wallets.length === 0) {
+                        showError('Please initialize wallet first');
+                        return;
+                    }
+
+                    const walletsWithBalance = await Promise.all(
+                        wallets.map(async (wallet) => {
+                            const balance = await provider.getBalance(wallet.address);
+                            return {
+                                address: wallet.address,
+                                balance: ethers.formatEther(balance)
+                            };
+                        })
                     );
-                }
 
-                document.getElementById('txStatus').textContent = 
-                    `Transaction sent! Hash: ${tx.hash}`;
-                
-                await tx.wait();
-                document.getElementById('txStatus').textContent += ' (Confirmed)';
-                
-                await displayAccounts();
+                    accounts.value = walletsWithBalance.sort((a, b) =>
+                        parseFloat(b.balance) - parseFloat(a.balance)
+                    ).slice(0, 3);
 
-            } catch (error) {
-                document.getElementById('txStatus').textContent = 
-                    'Transaction failed: ' + error.message;
+                    if (wallets.length === 1) {
+                        selectedFromAddress.value = wallets[0].address;
+                        await updateTokenBalance();
+                    }
+                };
+
+                const updateTokenBalance = async () => {
+                    if (!selectedFromAddress.value) return;
+
+                    if (tokenType.value === 'erc20' && tokenAddress.value) {
+                        try {
+                            const contract = new ethers.Contract(tokenAddress.value, ERC20_ABI, provider);
+                            const balance = await contract.balanceOf(selectedFromAddress.value);
+                            const decimals = await contract.decimals();
+                            const symbol = await contract.symbol();
+                            const formattedBalance = ethers.formatUnits(balance, decimals);
+                            txStatus.value = `Token Balance: ${formattedBalance} ${symbol}`;
+                        } catch (err) {
+                            txStatus.value = 'Error fetching token balance: ' + err.message;
+                        }
+                    }
+                };
+
+                const updateGasEstimate = async () => {
+                    if (!selectedFromAddress.value || !toAddress.value || !amount.value) {
+                        estimatedGas.value = '';
+                        return;
+                    }
+
+                    try {
+                        const wallet = wallets.find(w => w.address === selectedFromAddress.value);
+                        if (!wallet) return;
+
+                        let gasEstimate;
+                        if (tokenType.value === 'native') {
+                            const txRequest = {
+                                to: toAddress.value,
+                                value: ethers.parseEther(amount.value.toString())
+                            };
+                            gasEstimate = await provider.estimateGas(txRequest);
+                        } else {
+                            if (!tokenAddress.value) return;
+                            const contract = new ethers.Contract(tokenAddress.value, ERC20_ABI, wallet);
+                            const decimals = await contract.decimals();
+                            const transferTx = await contract.transfer.populateTransaction(
+                                toAddress.value,
+                                ethers.parseUnits(amount.value.toString(), decimals)
+                            );
+                            gasEstimate = await provider.estimateGas({
+                                ...transferTx,
+                                from: wallet.address
+                            });
+                        }
+
+                        // Add 20% buffer
+                        const gasWithBuffer = gasEstimate * 120n / 100n;
+
+                        // Get current gas price
+                        const feeData = await provider.getFeeData();
+                        const gasPrice = feeData.gasPrice;
+
+                        // Calculate total cost in wei
+                        const totalCostWei = gasWithBuffer * gasPrice;
+
+                        // Convert to ETH and format to 6 decimal places
+                        const totalCostEth = ethers.formatEther(totalCostWei);
+                        const formattedCost = parseFloat(totalCostEth).toFixed(6);
+
+                        // Store both gas units and ETH cost
+                        estimatedGas.value = {
+                            gasUnits: gasWithBuffer.toString(),
+                            ethCost: `${formattedCost}`
+                        };
+
+                        txStatus.value = '';
+                    } catch (err) {
+                        estimatedGas.value = '';
+                        if (txStatus.value === '') {  // Only show error if no other error is showing
+                            txStatus.value = 'Gas estimation failed: ' + err.message;
+                        }
+                    }
+                };
+
+                // Watch for changes in relevant fields and update gas estimate
+                watch([currentTab, selectedFromAddress, toAddress, amount, tokenType, tokenAddress],
+                    async (newValues, oldValues) => {
+                        if (currentTab.value === 'Transfer') {
+                            await updateGasEstimate();
+                        }
+                    }
+                );
+
+                const sendTransaction = async () => {
+                    try {
+                        if (!selectedFromAddress.value || !toAddress.value || !amount.value) {
+                            throw new Error('Please fill in all fields');
+                        }
+
+                        const wallet = wallets.find(w => w.address === selectedFromAddress.value);
+                        if (!wallet) throw new Error('Sender wallet not found');
+
+                        let tx;
+                        if (tokenType.value === 'native') {
+                            // Prepare transaction request
+                            const txRequest = {
+                                to: toAddress.value,
+                                value: ethers.parseEther(amount.value.toString())
+                            };
+
+                            // Estimate gas using RPC
+                            try {
+                                const gasEstimate = await provider.estimateGas(txRequest);
+                                // Add 20% buffer to the estimate
+                                txRequest.gasLimit = gasEstimate * 120n / 100n;
+                            } catch (error) {
+                                console.error('Gas estimation failed:', error);
+                                throw new Error('Failed to estimate gas. Please check if you have sufficient funds for gas.');
+                            }
+
+                            tx = await wallet.sendTransaction(txRequest);
+                        } else {
+                            if (!tokenAddress.value) throw new Error('Please provide token address');
+                            const contract = new ethers.Contract(tokenAddress.value, ERC20_ABI, wallet);
+                            const decimals = await contract.decimals();
+
+                            // Prepare the contract call
+                            const transferTx = await contract.transfer.populateTransaction(
+                                toAddress.value,
+                                ethers.parseUnits(amount.value.toString(), decimals)
+                            );
+
+                            // Estimate gas using RPC
+                            try {
+                                const gasEstimate = await provider.estimateGas({
+                                    ...transferTx,
+                                    from: wallet.address
+                                });
+                                // Add 20% buffer to the estimate
+                                transferTx.gasLimit = gasEstimate * 120n / 100n;
+                            } catch (error) {
+                                console.error('Gas estimation failed:', error);
+                                throw new Error('Failed to estimate gas. Please check if you have sufficient funds and the token contract is valid.');
+                            }
+
+                            tx = await wallet.sendTransaction(transferTx);
+                        }
+
+                        txStatus.value = `Transaction sent! Hash: ${tx.hash}`;
+                        await tx.wait();
+                        txStatus.value += ' (Confirmed)';
+                        await refreshAccounts();
+
+                    } catch (err) {
+                        txStatus.value = 'Transaction failed: ' + err.message;
+                    }
+                };
+
+                return {
+                    currentTab,
+                    tabs,
+                    rpcEndpoint,
+                    seedPhrase,
+                    seedVisible,
+                    walletStatus,
+                    error,
+                    accounts,
+                    selectedFromAddress,
+                    tokenType,
+                    tokenAddress,
+                    toAddress,
+                    amount,
+                    txStatus,
+                    estimatedGas,
+                    chainInfo,
+                    toggleSeedVisibility,
+                    initializeWallet,
+                    refreshAccounts,
+                    updateTokenBalance,
+                    sendTransaction
+                };
             }
-        }
+        }).mount('#app');
     </script>
 </body>
+
 </html>
