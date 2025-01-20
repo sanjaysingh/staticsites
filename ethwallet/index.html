@@ -82,7 +82,7 @@
                     <div v-for="account in accounts" :key="account.address"
                         class="p-4 border border-gray-200 rounded-lg">
                         <div class="font-medium text-gray-700 break-all">Address: {{ account.address }}</div>
-                        <div class="text-gray-600">Balance: {{ Number(account.balance).toFixed(5) }} {{
+                        <div class="text-gray-600">Balance: {{ Number(parseFloat(Number(account.balance).toFixed(4))) }} {{
                             chainInfo?.nativeSymbol }}</div>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
                         class="w-full p-2 border border-gray-300 rounded-md">
                         <option value="">Select sending address</option>
                         <option v-for="account in accounts" :key="account.address" :value="account.address">
-                            {{ account.address }} ({{ Number(account.balance).toFixed(5) }} {{chainInfo.nativeSymbol}})
+                            {{ account.address }} ({{ Number(parseFloat(Number(account.balance).toFixed(4))) }} {{chainInfo.nativeSymbol}})
                         </option>
                     </select>
 
@@ -144,6 +144,7 @@
             "function balanceOf(address owner) view returns (uint256)",
             "function decimals() view returns (uint8)",
             "function symbol() view returns (string)",
+            "function name() view returns (string)",
             "function transfer(address to, uint amount) returns (bool)",
             "function allowance(address owner, address spender) view returns (uint256)",
             "function approve(address spender, uint256 amount) returns (bool)"
@@ -155,7 +156,7 @@
             setup() {
                 const currentTab = ref('Configuration');
                 const tabs = ['Configuration', 'Accounts', 'Transfer'];
-                const rpcEndpoint = ref('');
+                const rpcEndpoint = ref('https://mainnet.base.org');
                 const seedPhrase = ref('');
                 const seedVisible = ref(false);
                 const walletStatus = ref('');
@@ -298,11 +299,13 @@
                             const balance = await contract.balanceOf(selectedFromAddress.value);
                             const decimals = await contract.decimals();
                             const symbol = await contract.symbol();
+                            const name = await contract.name();
                             const formattedBalance = ethers.formatUnits(balance, decimals);
                             
                             tokenInfo.value = {
-                                balance: Number(formattedBalance).toFixed(5),
-                                symbol: symbol
+                                balance: Number(parseFloat(Number(formattedBalance).toFixed(4))),
+                                symbol: symbol,
+                                name: name
                             };
                         } catch (err) {
                             txStatus.value = 'Error fetching token balance: ' + err.message;
