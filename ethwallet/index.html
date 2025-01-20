@@ -46,12 +46,18 @@
                     <div class="space-y-2">
                         <label for="seed" class="block text-sm font-medium text-gray-700">Seed Phrase or Private
                             Key:</label>
-                        <div class="relative">
-                            <input :type="seedVisible ? 'text' : 'password'" id="seed" v-model="seedPhrase"
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            <button @click="toggleSeedVisibility"
-                                class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                👁️
+                        <div class="relative flex space-x-2">
+                            <div class="relative flex-1">
+                                <input :type="seedVisible ? 'text' : 'password'" id="seed" v-model="seedPhrase"
+                                    class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <button @click="toggleSeedVisibility"
+                                    class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                    👁️
+                                </button>
+                            </div>
+                            <button @click="generateNewWallet"
+                                class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition">
+                                Generate New
                             </button>
                         </div>
                     </div>
@@ -96,9 +102,15 @@
                         <option value="erc20">ERC20 Token</option>
                     </select>
 
-                    <div v-if="tokenType === 'erc20'">
-                        <input v-model="tokenAddress" type="text" placeholder="ERC20 Token Contract Address"
-                            class="w-full p-2 border border-gray-300 rounded-md">
+                    <div v-if="tokenType === 'erc20'" class="space-y-2">
+                        <div class="flex space-x-2 items-center">
+                            <input v-model="tokenAddress" type="text" placeholder="ERC20 Token Contract Address"
+                                @input="updateTokenBalance"
+                                class="flex-1 p-2 border border-gray-300 rounded-md">
+                            <div v-if="tokenInfo" class="text-sm text-gray-600">
+                                Balance: {{ tokenInfo.balance }} {{ tokenInfo.symbol }}
+                            </div>
+                        </div>
                     </div>
 
                     <input v-model="toAddress" type="text" placeholder="To Address"
@@ -157,6 +169,7 @@
                 const amount = ref('');
                 const txStatus = ref('');
                 const estimatedGas = ref('');
+                const tokenInfo = ref(null);
 
                 let provider = null;
                 let wallets = [];
@@ -277,6 +290,7 @@
 
                 const updateTokenBalance = async () => {
                     if (!selectedFromAddress.value) return;
+                    tokenInfo.value = null;
 
                     if (tokenType.value === 'erc20' && tokenAddress.value) {
                         try {
@@ -285,7 +299,11 @@
                             const decimals = await contract.decimals();
                             const symbol = await contract.symbol();
                             const formattedBalance = ethers.formatUnits(balance, decimals);
-                            txStatus.value = `Token Balance: ${formattedBalance} ${symbol}`;
+                            
+                            tokenInfo.value = {
+                                balance: Number(formattedBalance).toFixed(5),
+                                symbol: symbol
+                            };
                         } catch (err) {
                             txStatus.value = 'Error fetching token balance: ' + err.message;
                         }
@@ -426,6 +444,16 @@
                     }
                 };
 
+                const generateNewWallet = () => {
+                    try {
+                        const wallet = ethers.Wallet.createRandom();
+                        seedPhrase.value = wallet.privateKey;
+                        walletStatus.value = `New wallet generated! Address: ${wallet.address}`;
+                    } catch (err) {
+                        showError('Failed to generate wallet: ' + err.message);
+                    }
+                };
+
                 return {
                     currentTab,
                     tabs,
@@ -443,11 +471,13 @@
                     txStatus,
                     estimatedGas,
                     chainInfo,
+                    tokenInfo,
                     toggleSeedVisibility,
                     initializeWallet,
                     refreshAccounts,
                     updateTokenBalance,
-                    sendTransaction
+                    sendTransaction,
+                    generateNewWallet
                 };
             }
         }).mount('#app');
