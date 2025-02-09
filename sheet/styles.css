@@ -1,0 +1,114 @@
+html, body {
+    scroll-behavior: smooth;
+    scroll-padding-top: 0;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.spreadsheet-grid {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+/* Remove outline but keep the element focusable */
+.overflow-x-auto:focus {
+    outline: none;
+}
+
+.cell {
+    border: 1px solid #e2e8f0;
+    padding: 4px 8px;
+    min-width: 100px;
+    height: 32px;
+    position: relative;
+    background-color: white;
+    color: #1a202c;
+}
+
+:root.dark .cell {
+    border-color: #4a5568;
+    background-color: #2d3748;
+    color: #f7fafc;
+}
+
+.cell.active {
+    border: 2px solid #4299e1;
+    outline: none;
+}
+
+:root.dark .cell.active {
+    border-color: #63b3ed;
+}
+
+.cell-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 4px 8px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: inherit;
+}
+
+.corner-header {
+    width: 40px;
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    color: #1a202c;
+}
+
+:root.dark .corner-header {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #f7fafc;
+}
+
+.column-header {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    font-weight: 600;
+    text-align: center;
+    color: #1a202c;
+}
+
+:root.dark .column-header {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #f7fafc;
+}
+
+.row-header {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    font-weight: 600;
+    text-align: center;
+    width: 40px;
+    color: #1a202c;
+}
+
+:root.dark .row-header {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #f7fafc;
+}
+
+.formula-input {
+    @apply flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-white;
+}
+
+.cell-reference {
+    @apply px-4 py-2 bg-gray-100 rounded font-mono text-gray-900 dark:bg-gray-700 dark:text-white;
+}
+
+@media (max-width: 640px) {
+    .cell {
+        min-width: 80px;
+    }
+}

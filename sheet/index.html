@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Spreadsheet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" integrity="sha512-wnea99uKIC3TJF7v4eKk4Y+lMz2Mklv18+r4na2Gn1abDRPPOeef95xTzdwGD9e6zXJBteMIhZ1+68QC5byJZw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="styles.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="fav-icon.png">
+    <link rel="apple-touch-icon" href="fav-icon.png">
+    <meta name="theme-color" content="#3B82F6">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.16/vue.min.js" integrity="sha512-Wx8niGbPNCD87mSuF0sBRytwW2+2ZFr7HwVDF8krCb3egstCc4oQfig+/cfg2OHd82KcUlOYxlSDAqdHqK5TCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.mini.min.js" integrity="sha512-NDQhXrK2pOCL18FV5/Nc+ya9Vz+7o8dJV1IGRwuuYuRMFhAR0allmjWdZCSHFLDYgMvXKyN2jXlSy2JJEmq+ZA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div id="app" class="min-h-screen">
+        <div class="min-h-screen">
+            <header class="bg-blue-100 shadow">
+                <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                    <h1 class="text-2xl font-bold text-gray-900 text-center">Offline Spreadsheet</h1>
+                </div>
+            </header>
+
+            <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <div class="flex justify-end space-x-2 mb-4">
+                    <button @click="newSheet" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
+                        New
+                    </button>
+                    <button @click="exportSheet"
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
+                        Save
+                    </button>
+                </div>
+
+                <formula-bar
+                    :active-cell="activeCell"
+                    :formula="activeFormula"
+                    @formula-change="updateFormula">
+                </formula-bar>
+
+                <spreadsheet-grid
+                    :data="sheetData"
+                    :active-cell="activeCell"
+                    @cell-selected="selectCell"
+                    @cell-updated="updateCell"
+                    @new-sheet="newSheet"
+                    @save-sheet="exportSheet">
+                </spreadsheet-grid>
+            </main>
+        </div>
+    </div>
+
+    <script src="components/FormulaBar.js"></script>
+    <script src="components/SpreadsheetGrid.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Check if dark mode is enabled in localStorage or system preference
+        const darkModeEnabled = 
+            localStorage.getItem('darkMode') === 'true' || 
+            window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        // Function to toggle dark mode
+        function toggleDarkMode(enabled) {
+            if (enabled) {
+                document.documentElement.classList.remove('light');
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('darkMode', 'true');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+                localStorage.setItem('darkMode', 'false');
+            }
+        }
+
+        // Initialize dark mode
+        toggleDarkMode(darkModeEnabled);
+
+        // Listen for system dark mode changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            toggleDarkMode(e.matches);
+        });
+    </script>
+</body>
+</html>
