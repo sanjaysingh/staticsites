@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Converter</title>
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.min.js" integrity="sha512-rgrFBaGRHjj2cy6RtcWr21S4oSicNV/Y3qACuRZZIVdi6hGIXOKZeFTtzFFZCJ7cI4OrwbY7/FGVvaJ5hXJdJg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div id="app" class="container mx-auto px-4 py-8 max-w-2xl">
+        <h1 class="text-4xl font-bold text-center mb-8 text-indigo-900">Unit Converter</h1>
+        
+        <!-- Tab Navigation -->
+        <div class="flex space-x-1 rounded-xl bg-white/50 backdrop-blur-sm p-1.5 mb-6 shadow-sm">
+            <button v-for="tab in tabs" 
+                    :key="tab"
+                    @click="currentTab = tab"
+                    :class="['flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200', 
+                            currentTab === tab 
+                                ? 'bg-indigo-500 text-white shadow-sm' 
+                                : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50']">
+                {{ tab }}
+            </button>
+        </div>
+
+        <!-- Conversion Form -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-8">
+            <div class="grid gap-4">
+                <!-- First Unit Row -->
+                <div class="flex gap-3 items-center">
+                    <div class="flex-1">
+                        <input type="number" v-model="value1" 
+                               @input="convertFromFirst"
+                               class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 
+                                      focus:border-indigo-500 focus:ring focus:ring-indigo-200 
+                                      transition-colors duration-200
+                                      bg-white/70 backdrop-blur-sm">
+                    </div>
+                    <div class="w-28 flex items-center">
+                        <template v-if="currentTab === 'Temperature'">
+                            <span class="text-lg text-gray-700 font-medium">°F</span>
+                        </template>
+                        <select v-else
+                                v-model="fromUnit" 
+                                @change="convertFromFirst"
+                                class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-200 
+                                       focus:border-indigo-500 focus:ring focus:ring-indigo-200 
+                                       transition-colors duration-200
+                                       bg-white/70 backdrop-blur-sm">
+                            <option v-for="unit in currentUnits" :key="unit" :value="unit">{{ unit }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Second Unit Row -->
+                <div class="flex gap-3 items-center">
+                    <div class="flex-1">
+                        <input type="number" v-model="value2"
+                               @input="convertFromSecond"
+                               class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 
+                                      focus:border-indigo-500 focus:ring focus:ring-indigo-200 
+                                      transition-colors duration-200
+                                      bg-white/70 backdrop-blur-sm">
+                    </div>
+                    <div class="w-28 flex items-center">
+                        <template v-if="currentTab === 'Temperature'">
+                            <span class="text-lg text-gray-700 font-medium">°C</span>
+                        </template>
+                        <select v-else
+                                v-model="toUnit"
+                                @change="convertFromFirst" 
+                                class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-200 
+                                       focus:border-indigo-500 focus:ring focus:ring-indigo-200 
+                                       transition-colors duration-200
+                                       bg-white/70 backdrop-blur-sm">
+                            <option v-for="unit in currentUnits" :key="unit" :value="unit">{{ unit }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Conversion Details -->
+                <div class="h-8">
+                    <div v-if="value1 && (currentTab !== 'Temperature' ? (fromUnit && toUnit) : true)"
+                         class="text-center text-gray-600">
+                        {{ conversionDetails }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    tabs: ['Length', 'Weight', 'Temperature'],
+                    currentTab: 'Length',
+                    values: {
+                        Length: { value1: 0, value2: 0 },
+                        Weight: { value1: 0, value2: 0 },
+                        Temperature: { value1: 0, value2: 0 }
+                    },
+                    fromUnit: '',
+                    toUnit: '',
+                    units: {
+                        Length: ['in', 'cm', 'ft', 'km', 'm', 'mi', 'yd'],
+                        Weight: ['lb', 'kg', 'oz', 'g'],
+                        Temperature: ['F', 'C']
+                    },
+                    conversions: {
+                        Length: {
+                            m: 1,
+                            km: 1000,
+                            cm: 0.01,
+                            in: 0.0254,
+                            ft: 0.3048,
+                            mi: 1609.344,
+                            yd: 0.9144
+                        },
+                        Weight: {
+                            kg: 1,
+                            g: 0.001,
+                            lb: 0.45359237,
+                            oz: 0.028349523125
+                        },
+                        Temperature: {
+                            F: {
+                                toC: value => (value - 32) * 5/9,
+                                fromC: value => (value * 9/5) + 32
+                            }
+                        }
+                    },
+                    unitNames: {
+                        Length: {
+                            in: 'Inches',
+                            cm: 'Centimeters',
+                            ft: 'Feet',
+                            km: 'Kilometers',
+                            m: 'Meters',
+                            mi: 'Miles',
+                            yd: 'Yards'
+                        },
+                        Weight: {
+                            lb: 'Pounds',
+                            kg: 'Kilograms',
+                            oz: 'Ounces',
+                            g: 'Grams'
+                        },
+                        Temperature: {
+                            F: 'Fahrenheit',
+                            C: 'Celsius'
+                        }
+                    }
+                }
+            },
+            computed: {
+                value1: {
+                    get() {
+                        return this.values[this.currentTab].value1;
+                    },
+                    set(value) {
+                        this.values[this.currentTab].value1 = value;
+                    }
+                },
+                value2: {
+                    get() {
+                        return this.values[this.currentTab].value2;
+                    },
+                    set(value) {
+                        this.values[this.currentTab].value2 = value;
+                    }
+                },
+                currentUnits() {
+                    return this.units[this.currentTab]
+                },
+                result() {
+                    if (!this.value1 || !this.fromUnit || !this.toUnit) return '0'
+                    
+                    if (this.currentTab === 'Temperature') {
+                        return this.convertTemperature()
+                    }
+                    
+                    const conversionRates = this.conversions[this.currentTab]
+                    const baseValue = this.value1 * conversionRates[this.fromUnit]
+                    const result = baseValue / conversionRates[this.toUnit]
+                    
+                    return `${this.value1} ${this.fromUnit} = ${result.toFixed(4)} ${this.toUnit}`
+                },
+                conversionDetails() {
+                    if (!this.value1) return '';
+                    
+                    if (this.currentTab === 'Temperature') {
+                        return `${this.value1} ${this.unitNames.Temperature.F} = ${this.value2} ${this.unitNames.Temperature.C}`;
+                    }
+                    
+                    const result = this.convert(this.value1, this.fromUnit, this.toUnit);
+                    return `${this.value1} ${this.unitNames[this.currentTab][this.fromUnit]} = ${result} ${this.unitNames[this.currentTab][this.toUnit]}`;
+                }
+            },
+            methods: {
+                formatNumber(value) {
+                    return Number(value.toFixed(3));
+                },
+                convert(value, fromUnit, toUnit) {
+                    if (!value) return 0;
+                    
+                    if (this.currentTab === 'Temperature') {
+                        const temp = this.conversions.Temperature.F;
+                        return this.formatNumber(fromUnit === 'F' ? temp.toC(Number(value)) : temp.fromC(Number(value)));
+                    }
+                    
+                    const conversionRates = this.conversions[this.currentTab];
+                    const baseValue = value * conversionRates[fromUnit];
+                    return this.formatNumber(baseValue / conversionRates[toUnit]);
+                },
+                convertFromFirst() {
+                    if (this.currentTab === 'Temperature') {
+                        this.value2 = this.convert(this.value1, 'F', 'C');
+                    } else {
+                        this.value2 = this.convert(this.value1, this.fromUnit, this.toUnit);
+                    }
+                    this.updateURL();
+                },
+                convertFromSecond() {
+                    if (this.currentTab === 'Temperature') {
+                        this.value1 = this.convert(this.value2, 'C', 'F');
+                    } else {
+                        this.value1 = this.convert(this.value2, this.toUnit, this.fromUnit);
+                    }
+                    this.updateURL();
+                },
+                convertTemperature() {
+                    let result
+                    if (this.fromUnit === 'F' && this.toUnit === 'C') {
+                        result = (this.value1 - 32) * 5/9
+                    } else if (this.fromUnit === 'C' && this.toUnit === 'F') {
+                        result = (this.value1 * 9/5) + 32
+                    } else {
+                        result = this.value1
+                    }
+                    return `${this.value1} ${this.fromUnit} = ${result.toFixed(2)} ${this.toUnit}`
+                },
+                updateURL() {
+                    const params = new URLSearchParams();
+                    params.set('tab', this.currentTab);
+                    params.set('value', this.values[this.currentTab].value1);
+                    
+                    if (this.currentTab !== 'Temperature') {
+                        params.set('from', this.fromUnit);
+                        params.set('to', this.toUnit);
+                    }
+                    
+                    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+                },
+                loadFromURL() {
+                    const params = new URLSearchParams(window.location.search);
+                    
+                    // Set tab if present
+                    const tab = params.get('tab');
+                    if (tab && this.tabs.includes(tab)) {
+                        this.currentTab = tab;
+                    }
+                    
+                    // Set value if present
+                    const value = params.get('value');
+                    if (value !== null) {
+                        this.values[this.currentTab].value1 = Number(value);
+                    }
+                    
+                    // Set units if present and not temperature
+                    if (this.currentTab !== 'Temperature') {
+                        const fromUnit = params.get('from');
+                        const toUnit = params.get('to');
+                        
+                        if (fromUnit && this.currentUnits.includes(fromUnit)) {
+                            this.fromUnit = fromUnit;
+                        }
+                        if (toUnit && this.currentUnits.includes(toUnit)) {
+                            this.toUnit = toUnit;
+                        }
+                    }
+                    
+                    // Perform initial conversion
+                    this.convertFromFirst();
+                }
+            },
+            mounted() {
+                // Set initial units for current tab
+                this.fromUnit = this.currentUnits[0]
+                this.toUnit = this.currentUnits[1]
+                
+                // Load from URL and perform conversion
+                this.loadFromURL()
+                
+                this.$watch(
+                    () => ({
+                        tab: this.currentTab,
+                        value: this.values[this.currentTab].value1,
+                        from: this.fromUnit,
+                        to: this.toUnit
+                    }),
+                    () => this.updateURL(),
+                    { deep: true }
+                )
+            },
+            watch: {
+                currentTab(newTab) {
+                    // Set default units first
+                    this.fromUnit = this.units[newTab][0]
+                    this.toUnit = this.units[newTab][1]
+                    
+                    // Only reset values if there's no URL parameters and no existing values
+                    const params = new URLSearchParams(window.location.search);
+                    if (!params.get('value') && this.values[newTab].value1 === 0) {
+                        this.values[newTab].value1 = 0
+                        this.values[newTab].value2 = 0
+                    } else {
+                        this.convertFromFirst()
+                    }
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
