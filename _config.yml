@@ -3,4 +3,14 @@ baseurl: ""
 url: ""
 exclude:
   - .github/
-  - README.md 
+  - README.md
+
+# Process all HTML files, even without front matter
+include:
+  - "**/*.html"
+defaults:
+  -
+    scope:
+      path: "" # all files
+    values:
+      layout: "default" 
