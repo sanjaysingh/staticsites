@@ -4,11 +4,11 @@ title: Web Apps Index
 ---
 
 <div class="container-fluid">
-    <div class="d-flex justify-content-end">
-        <div class="mr-auto p-2">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
             <h3>{{ page.title }}</h3>
         </div>
-        <div class="p-2">
+        <div>
             <span>
                 <a href="https://github.com/sanjaysingh/staticsites/blob/master/index.html">Edit this page</a>
             </span>
@@ -21,7 +21,9 @@ title: Web Apps Index
             {% if item.path contains 'index.html' and item.path != 'index.html' %}
             <li>
                 {% capture page_content %}{% include_relative {{ item.path }} %}{% endcapture %}
-                {% assign title = page_content | match_regex: '<title>(.*?)</title>' | first %}
+                {% assign title_start = page_content | split: '<title>' %}
+                {% assign title_end = title_start[1] | split: '</title>' %}
+                {% assign title = title_end[0] %}
                 <a href="{{ item.dir }}">{{ title | default: item.dir | remove: '/' }}</a>
             </li>
             {% endif %}
