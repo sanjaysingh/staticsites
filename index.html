@@ -16,23 +16,21 @@ title: Web Apps Index
     </div>
     <hr />
     <div id="pages">
-        <!-- Debug information -->
-        <h4>All static files:</h4>
-        <ul>
-        {% for file in site.static_files %}
-            <li>Path: {{ file.path }}</li>
-        {% endfor %}
-        </ul>
-
-        <h4>Filtered pages:</h4>
         <ol>
         {% for file in site.static_files %}
             {% if file.path contains 'index.html' and file.path != '/index.html' %}
-            <li>
                 {% assign folder = file.path | split: '/index.html' | first %}
-                <a href="{{ folder }}">{{ folder | remove: '/' }}</a>
-                (Path: {{ file.path }})
-            </li>
+                {% capture page_content %}{% include_relative {{ file.path }} %}{% endcapture %}
+                {% assign title_start = page_content | split: '<title>' %}
+                {% if title_start.size > 1 %}
+                    {% assign title_end = title_start[1] | split: '</title>' %}
+                    {% assign title = title_end[0] %}
+                {% else %}
+                    {% assign title = folder | remove: '/' %}
+                {% endif %}
+                <li>
+                    <a href="{{ folder }}">{{ title }}</a>
+                </li>
             {% endif %}
         {% endfor %}
         </ol>
