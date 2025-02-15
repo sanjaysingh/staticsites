@@ -5,12 +5,21 @@ exclude:
   - .github/
   - README.md
 
-# Process all HTML files, even without front matter
+# Process all files recursively
 include:
-  - "**/*.html"
+  - "**/*"
+  - "**/.*"
+
+# Set default layout for all files
 defaults:
   -
     scope:
       path: "" # all files
     values:
-      layout: "default" 
+      layout: "default"
+
+# Keep the source directory clean
+keep_files: [".git"]
+
+# Enable recursive directory reading
+safe: false 
