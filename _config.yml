@@ -1,0 +1,6 @@
+title: Web Apps Index
+baseurl: ""
+url: ""
+exclude:
+  - .github/
+  - README.md 

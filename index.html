@@ -1,105 +1,31 @@
-<html>
+---
+layout: default
+title: Web Apps Index
+---
 
-<head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-        crossorigin="anonymous">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="Web Apps Index">
-    <meta name="author" content="Sanjay Singh">
-    <title>Static Pages Index</title>
-    <style>
-        body {
-            overflow-x: hidden;
-        }
-
-        #wrapper {
-            padding-left: 0;
-            -webkit-transition: all 0.5s ease;
-            -moz-transition: all 0.5s ease;
-            -o-transition: all 0.5s ease;
-            transition: all 0.5s ease;
-        }
-
-        #wrapper.toggled {
-            padding-left: 250px;
-        }
-
-        #wrapper.toggled {
-            width: 250px;
-        }
-
-        #base64-container {
-            width: 100%;
-            position: absolute;
-            padding: 15px;
-        }
-
-        #wrapper.toggled #base64-container {
-            position: absolute;
-            margin-right: -250px;
-        }
-
-
-        @media(min-width:768px) {
-            #wrapper {
-                padding-left: 0;
-            }
-
-            #wrapper.toggled {
-                padding-left: 250px;
-            }
-
-            #wrapper.toggled {
-                width: 250px;
-            }
-
-            #base64-container {
-                padding: 20px;
-                position: relative;
-            }
-
-            #wrapper.toggled #base64-container {
-                position: relative;
-                margin-right: 0;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <div id="wrapper">
-        <div id="base64-container">
-            <div class="container-fluid">
-                <div class="d-flex justify-content-end">
-                    <div class="mr-auto p-2">
-                        <h3>Web Apps Index</h3>
-                    </div>
-                    <div class="p-2">
-                        <span>
-                            <a href="https://github.com/sanjaysingh/staticsites/blob/master/index.html">Edit this page</a>
-                        </span>
-                    </div>
-                </div>
-                <hr />
-                <div id="pages">
-                    <ol>
-                        <li><a href="/sas">Offline SAS Generator</a></li>
-                        <li><a href="/base64">Offline Base64 Encoder /  Decoder</a></li>
-                        <li><a href="/sha256">Offline Sha256 Encoder</a></li>
-                        <li><a href="/xmlencode">Offline XML Encoder /  Decoder</a></li>
-                        <li><a href="/tickingstopwatch">Ticking Stop Watch</a></li>
-                        <li><a href="/timelock">Time Lock (dapp)</a></li>
-                        <li><a href="/ethunitconverter">Ethereum Unit Converter</a></li>
-                        <li><a href="/cert">Cert Utils</a></li>
-                        <li><a href="/splitexp">Split Expenses</a></li>
-                        <li><a href="/editor">Code Editor</a></li>
-                    </ol>
-                </div>
-            </div>
+<div class="container-fluid">
+    <div class="d-flex justify-content-end">
+        <div class="mr-auto p-2">
+            <h3>{{ page.title }}</h3>
+        </div>
+        <div class="p-2">
+            <span>
+                <a href="https://github.com/sanjaysingh/staticsites/blob/master/index.html">Edit this page</a>
+            </span>
         </div>
     </div>
-
-</body>
-
-</html>
+    <hr />
+    <div id="pages">
+        <ol>
+        {% for item in site.pages %}
+            {% if item.path contains 'index.html' and item.path != 'index.html' %}
+            <li>
+                {% capture page_content %}{% include_relative {{ item.path }} %}{% endcapture %}
+                {% assign title = page_content | match_regex: '<title>(.*?)</title>' | first %}
+                <a href="{{ item.dir }}">{{ title | default: item.dir | remove: '/' }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+        </ol>
+    </div>
+</div>
