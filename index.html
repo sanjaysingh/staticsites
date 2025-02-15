@@ -16,6 +16,15 @@ title: Web Apps Index
     </div>
     <hr />
     <div id="pages">
+        <!-- Debug information -->
+        <h4>All pages:</h4>
+        <ul>
+        {% for item in site.pages %}
+            <li>Path: {{ item.path }}</li>
+        {% endfor %}
+        </ul>
+
+        <h4>Filtered pages:</h4>
         <ol>
         {% for item in site.pages %}
             {% if item.path contains 'index.html' and item.path != 'index.html' %}
@@ -25,6 +34,7 @@ title: Web Apps Index
                 {% assign title_end = title_start[1] | split: '</title>' %}
                 {% assign title = title_end[0] %}
                 <a href="{{ item.dir }}">{{ title | default: item.dir | remove: '/' }}</a>
+                (Path: {{ item.path }})
             </li>
             {% endif %}
         {% endfor %}
