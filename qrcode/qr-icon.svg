@@ -1,0 +1,39 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <!-- White background with rounded corners -->
+    <rect width="512" height="512" rx="64" fill="white"/>
+    
+    <!-- QR Code elements -->
+    <g fill="#3498db">
+        <!-- Top-left finder pattern -->
+        <rect x="96" y="96" width="96" height="96"/>
+        <rect x="112" y="112" width="64" height="64" fill="white"/>
+        <rect x="128" y="128" width="32" height="32"/>
+        
+        <!-- Top-right finder pattern -->
+        <rect x="320" y="96" width="96" height="96"/>
+        <rect x="336" y="112" width="64" height="64" fill="white"/>
+        <rect x="352" y="128" width="32" height="32"/>
+        
+        <!-- Bottom-left finder pattern -->
+        <rect x="96" y="320" width="96" height="96"/>
+        <rect x="112" y="336" width="64" height="64" fill="white"/>
+        <rect x="128" y="352" width="32" height="32"/>
+        
+        <!-- Timing patterns and alignment -->
+        <rect x="224" y="96" width="64" height="16"/>
+        <rect x="96" y="224" width="16" height="64"/>
+        <rect x="400" y="224" width="16" height="64"/>
+        <rect x="224" y="400" width="64" height="16"/>
+        
+        <!-- Random data modules -->
+        <rect x="224" y="144" width="32" height="32"/>
+        <rect x="272" y="176" width="32" height="32"/>
+        <rect x="224" y="224" width="32" height="32"/>
+        <rect x="320" y="224" width="32" height="32"/>
+        <rect x="256" y="256" width="32" height="32"/>
+        <rect x="352" y="288" width="32" height="32"/>
+        <rect x="224" y="320" width="32" height="32"/>
+        <rect x="288" y="352" width="32" height="32"/>
+        <rect x="352" y="352" width="32" height="32"/>
+    </g>
+</svg> 

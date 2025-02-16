@@ -11,56 +11,8 @@
     <meta name="apple-mobile-web-app-title" content="QR Generator">
     
     <!-- App Icons -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'><rect width='512' height='512' rx='64' fill='%233498db'/><g fill='white'><rect x='96' y='96' width='320' height='320' rx='16'/><g fill='%233498db'><rect x='128' y='128' width='32' height='32'/><rect x='128' y='192' width='32' height='32'/><rect x='128' y='256' width='32' height='32'/><rect x='128' y='320' width='32' height='32'/><rect x='192' y='128' width='32' height='32'/><rect x='192' y='192' width='32' height='32'/><rect x='192' y='256' width='32' height='32'/><rect x='192' y='320' width='32' height='32'/><rect x='256' y='128' width='32' height='32'/><rect x='256' y='192' width='32' height='32'/><rect x='256' y='256' width='32' height='32'/><rect x='256' y='320' width='32' height='32'/><rect x='320' y='128' width='32' height='32'/><rect x='320' y='192' width='32' height='32'/><rect x='320' y='256' width='32' height='32'/><rect x='320' y='320' width='32' height='32'/></g></g></svg>">
-    
-    <!-- Hidden SVG for apple-touch-icon -->
-    <style>
-        #app-icon {
-            display: none;
-        }
-    </style>
-    <svg id="app-icon" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="512" height="512" rx="64" fill="#3498db"/>
-        <g fill="white">
-            <!-- White background square -->
-            <rect x="96" y="96" width="320" height="320" rx="16"/>
-            <!-- QR code squares -->
-            <g fill="#3498db">
-                <!-- Row 1 -->
-                <rect x="128" y="128" width="32" height="32"/>
-                <rect x="128" y="192" width="32" height="32"/>
-                <rect x="128" y="256" width="32" height="32"/>
-                <rect x="128" y="320" width="32" height="32"/>
-                <!-- Row 2 -->
-                <rect x="192" y="128" width="32" height="32"/>
-                <rect x="192" y="192" width="32" height="32"/>
-                <rect x="192" y="256" width="32" height="32"/>
-                <rect x="192" y="320" width="32" height="32"/>
-                <!-- Row 3 -->
-                <rect x="256" y="128" width="32" height="32"/>
-                <rect x="256" y="192" width="32" height="32"/>
-                <rect x="256" y="256" width="32" height="32"/>
-                <rect x="256" y="320" width="32" height="32"/>
-                <!-- Row 4 -->
-                <rect x="320" y="128" width="32" height="32"/>
-                <rect x="320" y="192" width="32" height="32"/>
-                <rect x="320" y="256" width="32" height="32"/>
-                <rect x="320" y="320" width="32" height="32"/>
-            </g>
-        </g>
-    </svg>
-    <script>
-        // Generate apple-touch-icon dynamically
-        const svgElement = document.getElementById('app-icon');
-        const svgData = new XMLSerializer().serializeToString(svgElement);
-        const img = new Image();
-        img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
-        
-        const link = document.createElement('link');
-        link.rel = 'apple-touch-icon';
-        link.href = img.src;
-        document.head.appendChild(link);
-    </script>
+    <link rel="icon" type="image/svg+xml" href="qr-icon.svg">
+    <link rel="apple-touch-icon" href="qr-icon.svg">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js" integrity="sha512-PEhlWBZBrQL7flpJPY8lXx8tIN7HWX912GzGhFTDqA3iWFrakVH3lVHomCoU9BhfKzgxfEk6EG2C3xej+9srOQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
@@ -97,6 +49,24 @@
             margin-bottom: 1.5rem;
         }
 
+        #qrcode {
+            min-height: 200px;
+            text-align: center;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-style: italic;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+        }
+
+        #qrcode canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
         .input-section {
             display: flex;
             gap: 1rem;
@@ -113,12 +83,6 @@
 
         .input-group.size-group {
             width: 100px;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
         }
 
         label {
@@ -150,6 +114,12 @@
             text-align: right;
         }
 
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
         button {
             background-color: #3498db;
             color: white;
@@ -166,27 +136,8 @@
             background-color: #2980b9;
         }
 
-        #qrcode {
-            min-height: 200px;
-            text-align: center;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-style: italic;
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-        }
-
-        #qrcode canvas {
-            max-width: 100%;
-            height: auto;
-        }
-
         #download-btn {
             background-color: #27ae60;
-            margin-top: 0;
         }
 
         #download-btn:hover {
@@ -198,11 +149,11 @@
                 padding: 1rem;
             }
 
-            .options {
+            .input-section {
                 flex-direction: column;
             }
 
-            .size-input {
+            .input-group.size-group {
                 width: 100%;
             }
         }
@@ -233,7 +184,6 @@
             const text = document.getElementById('text').value;
             const size = document.getElementById('size').value;
             const qrcodeDiv = document.getElementById('qrcode');
-            const downloadBtn = document.getElementById('download-btn');
 
             if (!text) {
                 alert('Please enter some text or URL');
@@ -254,7 +204,6 @@
                     return;
                 }
                 qrcodeDiv.appendChild(canvas);
-                downloadBtn.style.display = 'block';
             });
         }
 
