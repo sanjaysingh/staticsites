@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Scanner</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-    <script src="https://unpkg.com/pdf-lib"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" integrity="sha512-cyzxRvewl+FOKTtpBzYjW6x6IAYUCZy3sGP40hn+DQkqeluGRCax7qztK2ImL64SA+C7kVWdLI6wvdlStawhyw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" integrity="sha512-6lplKUSl86rUVprDIjiW8DuOniNX8UDoRATqZSds/7t6zCQZfaCe3e5zcGaQwxa8Kpn5RTM9Fvl3X2lLV4grPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" integrity="sha512-z8IYLHO8bTgFqj+yrPyIJnzBDf7DDhWwiEsk4sY+Oe6J2M+WQequeGS7qioI5vT6rXgVRb4K1UVQC5ER7MKzKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://docs.opencv.org/4.5.4/opencv.js"></script>
     <!-- Add Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -32,14 +32,8 @@
             <div class="flex space-x-2 mb-4 justify-end">
                 <input type="file" id="fileInput" accept="image/*" capture="environment" class="hidden">
                 <input type="file" id="libraryInput" accept="image/*" class="hidden">
-                <button id="cameraBtn" class="bg-white p-3 rounded-lg hover:bg-gray-100 shadow-lg transition-all duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                </button>
-                <button id="libraryBtn" class="bg-white p-3 rounded-lg hover:bg-gray-100 shadow-lg transition-all duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button id="libraryBtn" class="bg-blue-600 p-3 rounded-lg hover:bg-blue-700 shadow-lg transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                 </button>
@@ -60,10 +54,10 @@
                         <span>Add to Document</span>
                     </button>
                     <div class="flex space-x-3">
-                        <button id="rotateLeftBtn" class="bg-gray-100 text-gray-700 p-3 rounded-lg hover:bg-gray-200 flex items-center justify-center transition-colors duration-200">
+                        <button id="rotateLeftBtn" class="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 flex items-center justify-center transition-colors duration-200">
                             <span class="material-icons">rotate_left</span>
                         </button>
-                        <button id="rotateRightBtn" class="bg-gray-100 text-gray-700 p-3 rounded-lg hover:bg-gray-200 flex items-center justify-center transition-colors duration-200">
+                        <button id="rotateRightBtn" class="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 flex items-center justify-center transition-colors duration-200">
                             <span class="material-icons">rotate_right</span>
                         </button>
                     </div>
@@ -89,10 +83,6 @@
         let currentCropper = null;
 
         // Handle file upload
-        document.getElementById('cameraBtn').addEventListener('click', () => {
-            document.getElementById('fileInput').click();
-        });
-
         document.getElementById('libraryBtn').addEventListener('click', () => {
             document.getElementById('libraryInput').click();
         });
