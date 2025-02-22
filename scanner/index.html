@@ -20,6 +20,32 @@
             background-image: none !important;
             background-color: #f3f4f6 !important;
         }
+        /* Make all corner handles larger */
+        .cropper-point.point-se,
+        .cropper-point.point-sw,
+        .cropper-point.point-ne,
+        .cropper-point.point-nw {
+            width: 20px !important;
+            height: 20px !important;
+            opacity: 0.85;
+        }
+        /* Adjust position to center the larger handles */
+        .cropper-point.point-se {
+            right: -10px !important;
+            bottom: -10px !important;
+        }
+        .cropper-point.point-sw {
+            left: -10px !important;
+            bottom: -10px !important;
+        }
+        .cropper-point.point-ne {
+            right: -10px !important;
+            top: -10px !important;
+        }
+        .cropper-point.point-nw {
+            left: -10px !important;
+            top: -10px !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -38,7 +64,7 @@
                     </svg>
                 </button>
             </div>
-            <div class="w-full h-[500px] border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50">
+            <div class="w-full h-[500px] border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50 cursor-pointer" id="dropArea">
                 <img id="previewImage" class="max-h-full max-w-full rounded-lg">
                 <div id="placeholderText" class="text-gray-400 flex flex-col items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -49,8 +75,7 @@
             </div>
             <div id="cropControls" class="hidden mt-6">
                 <div class="flex justify-between items-center">
-                    <button id="confirmCropBtn" class="bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2 transition-colors duration-200">
-                        <span class="material-icons">check</span>
+                    <button id="confirmCropBtn" class="bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center transition-colors duration-200">
                         <span>Add to Document</span>
                     </button>
                     <div class="flex space-x-3">
@@ -270,6 +295,14 @@
         document.getElementById('rotateRightBtn').addEventListener('click', () => {
             if (currentCropper) {
                 currentCropper.rotate(90);
+            }
+        });
+
+        // Make the drop area clickable
+        document.getElementById('dropArea').addEventListener('click', (e) => {
+            // Only trigger if clicking the drop area or placeholder (not when cropper is active)
+            if (!currentCropper && (e.target.id === 'dropArea' || e.target.closest('#placeholderText'))) {
+                document.getElementById('libraryInput').click();
             }
         });
     </script>
