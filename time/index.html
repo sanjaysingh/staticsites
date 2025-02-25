@@ -132,22 +132,186 @@
                 font-size: 1.4rem;
             }
         }
+
+        /* Settings panel styles */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100vh;
+            background: var(--tile-gradient-1);
+            box-shadow: -5px 0 15px var(--shadow-color);
+            z-index: 1001;
+            padding: 1.5rem;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .settings-panel.open {
+            transform: translateX(0);
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .settings-close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .settings-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-section-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--text-secondary);
+        }
+
+        .zone-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .form-check-input {
+            cursor: pointer;
+        }
+
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        /* Replace the theme-switch with settings button */
+        .settings-button {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            background: var(--tile-gradient-1);
+            box-shadow: 2px 2px 5px var(--shadow-color);
+        }
+
+        .settings-button:hover {
+            transform: scale(1.1);
+        }
+
+        /* Add this new style for the theme switch label */
+        .theme-switch-label {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        /* Fix the theme switch positioning */
+        .theme-switch-area {
+            padding: 8px;
+            border-radius: 8px;
+            background-color: rgba(128, 128, 128, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-check-input {
+            margin-left: 0;
+            position: relative;
+            float: none;
+        }
     </style>
 </head>
 <body :class="{ 'bg-light': !isDarkTheme }" :data-theme="isDarkTheme ? 'dark' : 'light'">
     <div id="app">
-        <div class="theme-switch">
-            <button class="theme-switch-button" @click="toggleTheme">
-                <i :class="isDarkTheme ? 'fas fa-sun' : 'fas fa-moon'"></i>
-            </button>
+        <!-- Settings button -->
+        <button class="settings-button" @click="toggleSettings">
+            <i class="fas fa-cog"></i>
+        </button>
+
+        <!-- Settings panel -->
+        <div class="overlay" :class="{ 'open': isSettingsOpen }" @click="closeSettings"></div>
+        <div class="settings-panel" :class="{ 'open': isSettingsOpen }">
+            <div class="settings-header">
+                <h5 class="m-0">Settings</h5>
+                <button class="settings-close" @click="closeSettings">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Theme section -->
+            <div class="settings-section">
+                <h6 class="settings-section-title">Theme</h6>
+                <div class="theme-switch-area">
+                    <span class="theme-switch-label">{{ isDarkTheme ? 'Dark Mode' : 'Light Mode' }}</span>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="themeSwitch" v-model="isDarkTheme">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Time zones section -->
+            <div class="settings-section">
+                <h6 class="settings-section-title">Time Zones</h6>
+                <div class="zone-toggle" v-for="(zone, index) in allTimeZones" :key="zone">
+                    <span>{{ formatLocation(zone) }}</span>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" 
+                               :id="'zone-' + index" 
+                               v-model="zoneVisibility[zone]"
+                               @change="saveVisibility">
+                    </div>
+                </div>
+            </div>
         </div>
+
         <div class="container py-4">
             <h1 class="text-center mb-4">
                 <i class="fas fa-globe me-2"></i>
                 World Time
             </h1>
             <div class="row g-4" ref="timeGrid">
-                <div v-for="(zone, index) in timeZones" 
+                <div v-for="(zone, index) in visibleTimeZones" 
                      :key="zone"
                      class="col-12 col-md-6 col-lg-4">
                     <div class="time-tile p-4">
@@ -168,7 +332,7 @@
         const app = createApp({
             data() {
                 return {
-                    timeZones: [
+                    allTimeZones: [
                         "UTC",
                         "America/New_York",
                         "America/Los_Angeles",
@@ -184,11 +348,18 @@
                         "Asia/Tokyo",
                         "Australia/Sydney"
                     ],
+                    zoneVisibility: {},
                     timer: null,
                     isDarkTheme: localStorage.getItem('isDarkTheme') !== null 
                         ? localStorage.getItem('isDarkTheme') === 'true' 
-                        : true
+                        : true,
+                    isSettingsOpen: false
                 };
+            },
+            computed: {
+                visibleTimeZones() {
+                    return this.allTimeZones.filter(zone => this.zoneVisibility[zone]);
+                }
             },
             methods: {
                 getTime(zone) {
@@ -220,12 +391,12 @@
                     return countries[zone] || zone.split('/')[0];
                 },
                 saveOrder() {
-                    localStorage.setItem('timeZoneOrder', JSON.stringify(this.timeZones));
+                    localStorage.setItem('timeZoneOrder', JSON.stringify(this.allTimeZones));
                 },
                 loadOrder() {
                     const saved = localStorage.getItem('timeZoneOrder');
                     if (saved) {
-                        this.timeZones = JSON.parse(saved);
+                        this.allTimeZones = JSON.parse(saved);
                     }
                 },
                 toggleTheme() {
@@ -242,11 +413,48 @@
                         localStorage.setItem('isDarkTheme', 'true');
                     }
                     document.documentElement.setAttribute('data-theme', this.isDarkTheme ? 'dark' : 'light');
+                },
+                toggleSettings() {
+                    this.isSettingsOpen = !this.isSettingsOpen;
+                    document.body.style.overflow = this.isSettingsOpen ? 'hidden' : '';
+                },
+                closeSettings() {
+                    this.isSettingsOpen = false;
+                    document.body.style.overflow = '';
+                },
+                initZoneVisibility() {
+                    // Initialize all zones to visible if no saved state
+                    const savedVisibility = localStorage.getItem('zoneVisibility');
+                    if (savedVisibility) {
+                        this.zoneVisibility = JSON.parse(savedVisibility);
+                        // Ensure any new zones are visible by default
+                        this.allTimeZones.forEach(zone => {
+                            if (this.zoneVisibility[zone] === undefined) {
+                                this.zoneVisibility[zone] = true;
+                            }
+                        });
+                    } else {
+                        // Set all zones to visible by default
+                        this.allTimeZones.forEach(zone => {
+                            this.zoneVisibility[zone] = true;
+                        });
+                    }
+                },
+                saveVisibility() {
+                    localStorage.setItem('zoneVisibility', JSON.stringify(this.zoneVisibility));
+                }
+            },
+            watch: {
+                isDarkTheme() {
+                    document.documentElement.setAttribute('data-theme', this.isDarkTheme ? 'dark' : 'light');
+                    localStorage.setItem('isDarkTheme', this.isDarkTheme);
                 }
             },
             mounted() {
                 this.loadOrder();
                 this.loadTheme();
+                this.initZoneVisibility();
+                
                 this.timer = setInterval(() => {
                     this.$forceUpdate();
                 }, 1000);
@@ -260,8 +468,18 @@
                         const newIndex = evt.newIndex;
                         const oldIndex = evt.oldIndex;
                         
-                        const item = this.timeZones.splice(oldIndex, 1)[0];
-                        this.timeZones.splice(newIndex, 0, item);
+                        // Get the actual zone from the visible zones
+                        const visibleZones = [...this.visibleTimeZones];
+                        const movedZone = visibleZones[oldIndex];
+                        
+                        // Find the indices in the allTimeZones array
+                        const allZonesOldIndex = this.allTimeZones.indexOf(movedZone);
+                        const targetZone = visibleZones[newIndex < visibleZones.length ? newIndex : visibleZones.length - 1];
+                        const allZonesNewIndex = this.allTimeZones.indexOf(targetZone);
+                        
+                        // Reorder in the allTimeZones array
+                        const item = this.allTimeZones.splice(allZonesOldIndex, 1)[0];
+                        this.allTimeZones.splice(allZonesNewIndex, 0, item);
                         
                         this.saveOrder();
                     }
