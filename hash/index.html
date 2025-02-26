@@ -254,9 +254,23 @@
 
         createApp({
             setup() {
+                // Get algorithm from URL if present
+                const getAlgorithmFromURL = () => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const algoParam = urlParams.get('algo');
+                    
+                    // List of valid algorithms to prevent injection
+                    const validAlgorithms = [
+                        'MD5', 'SHA1', 'SHA256', 'SHA512', 
+                        'SHA3-224', 'SHA3-256', 'SHA3-384', 'SHA3-512', 'Keccak-256'
+                    ];
+                    
+                    return algoParam && validAlgorithms.includes(algoParam) ? algoParam : 'SHA256';
+                };
+
                 const inputText = ref('');
                 const hashOutput = ref('');
-                const selectedAlgorithm = ref('SHA256');
+                const selectedAlgorithm = ref(getAlgorithmFromURL());
                 const showNotification = ref(false);
 
                 const algorithms = ref([
@@ -270,6 +284,13 @@
                     { name: 'SHA3-512', func: (text) => sha3_512(text) },
                     { name: 'Keccak-256', func: (text) => keccak_256(text) }
                 ]);
+
+                // Update URL when algorithm changes
+                const updateURL = (algorithm) => {
+                    const url = new URL(window.location);
+                    url.searchParams.set('algo', algorithm);
+                    window.history.replaceState({}, '', url);
+                };
 
                 const updateHash = () => {
                     const algorithm = algorithms.value.find(algo => algo.name === selectedAlgorithm.value);
@@ -346,8 +367,11 @@
                     }, 2000);
                 };
 
-                // Watch for changes in selectedAlgorithm to update the hash
-                watch(selectedAlgorithm, updateHash);
+                // Watch for changes in selectedAlgorithm to update the hash and URL
+                watch(selectedAlgorithm, (newValue) => {
+                    updateHash();
+                    updateURL(newValue);
+                });
 
                 return {
                     inputText,
