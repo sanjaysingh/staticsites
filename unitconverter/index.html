@@ -98,19 +98,21 @@
         createApp({
             data() {
                 return {
-                    tabs: ['Length', 'Weight', 'Temperature'],
+                    tabs: ['Length', 'Weight', 'Temperature', 'Area'],
                     currentTab: 'Length',
                     values: {
                         Length: { value1: 0, value2: 0 },
                         Weight: { value1: 0, value2: 0 },
-                        Temperature: { value1: 0, value2: 0 }
+                        Temperature: { value1: 0, value2: 0 },
+                        Area: { value1: 0, value2: 0 }
                     },
                     fromUnit: '',
                     toUnit: '',
                     units: {
                         Length: ['in', 'cm', 'ft', 'km', 'm', 'mi', 'yd'],
                         Weight: ['lb', 'kg', 'oz', 'g'],
-                        Temperature: ['F', 'C']
+                        Temperature: ['F', 'C'],
+                        Area: ['m²', 'km²', 'ft²', 'yd²', 'acre', 'ha', 'mi²']
                     },
                     conversions: {
                         Length: {
@@ -133,6 +135,15 @@
                                 toC: value => (value - 32) * 5/9,
                                 fromC: value => (value * 9/5) + 32
                             }
+                        },
+                        Area: {
+                            'm²': 1,
+                            'km²': 1000000,
+                            'ft²': 0.092903,
+                            'yd²': 0.836127,
+                            'acre': 4046.86,
+                            'ha': 10000,
+                            'mi²': 2589988.11
                         }
                     },
                     unitNames: {
@@ -154,6 +165,15 @@
                         Temperature: {
                             F: 'Fahrenheit',
                             C: 'Celsius'
+                        },
+                        Area: {
+                            'm²': 'Square Meters',
+                            'km²': 'Square Kilometers',
+                            'ft²': 'Square Feet',
+                            'yd²': 'Square Yards',
+                            'acre': 'Acres',
+                            'ha': 'Hectares',
+                            'mi²': 'Square Miles'
                         }
                     }
                 }
