@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UUID Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+          crossorigin="anonymous" 
+          referrerpolicy="no-referrer" />
+    <script type="module">
+        import { v4 as uuidv4 } from 'https://cdn.jsdelivr.net/npm/uuid@11.1.0/+esm';
+        
+        window.generateUUID = function() {
+            const uuid = uuidv4();
+            document.getElementById('lowercase-uuid').textContent = uuid;
+            document.getElementById('uppercase-uuid').textContent = uuid.toUpperCase();
+        };
+
+        // Generate initial UUID when page loads
+        window.addEventListener('load', generateUUID);
+    </script>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .uuid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .uuid-box {
+            position: relative;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .uuid-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            flex: 1;
+        }
+
+        .copy-btn {
+            background: transparent;
+            color: var(--primary-color);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .copy-btn:hover {
+            background: var(--bg-color);
+            color: var(--primary-hover);
+            transform: scale(1.1);
+        }
+
+        .generate-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .generate-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .copied {
+            color: #22c55e;
+        }
+
+        .copied:hover {
+            color: #16a34a;
+        }
+
+        .copy-success {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .copy-success.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .uuid-text {
+                font-size: 0.8rem;
+            }
+
+            .copy-btn {
+                width: 28px;
+                height: 28px;
+            }
+
+            .copy-success {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>UUID Generator</h1>
+        <div class="uuid-container">
+            <div>
+                <div class="label">Lowercase UUID</div>
+                <div class="uuid-box">
+                    <span class="uuid-text" id="lowercase-uuid"></span>
+                    <span class="copy-success">UUID copied!</span>
+                    <button class="copy-btn" data-uuid-id="lowercase-uuid" title="Copy to clipboard">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <div class="label">Uppercase UUID</div>
+                <div class="uuid-box">
+                    <span class="uuid-text" id="uppercase-uuid"></span>
+                    <span class="copy-success">UUID copied!</span>
+                    <button class="copy-btn" data-uuid-id="uppercase-uuid" title="Copy to clipboard">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <button class="generate-btn" onclick="generateUUID()">
+            <i class="fas fa-sync-alt"></i>
+            Generate New UUID
+        </button>
+    </div>
+
+    <script>
+        // Add event listeners for copy buttons
+        document.querySelectorAll('.copy-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const uuidId = this.dataset.uuidId;
+                copyToClipboard(uuidId, this);
+            });
+        });
+
+        function copyToClipboard(elementId, buttonElement) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const icon = buttonElement.querySelector('i');
+                const successMsg = buttonElement.parentElement.querySelector('.copy-success');
+                const originalClass = icon.className;
+                
+                // Show success message
+                successMsg.classList.add('show');
+                
+                // Change icon to checkmark
+                icon.className = 'fas fa-check';
+                buttonElement.classList.add('copied');
+                
+                setTimeout(() => {
+                    // Hide success message
+                    successMsg.classList.remove('show');
+                    // Restore original icon
+                    icon.className = originalClass;
+                    buttonElement.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
