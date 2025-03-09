@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Static Web Apps</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -13,7 +14,7 @@
         .header {
             background-color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,.1);
-            padding: 1.5rem 0;
+            padding: 1rem 0;
             margin-bottom: 2rem;
         }
         .app-list {
@@ -41,6 +42,16 @@
         .app-list a:hover {
             color: #0a58ca;
         }
+        .github-icon {
+            font-size: 2rem;
+            padding: 0.25rem 0.5rem;
+            color: #212529;
+            border: none;
+        }
+        .github-icon:hover {
+            color: #000;
+            background: none;
+        }
     </style>
 </head>
 <body>
@@ -52,8 +63,8 @@
                     <p class="text-muted mb-0">Collection of useful web utilities</p>
                 </div>
                 <div>
-                    <a href="https://github.com/sanjaysingh/staticsites" class="btn btn-outline-primary" target="_blank" rel="noopener">
-                        View on GitHub
+                    <a href="https://github.com/sanjaysingh/staticsites" class="btn github-icon" target="_blank" rel="noopener" title="View on GitHub">
+                        <i class="bi bi-github"></i>
                     </a>
                 </div>
             </div>
