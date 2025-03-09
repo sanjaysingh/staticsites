@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Run the generator script based on OS
+case "$(uname)" in
+    *NT*|MINGW*|MSYS*|CYGWIN*)
+        # Windows
+        powershell.exe -NoProfile -ExecutionPolicy Bypass -File "./generate_index.ps1"
+        ;;
+    *)
+        # Unix-like
+        chmod +x ./generate_index.sh
+        ./generate_index.sh
+        ;;
+esac
+
+# Add the generated index.html to the commit
+git add index.html 
