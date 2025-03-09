@@ -1,14 +1,43 @@
-title: Web Apps Index
+title: Static Web Apps
 baseurl: ""
 url: ""
+
+# Set the destination and cache directories
+destination: runtime/_site
+cache_dir: runtime/.jekyll-cache
+
+# Exclude files and directories from processing
 exclude:
+  - .git/
   - .github/
+  - node_modules/
   - README.md
+  - LICENSE
+  - CNAME
+  - Gemfile
+  - "*.ps1"
+  - "*.sh"
+  - "*.md"
+  - "**/*.md"
+  - "**/node_modules"
+  - "./node_modules"
+  - "**/.git/"
+  - "**/.github/"
+  - "**/package.json"
+  - "**/package-lock.json"
+  - "**/.gitignore"
+  - "**/README.md"
+  - "runtime"
 
 # Process all files recursively
 include:
-  - "**/*"
-  - "**/.*"
+  - "**/*.html"
+  - "**/*.css"
+  - "**/*.js"
+  - "**/*.jpg"
+  - "**/*.png"
+  - "**/*.gif"
+  - "**/*.svg"
 
 # Set default layout for all files
 defaults:

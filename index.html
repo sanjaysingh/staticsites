@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Web Apps Index
+title: Static Web Apps
 ---
 
 <div class="container-fluid">
@@ -8,29 +8,27 @@ title: Web Apps Index
         <div>
             <h3>{{ page.title }}</h3>
         </div>
-        <div>
-            <span>
-                <a href="https://github.com/sanjaysingh/staticsites/blob/master/index.html">Edit this page</a>
-            </span>
-        </div>
     </div>
     <hr />
     <div id="pages">
         <ol>
         {% for file in site.static_files %}
             {% if file.path contains 'index.html' and file.path != '/index.html' %}
-                {% assign folder = file.path | split: '/index.html' | first %}
-                {% capture page_content %}{% include_relative {{ file.path }} %}{% endcapture %}
-                {% assign title_start = page_content | split: '<title>' %}
-                {% if title_start.size > 1 %}
-                    {% assign title_end = title_start[1] | split: '</title>' %}
-                    {% assign title = title_end[0] %}
-                {% else %}
-                    {% assign title = folder | remove: '/' %}
+                {% assign path_parts = file.path | split: '/' %}
+                {% if path_parts.size == 3 and path_parts.last == 'index.html' %}
+                    {% assign folder = path_parts[1] %}
+                    {% capture page_content %}{% include_relative {{ file.path }} %}{% endcapture %}
+                    {% assign title_start = page_content | split: '<title>' %}
+                    {% if title_start.size > 1 %}
+                        {% assign title_end = title_start[1] | split: '</title>' %}
+                        {% assign title = title_end[0] %}
+                    {% else %}
+                        {% assign title = folder %}
+                    {% endif %}
+                    <li>
+                        <a href="/{{ folder }}">{{ title }}</a>
+                    </li>
                 {% endif %}
-                <li>
-                    <a href="{{ folder }}">{{ title }}</a>
-                </li>
             {% endif %}
         {% endfor %}
         </ol>

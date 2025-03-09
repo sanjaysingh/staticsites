@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  jekyll:
+    build: 
+      context: .
+    ports:
+      - "4000:4000"
+      - "35729:35729"  # For livereload
+    volumes:
+      - .:/app:cached
+      - jekyll_bundle:/usr/local/bundle
+      - runtime:/app/runtime
+    environment:
+      - JEKYLL_ENV=development
+      - FORCE_POLLING=true
+    command: >
+      bundle exec jekyll serve 
+      --host 0.0.0.0 
+      --livereload 
+      --destination runtime/_site 
+      --force_polling 
+      --incremental false 
+      --watch
+      --open-url
+      --port 4000
+      --livereload-port 35729
+
+volumes:
+  jekyll_bundle:
+  runtime: 
