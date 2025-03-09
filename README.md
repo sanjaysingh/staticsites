@@ -25,6 +25,25 @@ Collection of static web applications hosted at [static.sanjaysingh.net](https:/
 
 Your app will appear at `static.sanjaysingh.net/my-app`
 
+## Local Setup
+
+1. Clone and setup:
+   ```bash
+   git clone https://github.com/sanjaybv/staticsites.git
+   cd staticsites
+   ```
+
+2. Test locally:
+   - Open in VS Code
+   - Install "Live Server" extension
+   - Click "Go Live" in the bottom right
+   - Site will open in your default browser
+
+Alternatively, use Python's built-in server:
+```bash
+python -m http.server 8080
+```
+
 ## Structure
 
 ```

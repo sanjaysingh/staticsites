@@ -4,17 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Static Web Apps</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+        }
+        .app-list {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+            padding: 2rem;
+        }
+        .app-list ol {
+            list-style-position: inside;
+            padding-left: 0;
+        }
+        .app-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        .app-list li:last-child {
+            border-bottom: none;
+        }
+        .app-list a {
+            color: #0d6efd;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .app-list a:hover {
+            color: #0a58ca;
+        }
+    </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h3>Static Web Apps</h3>
+    <div class="header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Static Web Apps</h1>
+                    <p class="text-muted mb-0">Collection of useful web utilities</p>
+                </div>
+                <div>
+                    <a href="https://github.com/sanjaysingh/staticsites" class="btn btn-outline-primary" target="_blank" rel="noopener">
+                        View on GitHub
+                    </a>
+                </div>
             </div>
         </div>
-        <hr />
-        <div id="pages">
+    </div>
+
+    <div class="container">
+        <!-- WARNING: The following section is automatically generated. Do not edit manually.
+             Changes will be overwritten by the pre-commit hook. -->
+        <div id="pages" class="app-list">
             <ol>
                 <li><a href="/base64">Base64 Encoder and Decoder</a></li>
                 <li><a href="/cert">Cert Utils</a></li>
@@ -28,7 +77,7 @@
                 <li><a href="/scanner">Document Scanner</a></li>
                 <li><a href="/sheet">Offline Spreadsheet</a></li>
                 <li><a href="/splitexp">Split Expenses</a></li>
-                <li><a href="/tickingstopwatch">Ticking Stopwatch App</a></li>
+                <li><a href="/tickingstopwatch">Ticking Stopwatch</a></li>
                 <li><a href="/time">World Time Dashboard</a></li>
                 <li><a href="/timelock">Timed Locker</a></li>
                 <li><a href="/unitconverter">Unit Converter</a></li>
