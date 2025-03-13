@@ -189,7 +189,7 @@
                     <div class="input-container">
                         <div class="jwt-section">
                             <h3 class="section-header">Enter JWT Token</h3>
-                            <textarea id="jwtInput" class="form-control token-input" placeholder="Paste your JWT token here..."></textarea>
+                            <textarea id="jwtInput" class="form-control token-input">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjIsImFkbWluIjp0cnVlfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</textarea>
                             <div id="errorMessage" class="error-message"></div>
                         </div>
                     </div>
@@ -270,6 +270,9 @@
         document.getElementById('jwtInput').addEventListener('paste', () => {
             setTimeout(updateOutput, 0);
         });
+
+        // Initialize with the sample token
+        updateOutput();
     </script>
 </body>
 </html> 
