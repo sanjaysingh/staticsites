@@ -17,6 +17,20 @@ const encoders = {
         },
         decode: (text) => atob(text)
     },
+    url: {
+        encode: (text) => {
+            // Encode the text, preserving spaces as %20 instead of +
+            return encodeURIComponent(text).replace(/%20/g, ' ');
+        },
+        decode: (text) => {
+            try {
+                // Replace spaces with %20 before decoding to handle spaces correctly
+                return decodeURIComponent(text.replace(/ /g, '%20'));
+            } catch (error) {
+                throw new Error('Invalid URL encoded text');
+            }
+        }
+    },
     xml: {
         encode: (text) => {
             // XML entity encoding map with more special characters
@@ -282,6 +296,37 @@ const encodingType = document.getElementById('encodingType');
 const encodeRadio = document.getElementById('encodeRadio');
 const decodeRadio = document.getElementById('decodeRadio');
 const notification = document.getElementById('notification');
+
+// URL Parameter handling
+function updateURL() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('type', encodingType.value);
+    params.set('mode', encodeRadio.checked ? 'encode' : 'decode');
+    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+}
+
+function loadFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type');
+    const mode = params.get('mode');
+    
+    if (type && encoders[type]) {
+        encodingType.value = type;
+    }
+    
+    if (mode === 'decode') {
+        decodeRadio.checked = true;
+        encodeRadio.checked = false;
+    }
+}
+
+// Initialize from URL parameters
+loadFromURL();
+
+// Add event listeners for URL updates
+encodingType.addEventListener('change', updateURL);
+encodeRadio.addEventListener('change', updateURL);
+decodeRadio.addEventListener('change', updateURL);
 
 // Notification system
 function showNotification(message, type = 'error') {
