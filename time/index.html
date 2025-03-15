@@ -334,6 +334,7 @@
                 return {
                     allTimeZones: [
                         "UTC",
+                        "UNIX",
                         "America/New_York",
                         "America/Los_Angeles",
                         "America/Chicago",
@@ -363,15 +364,27 @@
             },
             methods: {
                 getTime(zone) {
+                    if (zone === "UNIX") {
+                        return Math.floor(Date.now() / 1000).toString();
+                    }
                     return moment().tz(zone).format('hh:mm:ss A');
                 },
                 getDate(zone) {
+                    if (zone === "UNIX") {
+                        return "Unix Timestamp";
+                    }
                     return moment().tz(zone).format('ddd, MMM D, YYYY');
                 },
                 formatLocation(zone) {
+                    if (zone === "UNIX") {
+                        return "UNIX";
+                    }
                     return zone.replace('_', ' ').split('/').pop();
                 },
                 getCountry(zone) {
+                    if (zone === "UNIX") {
+                        return "Unix Epoch";
+                    }
                     const countries = {
                         'UTC': 'Coordinated Universal Time',
                         'America/New_York': 'United States',
@@ -396,7 +409,12 @@
                 loadOrder() {
                     const saved = localStorage.getItem('timeZoneOrder');
                     if (saved) {
-                        this.allTimeZones = JSON.parse(saved);
+                        const parsedOrder = JSON.parse(saved);
+                        // Ensure UNIX is in the order
+                        if (!parsedOrder.includes('UNIX')) {
+                            parsedOrder.splice(1, 0, 'UNIX'); // Insert after UTC
+                        }
+                        this.allTimeZones = parsedOrder;
                     }
                 },
                 toggleTheme() {
@@ -439,6 +457,9 @@
                             this.zoneVisibility[zone] = true;
                         });
                     }
+                    // Force Unix tile to be visible and save
+                    this.zoneVisibility['UNIX'] = true;
+                    this.saveVisibility();
                 },
                 saveVisibility() {
                     localStorage.setItem('zoneVisibility', JSON.stringify(this.zoneVisibility));
@@ -451,9 +472,14 @@
                 }
             },
             mounted() {
+                // Load order first to ensure allTimeZones is set
                 this.loadOrder();
-                this.loadTheme();
+                
+                // Then initialize visibility
                 this.initZoneVisibility();
+                
+                // Finally load theme
+                this.loadTheme();
                 
                 this.timer = setInterval(() => {
                     this.$forceUpdate();
