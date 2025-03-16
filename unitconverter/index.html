@@ -65,35 +65,36 @@
                 <div class="flex gap-3 items-center">
                     <div class="flex-1">
                         <template v-if="currentTab === 'Timestamp'">
-                            <div class="grid grid-cols-3 gap-2 mb-4">
-                                <div class="flex flex-col">
+                            <div class="text-base text-gray-600 font-bold mb-2">{{ Intl.DateTimeFormat().resolvedOptions().timeZone }}</div>
+                            <div class="grid grid-cols-7 gap-1 mb-4">
+                                <div class="col-span-2 flex flex-col">
                                     <label class="text-xs text-gray-600 mb-1">Year</label>
                                     <input type="number" v-model="dateTime.year" placeholder="Year" min="1970" max="2100"
                                            class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
                                 </div>
                                 <div class="flex flex-col">
                                     <label class="text-xs text-gray-600 mb-1">Month</label>
-                                    <input type="number" v-model="dateTime.month" placeholder="Month" min="1" max="12"
+                                    <input type="number" v-model="formattedMonth" placeholder="Month" min="1" max="12"
                                            class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
                                 </div>
                                 <div class="flex flex-col">
                                     <label class="text-xs text-gray-600 mb-1">Day</label>
-                                    <input type="number" v-model="dateTime.day" placeholder="Day" min="1" max="31"
+                                    <input type="number" v-model="formattedDay" placeholder="Day" min="1" max="31"
                                            class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
                                 </div>
                                 <div class="flex flex-col">
                                     <label class="text-xs text-gray-600 mb-1">Hour</label>
-                                    <input type="number" v-model="dateTime.hour" placeholder="Hour" min="0" max="23"
+                                    <input type="number" v-model="formattedHour" placeholder="Hour" min="0" max="23"
                                            class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
                                 </div>
                                 <div class="flex flex-col">
                                     <label class="text-xs text-gray-600 mb-1">Min</label>
-                                    <input type="number" v-model="dateTime.minute" placeholder="Min" min="0" max="59"
+                                    <input type="number" v-model="formattedMinute" placeholder="Min" min="0" max="59"
                                            class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
                                 </div>
                                 <div class="flex flex-col">
                                     <label class="text-xs text-gray-600 mb-1">Sec</label>
-                                    <input type="number" v-model="dateTime.second" placeholder="Sec" min="0" max="59"
+                                    <input type="number" v-model="formattedSecond" placeholder="Sec" min="0" max="59"
                                            class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
                                 </div>
                             </div>
@@ -107,12 +108,9 @@
                                       transition-colors duration-200
                                       bg-white/70 backdrop-blur-sm">
                     </div>
-                    <div class="w-28 flex items-center">
+                    <div v-if="currentTab !== 'Timestamp'" class="w-28 flex items-center">
                         <template v-if="currentTab === 'Temperature'">
                             <span class="text-lg text-gray-700 font-medium">°F</span>
-                        </template>
-                        <template v-else-if="currentTab === 'Timestamp'">
-                            <span class="text-xs text-gray-600">{{ Intl.DateTimeFormat().resolvedOptions().timeZone }}</span>
                         </template>
                         <select v-else
                                 v-model="fromUnit" 
@@ -129,6 +127,9 @@
                 <!-- Second Unit Row -->
                 <div class="flex gap-3 items-center">
                     <div class="flex-1">
+                        <template v-if="currentTab === 'Timestamp'">
+                            <div class="text-base text-gray-600 font-bold mb-2">Unix</div>
+                        </template>
                         <input type="number" 
                                v-model="value2"
                                @input="convertFromSecond"
@@ -138,12 +139,9 @@
                                       transition-colors duration-200
                                       bg-white/70 backdrop-blur-sm">
                     </div>
-                    <div class="w-28 flex items-center">
+                    <div v-if="currentTab !== 'Timestamp'" class="w-28 flex items-center">
                         <template v-if="currentTab === 'Temperature'">
                             <span class="text-lg text-gray-700 font-medium">°C</span>
-                        </template>
-                        <template v-else-if="currentTab === 'Timestamp'">
-                            <span class="text-xs text-gray-600">Unix</span>
                         </template>
                         <select v-else
                                 v-model="toUnit"
@@ -191,6 +189,13 @@
                         hour: new Date().getHours(),
                         minute: new Date().getMinutes(),
                         second: new Date().getSeconds()
+                    },
+                    formattedDateTime: {
+                        month: '',
+                        day: '',
+                        hour: '',
+                        minute: '',
+                        second: ''
                     },
                     fromUnit: '',
                     toUnit: '',
@@ -288,6 +293,46 @@
                 },
                 currentUnits() {
                     return this.units[this.currentTab]
+                },
+                formattedMonth: {
+                    get() {
+                        return String(this.dateTime.month).padStart(2, '0');
+                    },
+                    set(value) {
+                        this.dateTime.month = parseInt(value) || 1;
+                    }
+                },
+                formattedDay: {
+                    get() {
+                        return String(this.dateTime.day).padStart(2, '0');
+                    },
+                    set(value) {
+                        this.dateTime.day = parseInt(value) || 1;
+                    }
+                },
+                formattedHour: {
+                    get() {
+                        return String(this.dateTime.hour).padStart(2, '0');
+                    },
+                    set(value) {
+                        this.dateTime.hour = parseInt(value) || 0;
+                    }
+                },
+                formattedMinute: {
+                    get() {
+                        return String(this.dateTime.minute).padStart(2, '0');
+                    },
+                    set(value) {
+                        this.dateTime.minute = parseInt(value) || 0;
+                    }
+                },
+                formattedSecond: {
+                    get() {
+                        return String(this.dateTime.second).padStart(2, '0');
+                    },
+                    set(value) {
+                        this.dateTime.second = parseInt(value) || 0;
+                    }
                 },
                 result() {
                     if (!this.value1 || !this.fromUnit || !this.toUnit) return '0'
