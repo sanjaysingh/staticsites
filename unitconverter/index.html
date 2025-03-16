@@ -13,6 +13,21 @@
     <div id="app" class="container mx-auto px-4 py-8 max-w-2xl">
         <h1 class="text-4xl font-bold text-center mb-8 text-indigo-900">Unit Converter</h1>
         
+        <!-- Desktop Tabs -->
+        <div class="hidden md:block mb-6">
+            <div class="flex space-x-1 rounded-xl bg-white/50 backdrop-blur-sm p-1.5 shadow-sm">
+                <button v-for="tab in tabs" 
+                        :key="tab"
+                        @click="currentTab = tab"
+                        :class="['flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200', 
+                                currentTab === tab 
+                                    ? 'bg-indigo-500 text-white shadow-sm' 
+                                    : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50']">
+                    {{ tab }}
+                </button>
+            </div>
+        </div>
+
         <!-- Mobile Dropdown -->
         <div class="md:hidden mb-6">
             <div class="relative">
@@ -150,21 +165,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Desktop Tabs -->
-    <div class="hidden md:block mb-6">
-        <div class="flex space-x-1 rounded-xl bg-white/50 backdrop-blur-sm p-1.5 shadow-sm">
-            <button v-for="tab in tabs" 
-                    :key="tab"
-                    @click="currentTab = tab"
-                    :class="['flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200', 
-                            currentTab === tab 
-                                ? 'bg-indigo-500 text-white shadow-sm' 
-                                : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50']">
-                {{ tab }}
-            </button>
         </div>
     </div>
 
