@@ -32,7 +32,43 @@
                 <!-- First Unit Row -->
                 <div class="flex gap-3 items-center">
                     <div class="flex-1">
-                        <input type="number" v-model="value1" 
+                        <template v-if="currentTab === 'Timestamp'">
+                            <div class="grid grid-cols-3 gap-2 mb-4">
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Year</label>
+                                    <input type="number" v-model="dateTime.year" placeholder="Year" min="1970" max="2100"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Month</label>
+                                    <input type="number" v-model="dateTime.month" placeholder="Month" min="1" max="12"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Day</label>
+                                    <input type="number" v-model="dateTime.day" placeholder="Day" min="1" max="31"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Hour</label>
+                                    <input type="number" v-model="dateTime.hour" placeholder="Hour" min="0" max="23"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Min</label>
+                                    <input type="number" v-model="dateTime.minute" placeholder="Min" min="0" max="59"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Sec</label>
+                                    <input type="number" v-model="dateTime.second" placeholder="Sec" min="0" max="59"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                            </div>
+                        </template>
+                        <input v-else
+                               type="number" 
+                               v-model="value1" 
                                @input="convertFromFirst"
                                class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 
                                       focus:border-indigo-500 focus:ring focus:ring-indigo-200 
@@ -42,6 +78,9 @@
                     <div class="w-28 flex items-center">
                         <template v-if="currentTab === 'Temperature'">
                             <span class="text-lg text-gray-700 font-medium">°F</span>
+                        </template>
+                        <template v-else-if="currentTab === 'Timestamp'">
+                            <span class="text-sm text-gray-700 font-medium">{{ Intl.DateTimeFormat().resolvedOptions().timeZone }}</span>
                         </template>
                         <select v-else
                                 v-model="fromUnit" 
@@ -58,8 +97,10 @@
                 <!-- Second Unit Row -->
                 <div class="flex gap-3 items-center">
                     <div class="flex-1">
-                        <input type="number" v-model="value2"
+                        <input type="number" 
+                               v-model="value2"
                                @input="convertFromSecond"
+                               :readonly="currentTab !== 'Timestamp'"
                                class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 
                                       focus:border-indigo-500 focus:ring focus:ring-indigo-200 
                                       transition-colors duration-200
@@ -68,6 +109,9 @@
                     <div class="w-28 flex items-center">
                         <template v-if="currentTab === 'Temperature'">
                             <span class="text-lg text-gray-700 font-medium">°C</span>
+                        </template>
+                        <template v-else-if="currentTab === 'Timestamp'">
+                            <span class="text-sm text-gray-700 font-medium">Unix</span>
                         </template>
                         <select v-else
                                 v-model="toUnit"
@@ -83,7 +127,7 @@
 
                 <!-- Conversion Details -->
                 <div class="h-8">
-                    <div v-if="value1 && (currentTab !== 'Temperature' ? (fromUnit && toUnit) : true)"
+                    <div v-if="currentTab === 'Timestamp' || (value1 && (currentTab !== 'Temperature' ? (fromUnit && toUnit) : true))"
                          class="text-center text-gray-600">
                         {{ conversionDetails }}
                     </div>
@@ -98,13 +142,22 @@
         createApp({
             data() {
                 return {
-                    tabs: ['Length', 'Weight', 'Temperature', 'Area'],
+                    tabs: ['Length', 'Weight', 'Temperature', 'Area', 'Timestamp'],
                     currentTab: 'Length',
                     values: {
                         Length: { value1: 0, value2: 0 },
                         Weight: { value1: 0, value2: 0 },
                         Temperature: { value1: 0, value2: 0 },
-                        Area: { value1: 0, value2: 0 }
+                        Area: { value1: 0, value2: 0 },
+                        Timestamp: { value1: 0, value2: 0 }
+                    },
+                    dateTime: {
+                        year: new Date().getFullYear(),
+                        month: new Date().getMonth() + 1,
+                        day: new Date().getDate(),
+                        hour: new Date().getHours(),
+                        minute: new Date().getMinutes(),
+                        second: new Date().getSeconds()
                     },
                     fromUnit: '',
                     toUnit: '',
@@ -112,7 +165,8 @@
                         Length: ['in', 'cm', 'ft', 'km', 'm', 'mi', 'yd'],
                         Weight: ['lb', 'kg', 'oz', 'g'],
                         Temperature: ['F', 'C'],
-                        Area: ['m²', 'km²', 'ft²', 'yd²', 'acre', 'ha', 'mi²']
+                        Area: ['m²', 'km²', 'ft²', 'yd²', 'acre', 'ha', 'mi²'],
+                        Timestamp: ['Unix', 'Local']
                     },
                     conversions: {
                         Length: {
@@ -174,6 +228,10 @@
                             'acre': 'Acres',
                             'ha': 'Hectares',
                             'mi²': 'Square Miles'
+                        },
+                        Timestamp: {
+                            Unix: 'Unix Timestamp',
+                            Local: 'Local Date/Time'
                         }
                     }
                 }
@@ -212,10 +270,17 @@
                     return `${this.value1} ${this.fromUnit} = ${result.toFixed(4)} ${this.toUnit}`
                 },
                 conversionDetails() {
-                    if (!this.value1) return '';
+                    if (!this.value1 && this.currentTab !== 'Timestamp') return '';
                     
                     if (this.currentTab === 'Temperature') {
                         return `${this.value1} ${this.unitNames.Temperature.F} = ${this.value2} ${this.unitNames.Temperature.C}`;
+                    }
+                    
+                    if (this.currentTab === 'Timestamp') {
+                        const { year, month, day, hour, minute, second } = this.dateTime;
+                        const date = new Date(year, month - 1, day, hour, minute, second);
+                        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')} ${timezone} = ${this.value2} seconds since epoch`;
                     }
                     
                     const result = this.convert(this.value1, this.fromUnit, this.toUnit);
@@ -227,11 +292,17 @@
                     return Number(value.toFixed(3));
                 },
                 convert(value, fromUnit, toUnit) {
-                    if (!value) return 0;
+                    if (!value && this.currentTab !== 'Timestamp') return 0;
                     
                     if (this.currentTab === 'Temperature') {
                         const temp = this.conversions.Temperature.F;
                         return this.formatNumber(fromUnit === 'F' ? temp.toC(Number(value)) : temp.fromC(Number(value)));
+                    }
+                    
+                    if (this.currentTab === 'Timestamp') {
+                        const { year, month, day, hour, minute, second } = this.dateTime;
+                        const date = new Date(year, month - 1, day, hour, minute, second);
+                        return Math.floor(date.getTime() / 1000);
                     }
                     
                     const conversionRates = this.conversions[this.currentTab];
@@ -241,6 +312,8 @@
                 convertFromFirst() {
                     if (this.currentTab === 'Temperature') {
                         this.value2 = this.convert(this.value1, 'F', 'C');
+                    } else if (this.currentTab === 'Timestamp') {
+                        this.value2 = this.convert(1, null, null); // Pass a dummy value to trigger conversion
                     } else {
                         this.value2 = this.convert(this.value1, this.fromUnit, this.toUnit);
                     }
@@ -249,6 +322,18 @@
                 convertFromSecond() {
                     if (this.currentTab === 'Temperature') {
                         this.value1 = this.convert(this.value2, 'C', 'F');
+                    } else if (this.currentTab === 'Timestamp') {
+                        if (this.value2) {
+                            const date = new Date(Number(this.value2) * 1000);
+                            this.dateTime = {
+                                year: date.getFullYear(),
+                                month: date.getMonth() + 1,
+                                day: date.getDate(),
+                                hour: date.getHours(),
+                                minute: date.getMinutes(),
+                                second: date.getSeconds()
+                            };
+                        }
                     } else {
                         this.value1 = this.convert(this.value2, this.toUnit, this.fromUnit);
                     }
@@ -314,8 +399,26 @@
                 this.fromUnit = this.currentUnits[0]
                 this.toUnit = this.currentUnits[1]
                 
+                // Initialize Timestamp tab with current time if it's the current tab
+                if (this.currentTab === 'Timestamp') {
+                    const now = new Date();
+                    this.dateTime = {
+                        year: now.getFullYear(),
+                        month: now.getMonth() + 1,
+                        day: now.getDate(),
+                        hour: now.getHours(),
+                        minute: now.getMinutes(),
+                        second: now.getSeconds()
+                    };
+                    // Force initial conversion for timestamp
+                    this.convertFromFirst();
+                }
+                
                 // Load from URL and perform conversion
                 this.loadFromURL()
+                
+                // Perform initial conversion for current tab
+                this.convertFromFirst()
                 
                 this.$watch(
                     () => ({
@@ -334,15 +437,35 @@
                     this.fromUnit = this.units[newTab][0]
                     this.toUnit = this.units[newTab][1]
                     
-                    // Only reset values if there's no URL parameters and no existing values
-                    const params = new URLSearchParams(window.location.search);
-                    if (!params.get('value') && this.values[newTab].value1 === 0) {
-                        this.values[newTab].value1 = 0
-                        this.values[newTab].value2 = 0
+                    // Initialize Timestamp tab with current time
+                    if (newTab === 'Timestamp') {
+                        const now = new Date();
+                        this.dateTime = {
+                            year: now.getFullYear(),
+                            month: now.getMonth() + 1,
+                            day: now.getDate(),
+                            hour: now.getHours(),
+                            minute: now.getMinutes(),
+                            second: now.getSeconds()
+                        };
                     } else {
-                        this.convertFromFirst()
+                        // Reset values for other tabs if no URL parameters
+                        const params = new URLSearchParams(window.location.search);
+                        if (!params.get('value') && this.values[newTab].value1 === 0) {
+                            this.values[newTab].value1 = 0
+                            this.values[newTab].value2 = 0
+                        }
                     }
-                }
+                    
+                    // Always perform conversion when switching tabs
+                    this.convertFromFirst()
+                },
+                'dateTime.year'() { if (this.currentTab === 'Timestamp') this.convertFromFirst() },
+                'dateTime.month'() { if (this.currentTab === 'Timestamp') this.convertFromFirst() },
+                'dateTime.day'() { if (this.currentTab === 'Timestamp') this.convertFromFirst() },
+                'dateTime.hour'() { if (this.currentTab === 'Timestamp') this.convertFromFirst() },
+                'dateTime.minute'() { if (this.currentTab === 'Timestamp') this.convertFromFirst() },
+                'dateTime.second'() { if (this.currentTab === 'Timestamp') this.convertFromFirst() }
             }
         }).mount('#app')
     </script>
