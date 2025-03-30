@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Wallet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+           /* background-color: #f8f9fa; */ /* Use Bootstrap theme background */
+        }
+        .container {
+            max-width: 720px;
+        }
+        /* Removed initial-view styles */
+        #main-wallet-view {
+            margin-top: 1rem; /* Reduced top margin */
+        }
+        .card {
+            margin-bottom: 1.5rem;
+        }
+        .private-key-display {
+            word-break: break-all;
+            font-family: monospace;
+            background-color: var(--bs-secondary-bg);
+            padding: 0.75rem;
+            border-radius: var(--bs-border-radius);
+            border: 1px solid var(--bs-border-color);
+        }
+        .address-display {
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+        .balance-display {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        #alert-placeholder {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050;
+            min-width: 300px;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(var(--bs-body-bg-rgb), 0.7);
+            z-index: 1060;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #qrcode {
+            display: flex; /* Use flex to center canvas */
+            justify-content: center;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: white; /* QR code needs white background */
+            border-radius: var(--bs-border-radius);
+            max-width: 280px; /* Limit size */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #qrcode canvas {
+             max-width: 100%;
+             height: auto;
+        }
+        /* Input group styling for copying */
+        .input-group .btn {
+             z-index: 3; /* Ensure button is clickable */
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3"><i class="bi bi-bitcoin me-2"></i>Bitcoin Wallet (Testing Only)</h1>
+            <span class="theme-toggle" id="theme-toggle-btn">
+                <i class="bi bi-sun-fill"></i> <!-- Default to light icon -->
+            </span>
+        </header>
+
+        <!-- Alert Placeholder -->
+        <div id="alert-placeholder"></div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay d-none" id="loading-overlay">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Main Wallet View (Tabs) - Always Visible Now -->
+        <div id="main-wallet-view">
+
+            <!-- Nav tabs -->
+            <ul class="nav nav-pills nav-fill mb-3" id="walletTab" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-tab-pane" type="button" role="tab" aria-controls="info-tab-pane" aria-selected="true"><i class="bi bi-wallet2 me-1"></i> Wallet</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="send-tab" data-bs-toggle="tab" data-bs-target="#send-tab-pane" type="button" role="tab" aria-controls="send-tab-pane" aria-selected="false"><i class="bi bi-send me-1"></i> Send</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="receive-tab" data-bs-toggle="tab" data-bs-target="#receive-tab-pane" type="button" role="tab" aria-controls="receive-tab-pane" aria-selected="false"><i class="bi bi-qr-code me-1"></i> Receive</button>
+              </li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content" id="walletTabContent">
+              <!-- Wallet Info Pane -->
+              <div class="tab-pane fade show active" id="info-tab-pane" role="tabpanel" aria-labelledby="info-tab" tabindex="0">
+
+                  <!-- Moved: Network & RPC Card -->
+                   <div class="card shadow-sm mb-4">
+                       <div class="card-body">
+                            <h5 class="card-title mb-3"><i class="bi bi-gear-wide-connected me-1"></i> Network & RPC</h5>
+                            <!-- RPC Endpoint Selection -->
+                            <div class="mb-3">
+                                <label for="rpc-endpoint-select" class="form-label">RPC Endpoint</label>
+                                <select class="form-select mb-2" id="rpc-endpoint-select">
+                                    <option value="DEFAULT_TESTNET">Default Testnet (Blockstream)</option>
+                                    <option value="DEFAULT_MAINNET">Default Mainnet (Blockstream)</option>
+                                    <option value="CUSTOM">Other...</option>
+                                </select>
+                                <input type="text" class="form-control d-none" id="rpc-endpoint-custom" placeholder="Enter custom Esplora API URL">
+                            </div>
+                            <button class="btn btn-secondary" id="update-rpc-btn"><i class="bi bi-check-circle me-1"></i> Update</button>
+                            <small id="detected-network-info" class="form-text text-muted d-block mt-2">Network: (Will detect upon update)</small>
+                       </div>
+                   </div>
+
+                  <!-- Original: Manage Wallet Session Card -->
+                  <div class="card shadow-sm mb-4">
+                       <div class="card-body">
+                           <h5 class="card-title mb-3"><i class="bi bi-key-fill me-1"></i> Manage Wallet Session</h5>
+
+                           <!-- Create/Import/Clear Section -->
+                            <div id="wallet-management-section">
+                                <div class="mb-3">
+                                    <button class="btn btn-primary" id="create-wallet-btn"><i class="bi bi-plus-circle me-1"></i> Create New Wallet</button>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="private-key-input" class="form-label">Import Private Key (WIF format)</label>
+                                     <div class="input-group">
+                                         <input type="password" class="form-control" id="private-key-input" placeholder="Enter WIF private key to import">
+                                         <button class="btn btn-outline-secondary" type="button" id="toggle-pk-visibility-import-btn" title="Show/Hide Key"><i class="bi bi-eye-fill"></i></button>
+                                         <button class="btn btn-secondary" type="button" id="import-wallet-btn"><i class="bi bi-box-arrow-in-right me-1"></i> Import</button>
+                                     </div>
+                                </div>
+                            </div>
+
+                           <!-- Loaded Wallet Info Section (shown when keyPair exists) -->
+                            <div id="loaded-wallet-details" class="d-none mt-4 border-top pt-3">
+                                <div class="mb-3">
+                                     <label class="form-label">Current Session Private Key (WIF):</label>
+                                     <div class="input-group">
+                                         <span id="current-private-key" class="form-control private-key-display" type="password"></span> <!-- Use span, manage visibility via class/JS -->
+                                         <button class="btn btn-outline-secondary" type="button" id="toggle-current-pk-visibility-btn" title="Show/Hide Key"><i class="bi bi-eye-fill"></i></button>
+                                         <button class="btn btn-outline-secondary" type="button" id="copy-pk-btn" title="Copy Private Key"><i class="bi bi-clipboard"></i></button>
+                                     </div>
+                                     <small class="text-danger">Never share your private key!</small>
+                                </div>
+                                <button class="btn btn-danger btn-sm" id="clear-session-btn"><i class="bi bi-x-octagon me-1"></i> Clear Wallet Session</button>
+                           </div>
+                       </div>
+                  </div>
+
+                  <!-- Original: Wallet Details Card -->
+                  <div class="card shadow-sm mb-4">
+                       <div class="card-body">
+                           <h5 class="card-title mb-3"><i class="bi bi-info-circle me-1"></i> Wallet Details</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Address:</label>
+                                <div class="input-group">
+                                     <span id="wallet-address" class="form-control address-display bg-light">Not loaded</span>
+                                     <button class="btn btn-outline-secondary" type="button" id="copy-address-btn" title="Copy Address" disabled><i class="bi bi-clipboard"></i></button>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Balance:</label>
+                                <div class="d-flex align-items-center">
+                                    <span id="wallet-balance" class="balance-display me-2">N/A</span>
+                                    <span class="text-muted me-3" id="balance-unit">BTC</span>
+                                    <button class="btn btn-sm btn-outline-primary" id="refresh-balance-btn" title="Refresh Balance" disabled><i class="bi bi-arrow-clockwise"></i></button>
+                                </div>
+                                <small class="text-muted">(Balance is an estimate based on spendable UTXOs)</small>
+                           </div>
+                       </div>
+                  </div>
+
+              </div>
+
+              <!-- Send Pane -->
+              <div class="tab-pane fade" id="send-tab-pane" role="tabpanel" aria-labelledby="send-tab" tabindex="0">
+                  <div class="card shadow-sm">
+                    <div class="card-body">
+                         <h5 class="card-title mb-3"><i class="bi bi-send-fill me-1"></i> Send Bitcoin</h5>
+
+                         <!-- Add Sender Address Display -->
+                         <div class="mb-3">
+                             <label class="form-label">From Address:</label>
+                             <div class="input-group">
+                                 <span id="sender-address-display" class="form-control bg-light address-display">No wallet loaded</span>
+                                 <button class="btn btn-outline-secondary" type="button" id="copy-sender-address-btn" title="Copy Sender Address" disabled><i class="bi bi-clipboard"></i></button>
+                             </div>
+                         </div>
+
+                         <form id="send-form">
+                            <div class="mb-3">
+                                <label for="recipient-address" class="form-label">Recipient Address</label>
+                                <input type="text" class="form-control" id="recipient-address" required placeholder="Enter recipient address">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                     <label for="send-amount" class="form-label">Amount (BTC)</label>
+                                     <input type="number" step="0.00000001" min="0" class="form-control" id="send-amount" required placeholder="0.00000000">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="fee-rate" class="form-label">Fee Rate (sat/vB)</label>
+                                    <input type="number" class="form-control" id="fee-rate" value="10" min="1" required placeholder="Sats per vByte">
+                                    <small class="form-text text-muted">Higher fees = faster confirmation.</small>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success"><i class="bi bi-send-check me-1"></i> Send Transaction</button>
+                        </form>
+                         <div id="tx-info" class="mt-4 border-top pt-3 d-none">
+                            <h6><i class="bi bi-receipt me-1"></i> Transaction Status:</h6>
+                            <p><strong>Status:</strong> <span id="tx-status"></span></p>
+                            <p><strong>Transaction ID:</strong> <span id="tx-id" class="text-break"></span></p>
+                             <p><a id="tx-link" href="#" target="_blank" rel="noopener noreferrer">View on Block Explorer <i class="bi bi-box-arrow-up-right small"></i></a></p>
+                        </div>
+                    </div>
+                </div>
+              </div>
+
+              <!-- Receive Pane -->
+              <div class="tab-pane fade" id="receive-tab-pane" role="tabpanel" aria-labelledby="receive-tab" tabindex="0">
+                 <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title mb-3"><i class="bi bi-arrow-down-circle me-1"></i> Receive Bitcoin</h5>
+                        <p>Share this address or QR code to receive funds:</p>
+                        <div class="input-group mb-3 w-auto mx-auto" style="max-width: 500px;">
+                            <span id="receive-address" class="form-control form-control-lg address-display bg-light">Not loaded</span>
+                             <button class="btn btn-outline-secondary" type="button" id="copy-receive-address-btn" title="Copy Address" disabled><i class="bi bi-clipboard"></i></button>
+                        </div>
+                        <div id="qrcode"></div> <!-- QR Code will be generated here -->
+                    </div>
+                 </div>
+              </div>
+            </div>
+        </div>
+
+    </div> <!-- /container -->
+
+    <!-- JS Includes -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Load the locally bundled bitcoinjs-lib -->
+    <script src="./bitcoinjs-lib-bundle.js"></script>
+    <!-- Add QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+
+    <script>
+        // --- Configuration ---
+        const DEFAULT_MAINNET_RPC_ENDPOINT = 'https://blockstream.info/api/';
+        const DEFAULT_TESTNET_RPC_ENDPOINT = 'https://blockstream.info/testnet/api/';
+        let NETWORK = bitcoin.networks.testnet; // Default, will be updated
+        const MIN_CONFIRMATIONS = 1; // Minimum confirmations for UTXOs to be considered spendable
+
+        // --- DOM Elements ---
+        const createWalletBtn = document.getElementById('create-wallet-btn');
+        const privateKeyInput = document.getElementById('private-key-input');
+        const copyPkBtn = document.getElementById('copy-pk-btn');
+        // New UI Elements
+        const mainWalletView = document.getElementById('main-wallet-view');
+        const copyAddressBtn = document.getElementById('copy-address-btn');
+        const copyReceiveAddressBtn = document.getElementById('copy-receive-address-btn');
+        const receiveAddressSpan = document.getElementById('receive-address');
+        const qrCodeDiv = document.getElementById('qrcode');
+        const togglePkVisibilityImportBtn = document.getElementById('toggle-pk-visibility-import-btn');
+        const themeToggleButton = document.getElementById('theme-toggle-btn');
+        // Wallet Tab Elements
+        const importWalletBtn = document.getElementById('import-wallet-btn');
+        const walletManagementSection = document.getElementById('wallet-management-section');
+        const loadedWalletDetailsSection = document.getElementById('loaded-wallet-details');
+        const currentPrivateKeySpan = document.getElementById('current-private-key');
+        const toggleCurrentPkVisibilityBtn = document.getElementById('toggle-current-pk-visibility-btn');
+        const clearSessionBtn = document.getElementById('clear-session-btn');
+        const balanceUnitSpan = document.getElementById('balance-unit');
+
+        const walletAddressSpan = document.getElementById('wallet-address');
+        const walletBalanceSpan = document.getElementById('wallet-balance');
+        const refreshBalanceBtn = document.getElementById('refresh-balance-btn');
+
+        const sendBtcSection = document.getElementById('send-btc');
+        const sendForm = document.getElementById('send-form');
+        const recipientAddressInput = document.getElementById('recipient-address');
+        const sendAmountInput = document.getElementById('send-amount');
+        const feeRateInput = document.getElementById('fee-rate');
+        const txInfoDiv = document.getElementById('tx-info');
+        const txStatusSpan = document.getElementById('tx-status');
+        const txIdSpan = document.getElementById('tx-id');
+        const txLink = document.getElementById('tx-link');
+
+        // Send Tab Elements
+        const senderAddressDisplaySpan = document.getElementById('sender-address-display');
+        const copySenderAddressBtn = document.getElementById('copy-sender-address-btn');
+
+        const settingsSection = document.getElementById('settings');
+        const rpcEndpointSelect = document.getElementById('rpc-endpoint-select');
+        const rpcEndpointCustomInput = document.getElementById('rpc-endpoint-custom');
+        const updateRpcBtn = document.getElementById('update-rpc-btn');
+        const detectedNetworkInfo = document.getElementById('detected-network-info');
+
+        const alertPlaceholder = document.getElementById('alert-placeholder');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        // --- State ---
+        let keyPair = null; // Holds the bitcoinjs-lib keyPair object
+        let currentRpcEndpoint = ''; // Will be set in initializeApp
+        let qrCodeInstance = null; // To hold the QRCode instance
+        let isTestnet = true; // Default to testnet
+        let currentWif = ''; // Added to store WIF
+        let isPkVisible = false; // Added to manage key visibility
+
+        // --- Helper Functions ---
+
+        function showLoading(show = true) {
+            loadingOverlay.classList.toggle('d-none', !show);
+        }
+
+        function showAlert(message, type = 'info', duration = 5000) {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = [
+                `<div class="alert alert-${type} alert-dismissible fade show" role="alert">`,
+                `   <div>${message}</div>`,
+                '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+                '</div>'
+            ].join('');
+
+            alertPlaceholder.append(wrapper);
+
+            // Auto-dismiss
+             if (duration > 0) {
+                setTimeout(() => {
+                   // Check if the alert element still exists in the DOM
+                   // wrapper.firstChild is the actual alert div
+                   if (wrapper.firstChild && wrapper.firstChild.parentNode) {
+                       const alertInstance = bootstrap.Alert.getOrCreateInstance(wrapper.firstChild);
+                       if (alertInstance) {
+                           alertInstance.close();
+                       }
+                   }
+                   // Optional: clean up the wrapper if needed, though Bootstrap might handle this.
+                   // if (wrapper.parentNode && wrapper.childElementCount === 0) { 
+                   //    wrapper.remove(); 
+                   // }
+                }, duration);
+            }
+        }
+
+        function satoshisToBtc(satoshis) {
+            return satoshis / 100_000_000;
+        }
+
+        function btcToSatoshis(btc) {
+            // Use Math.round to avoid floating point issues with large numbers
+            return Math.round(btc * 100_000_000);
+        }
+
+         // Basic validation (more robust needed for production)
+        function isValidWif(wif) {
+             try {
+                // Use the CURRENTLY selected network for validation
+                bitcoin.ECPair.fromWIF(wif, NETWORK);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+         function getAddress(node) {
+            // Using P2WPKH (SegWit) as default
+            return bitcoin.payments.p2wpkh({ pubkey: node.publicKey, network: NETWORK }).address;
+        }
+
+        // Helper to mask WIF keys
+        function maskWif(wif) {
+            if (!wif || wif.length < 10) return '***'; // Handle short/empty WIFs
+            return `${wif.substring(0, 6)}...${wif.substring(wif.length - 6)}`;
+        }
+
+        // Helper to update PK visibility display and button icon
+        function updatePkVisibilityDisplay() {
+            if (!currentPrivateKeySpan || !toggleCurrentPkVisibilityBtn) return;
+
+            currentPrivateKeySpan.textContent = isPkVisible ? currentWif : maskWif(currentWif);
+            const icon = toggleCurrentPkVisibilityBtn.querySelector('i');
+            if (isPkVisible) {
+                icon.classList.remove('bi-eye-fill');
+                icon.classList.add('bi-eye-slash-fill');
+            } else {
+                icon.classList.remove('bi-eye-slash-fill');
+                icon.classList.add('bi-eye-fill');
+            }
+        }
+
+        // --- UI Update Functions ---
+        function updateUI() {
+            const networkName = isTestnet ? 'Testnet' : 'Mainnet';
+            if (keyPair) {
+                // Wallet Loaded State
+                walletManagementSection.classList.add('d-none');
+                loadedWalletDetailsSection.classList.remove('d-none');
+
+                // Display masked/unmasked WIF using helper
+                updatePkVisibilityDisplay();
+
+                const address = getAddress(keyPair);
+                walletAddressSpan.textContent = address;
+                receiveAddressSpan.textContent = address;
+                senderAddressDisplaySpan.textContent = address; // Update sender display
+
+                // Enable buttons
+                copyAddressBtn.disabled = false;
+                copyReceiveAddressBtn.disabled = false;
+                copySenderAddressBtn.disabled = false; // Enable sender copy button
+                refreshBalanceBtn.disabled = false;
+
+                // Update balance unit text (although constant here)
+                balanceUnitSpan.textContent = 'BTC';
+
+                // Generate QR Code
+                qrCodeDiv.innerHTML = ''; // Clear previous QR code
+                if (typeof QRCode !== 'undefined') {
+                     try {
+                         qrCodeInstance = new QRCode(qrCodeDiv, {
+                             text: 'bitcoin:' + address, // Prepend bitcoin: URI scheme
+                             width: 256,
+                             height: 256,
+                             colorDark : "#000000",
+                             colorLight : "#ffffff",
+                             correctLevel : QRCode.CorrectLevel.H
+                         });
+                     } catch (e) {
+                         console.error("Error generating QR code:", e);
+                         qrCodeDiv.textContent = 'Error generating QR code.';
+                     }
+                } else {
+                     qrCodeDiv.textContent = 'QR Code library not loaded.';
+                }
+
+                fetchBalance(address); // Fetch balance when UI updates with a keypair
+            } else {
+                // No Wallet Loaded State
+                walletManagementSection.classList.remove('d-none');
+                loadedWalletDetailsSection.classList.add('d-none');
+
+                walletAddressSpan.textContent = 'Not loaded';
+                receiveAddressSpan.textContent = 'Not loaded';
+                senderAddressDisplaySpan.textContent = 'No wallet loaded'; // Reset sender display
+                walletBalanceSpan.textContent = 'N/A';
+                txInfoDiv.classList.add('d-none');
+                qrCodeDiv.innerHTML = ''; // Clear QR code if no wallet
+                currentWif = ''; // Clear stored WIF
+                currentPrivateKeySpan.textContent = ''; // Clear display
+                privateKeyInput.value = ''; // Clear import input
+
+                // Disable buttons
+                copyAddressBtn.disabled = true;
+                copyReceiveAddressBtn.disabled = true;
+                copySenderAddressBtn.disabled = true; // Disable sender copy button
+                refreshBalanceBtn.disabled = true;
+
+                // Reset balance unit
+                balanceUnitSpan.textContent = 'BTC';
+            }
+
+            // Ensure RPC input shows current endpoint
+            if (rpcEndpointSelect) {
+                if (currentRpcEndpoint === DEFAULT_TESTNET_RPC_ENDPOINT) {
+                    rpcEndpointSelect.value = 'DEFAULT_TESTNET';
+                    rpcEndpointCustomInput.classList.add('d-none');
+                } else if (currentRpcEndpoint === DEFAULT_MAINNET_RPC_ENDPOINT) {
+                    rpcEndpointSelect.value = 'DEFAULT_MAINNET';
+                    rpcEndpointCustomInput.classList.add('d-none');
+                } else {
+                    rpcEndpointSelect.value = 'CUSTOM';
+                    rpcEndpointCustomInput.value = currentRpcEndpoint;
+                    rpcEndpointCustomInput.classList.remove('d-none');
+                }
+                rpcEndpointCustomInput.placeholder = 'Enter custom Esplora API URL'; // Keep placeholder consistent
+            }
+        }
+
+        // --- Core Wallet Logic ---
+
+        async function createWallet() {
+            try {
+                keyPair = bitcoin.ECPair.makeRandom({ network: NETWORK });
+                // Store the WIF in state
+                currentWif = keyPair.toWIF();
+
+                // Don't show modal, update UI directly
+                isPkVisible = false; // Hide the new key by default
+                // updatePkVisibilityDisplay(); // updateUI will call this
+                updateUI();
+
+                showAlert(`New ${isTestnet ? 'Testnet' : 'Mainnet'} wallet created! Ensure you copy the Private Key shown below.`, "success", 8000);
+
+            } catch (error) {
+                 console.error("Error creating wallet:", error);
+                 showAlert("Failed to create wallet. Please try again.", "danger");
+                 clearSession(); // Use clearSession to reset state on failure
+            }
+        }
+
+        function importWallet(wif) {
+             if (!isValidWif(wif)) {
+                showAlert("Invalid Private Key format (WIF expected).", "danger");
+                return false;
+            }
+            try {
+                keyPair = bitcoin.ECPair.fromWIF(wif, NETWORK);
+                currentWif = wif; // Store the imported WIF
+                isPkVisible = false; // Hide imported key by default
+                showAlert("Wallet imported successfully for this session!", "success");
+                privateKeyInput.value = ''; // Clear input after import
+                // importWalletModal.hide(); // Modal no longer exists
+                updateUI();
+                return true;
+            } catch (e) {
+                console.error("Error importing WIF:", e);
+                showAlert("Failed to import private key. Please check the format and try again.", "danger");
+                 keyPair = null; // Ensure keyPair is null on failure
+                return false;
+            }
+        }
+
+        // --- Bitcoin Network Interaction (using Esplora API via Axios) ---
+
+        async function getUtxos(address) {
+            showLoading(true);
+            try {
+                const url = `${currentRpcEndpoint}address/${address}/utxo`;
+                const response = await axios.get(url);
+                console.log("UTXOs fetched:", response.data);
+                // Filter out unconfirmed UTXOs if necessary (Esplora often includes them)
+                // We might rely on MIN_CONFIRMATIONS later during tx building instead
+                return response.data;
+            } catch (error) {
+                 console.error(`Error fetching UTXOs for ${address}:`, error.response ? error.response.data : error.message);
+                 showAlert(`Failed to fetch UTXOs. Check RPC endpoint and network connection. Error: ${error.message}`, "danger");
+                return []; // Return empty array on error
+            } finally {
+                 showLoading(false);
+            }
+        }
+
+        async function fetchBalance(address) {
+            walletBalanceSpan.textContent = 'Loading...';
+            const utxos = await getUtxos(address);
+            if (utxos) {
+                 // Sum confirmed UTXOs only
+                const confirmedBalance = utxos
+                    .filter(utxo => utxo.status.confirmed) // Ensure UTXO is confirmed
+                    .reduce((sum, utxo) => sum + utxo.value, 0);
+
+                walletBalanceSpan.textContent = satoshisToBtc(confirmedBalance).toFixed(8);
+            } else {
+                walletBalanceSpan.textContent = 'Error';
+            }
+        }
+
+        async function broadcastTransaction(txHex) {
+            showLoading(true);
+            txStatusSpan.textContent = "Broadcasting...";
+            txIdSpan.textContent = "";
+            txLink.href = "#";
+             txInfoDiv.classList.remove('d-none');
+
+            try {
+                const url = `${currentRpcEndpoint}tx`;
+                // Axios automatically sets Content-Type to application/json
+                // Esplora's /tx endpoint expects text/plain for the hex
+                const response = await axios.post(url, txHex, {
+                    headers: { 'Content-Type': 'text/plain' }
+                });
+                const txid = response.data;
+                console.log("Transaction broadcasted:", txid);
+                txStatusSpan.textContent = "Success!";
+                txIdSpan.textContent = txid;
+                txLink.href = `https://mempool.space/tx/${txid}`; // Link to a block explorer
+                 showAlert(`Transaction broadcast successfully! TXID: ${txid}`, "success", 10000);
+                // Refresh balance after successful broadcast
+                fetchBalance(getAddress(keyPair));
+                return txid;
+            } catch (error) {
+                const errorMessage = error.response ? await error.response.data : error.message; // Esplora might return plain text error
+                console.error("Error broadcasting transaction:", errorMessage);
+                txStatusSpan.textContent = "Failed";
+                 txIdSpan.textContent = `Error: ${errorMessage}`;
+                 showAlert(`Transaction broadcast failed: ${errorMessage}`, "danger", 10000);
+                return null;
+            } finally {
+                 showLoading(false);
+            }
+        }
+
+         // --- Transaction Building ---
+
+        async function sendTransaction(recipientAddress, amountBtc, feeRateSatPerVb) {
+             if (!keyPair) {
+                 showAlert("No wallet loaded.", "warning");
+                 return;
+             }
+
+             showLoading(true);
+             txStatusSpan.textContent = "Preparing Transaction...";
+             txIdSpan.textContent = "";
+             txLink.href = "#";
+             txInfoDiv.classList.remove('d-none');
+
+
+             const amountSatoshis = btcToSatoshis(amountBtc);
+             const feeRate = parseInt(feeRateSatPerVb, 10);
+
+             if (isNaN(amountSatoshis) || amountSatoshis <= 0) {
+                 showAlert("Invalid amount.", "warning");
+                 showLoading(false);
+                 return;
+             }
+              if (isNaN(feeRate) || feeRate <= 0) {
+                 showAlert("Invalid fee rate.", "warning");
+                 showLoading(false);
+                 return;
+             }
+
+             try {
+                 const walletAddress = getAddress(keyPair);
+                 const utxos = await getUtxos(walletAddress);
+
+                 // Filter for confirmed UTXOs only, and maybe minimum value?
+                 const spendableUtxos = utxos.filter(utxo => utxo.status.confirmed);
+
+                 if (spendableUtxos.length === 0) {
+                     showAlert("No spendable confirmed UTXOs found.", "warning");
+                     showLoading(false);
+                     return;
+                 }
+
+                 // --- Transaction Building with bitcoinjs-lib ---
+                 const psbt = new bitcoin.Psbt({ network: NETWORK });
+                 let totalInputSatoshis = 0;
+                 let inputCount = 0;
+
+                 // We need to fetch the full previous transaction hex for non-witness UTXOs
+                 // For witness UTXOs (like P2WPKH), we only need the value and scriptPubKey (which Esplora provides)
+                 // Assuming P2WPKH for simplicity here. If using legacy addresses, this needs adjustment.
+
+                 const utxoPromises = spendableUtxos.map(async (utxo) => {
+                    // For P2WPKH, bitcoinjs-lib needs the UTXO details directly
+                    // It doesn't *always* need the full prior tx for signing witness inputs
+                    return {
+                        hash: utxo.txid,
+                        index: utxo.vout,
+                        witnessUtxo: {
+                            script: Buffer.from(bitcoin.address.toOutputScript(walletAddress, NETWORK)), // Reconstruct scriptPubKey
+                            value: utxo.value,
+                        },
+                        // We might need nonWitnessUtxo for older tx types or mixed inputs
+                        // nonWitnessUtxo: Buffer.from(await fetchTransactionHex(utxo.txid), 'hex') // Example if needed
+                    };
+                 });
+
+                 const processedUtxos = await Promise.all(utxoPromises);
+
+                 // --- Simple Coin Selection (Select UTXOs until amount + fee is covered) ---
+                 // A more sophisticated algorithm would be better (e.g., minimize inputs, avoid dust)
+                 const selectedUtxos = [];
+                 let estimatedTxBytes = 10 + (processedUtxos.length * 148) + (2 * 34) ; // Rough estimate: base + inputs + outputs
+                 let estimatedFee = Math.ceil(estimatedTxBytes * feeRate); // Initial fee estimate
+
+                 for (const utxo of processedUtxos) {
+                     if (totalInputSatoshis < amountSatoshis + estimatedFee) {
+                         selectedUtxos.push(utxo);
+                         totalInputSatoshis += utxo.witnessUtxo.value;
+                         inputCount++;
+                         // Recalculate estimated size and fee with added input
+                         // P2WPKH input size is ~68 vBytes, but PSBT adds overhead during creation? Use generous 148 for now.
+                         // P2WPKH output size is ~31 vBytes. Use 34 for safety.
+                         estimatedTxBytes = 10 + (inputCount * 68) + (2 * 31); // Refined estimate for P2WPKH
+                         estimatedFee = Math.ceil(estimatedTxBytes * feeRate);
+                     } else {
+                         break; // Stop adding inputs once target is met
+                     }
+                 }
+
+                 console.log(`Selected ${inputCount} UTXOs totaling ${totalInputSatoshis} satoshis.`);
+                 console.log(`Target amount: ${amountSatoshis}, Estimated fee: ${estimatedFee}`);
+
+
+                 if (totalInputSatoshis < amountSatoshis + estimatedFee) {
+                     showAlert(`Insufficient funds. Need ${satoshisToBtc(amountSatoshis + estimatedFee).toFixed(8)} BTC (amount + estimated fee), but only have ${satoshisToBtc(totalInputSatoshis).toFixed(8)} BTC available in confirmed UTXOs.`, "warning", 10000);
+                     showLoading(false);
+                     return;
+                 }
+
+                 // Add inputs to PSBT
+                 selectedUtxos.forEach(utxo => psbt.addInput(utxo));
+
+                 // Add output for the recipient
+                 psbt.addOutput({
+                     address: recipientAddress,
+                     value: amountSatoshis,
+                 });
+
+                 // Add change output if necessary
+                 const changeAmount = totalInputSatoshis - amountSatoshis - estimatedFee;
+                 console.log(`Calculated change: ${changeAmount} satoshis`);
+
+                 if (changeAmount < 0) {
+                    // This should not happen if the check above worked, but safety first
+                    console.error("Negative change amount calculated, aborting.", {totalInputSatoshis, amountSatoshis, estimatedFee});
+                    showAlert("Transaction calculation error: negative change amount.", "danger");
+                    showLoading(false);
+                    return;
+                 }
+
+                 // Only add change if it's above dust threshold (e.g., 546 satoshis)
+                 const DUST_THRESHOLD = 546;
+                 if (changeAmount >= DUST_THRESHOLD) {
+                     psbt.addOutput({
+                         address: walletAddress, // Send change back to self
+                         value: changeAmount,
+                     });
+                      console.log(`Adding change output: ${changeAmount} satoshis to ${walletAddress}`);
+                 } else {
+                    console.log(`Change amount ${changeAmount} is below dust threshold, adding to fee.`);
+                    // If change is dust, it effectively becomes part of the fee
+                 }
+
+                 // Sign the inputs
+                 for (let i = 0; i < inputCount; i++) {
+                     psbt.signInput(i, keyPair);
+                 }
+
+                 // Finalize the transaction
+                 psbt.finalizeAllInputs();
+
+                 // Get the transaction hex
+                 const txHex = psbt.extractTransaction().toHex();
+                 console.log("Transaction Hex:", txHex);
+                 txStatusSpan.textContent = "Signed. Broadcasting...";
+
+                 // Broadcast the transaction
+                 await broadcastTransaction(txHex);
+
+             } catch (error) {
+                 console.error("Error creating or sending transaction:", error);
+                 showAlert(`Transaction failed: ${error.message}`, "danger", 10000);
+                 txStatusSpan.textContent = "Error";
+                 txIdSpan.textContent = error.message;
+             } finally {
+                 showLoading(false);
+             }
+         }
+
+
+        // --- Event Listeners ---
+        createWalletBtn.addEventListener('click', createWallet);
+
+        // Listener for RPC Endpoint Dropdown Change
+        rpcEndpointSelect.addEventListener('change', () => {
+            if (rpcEndpointSelect.value === 'CUSTOM') {
+                rpcEndpointCustomInput.classList.remove('d-none');
+                rpcEndpointCustomInput.focus(); // Focus the input for convenience
+            } else {
+                rpcEndpointCustomInput.classList.add('d-none');
+            }
+        });
+
+        copyPkBtn.addEventListener('click', () => {
+            if (currentWif) {
+                 navigator.clipboard.writeText(currentWif) // Always copy the full key
+                    .then(() => showAlert("Private key copied to clipboard!", "success", 2000))
+                    .catch(err => showAlert("Failed to copy key.", "warning"));
+            }
+        });
+
+        // Copy Address Buttons
+        copyAddressBtn.addEventListener('click', () => {
+            if (walletAddressSpan.textContent && walletAddressSpan.textContent !== 'Loading...') {
+                 navigator.clipboard.writeText(walletAddressSpan.textContent)
+                    .then(() => showAlert("Address copied to clipboard!", "success", 2000))
+                    .catch(err => showAlert("Failed to copy address.", "warning"));
+            }
+        });
+
+        copyReceiveAddressBtn.addEventListener('click', () => {
+            if (receiveAddressSpan.textContent && receiveAddressSpan.textContent !== 'Loading...') {
+                 navigator.clipboard.writeText(receiveAddressSpan.textContent)
+                    .then(() => showAlert("Address copied to clipboard!", "success", 2000))
+                    .catch(err => showAlert("Failed to copy address.", "warning"));
+            }
+        });
+
+        // Toggle Private Key Visibility (for IMPORT field)
+        togglePkVisibilityImportBtn.addEventListener('click', () => {
+            const icon = togglePkVisibilityImportBtn.querySelector('i');
+            if (privateKeyInput.type === 'password') {
+                privateKeyInput.type = 'text';
+                icon.classList.remove('bi-eye-fill');
+                icon.classList.add('bi-eye-slash-fill');
+            } else {
+                privateKeyInput.type = 'password';
+                icon.classList.remove('bi-eye-slash-fill');
+                icon.classList.add('bi-eye-fill');
+            }
+        });
+
+        // Theme Toggle
+        themeToggleButton.addEventListener('click', () => {
+            const htmlElement = document.documentElement;
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            htmlElement.setAttribute('data-bs-theme', newTheme);
+
+            // Update icon
+            const icon = themeToggleButton.querySelector('i');
+            if (newTheme === 'dark') {
+                icon.classList.remove('bi-sun-fill');
+                icon.classList.add('bi-moon-stars-fill');
+            } else {
+                icon.classList.remove('bi-moon-stars-fill');
+                icon.classList.add('bi-sun-fill');
+            }
+            // Optional: Persist theme preference in session storage if needed (but goal was no storage)
+        });
+
+        refreshBalanceBtn.addEventListener('click', () => {
+             if (keyPair) {
+                 fetchBalance(getAddress(keyPair));
+             }
+        });
+
+        sendForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const recipient = recipientAddressInput.value.trim();
+            const amount = parseFloat(sendAmountInput.value);
+            const feeRate = parseInt(feeRateInput.value, 10);
+
+             // Basic validation
+             if (!recipient || isNaN(amount) || amount <= 0 || isNaN(feeRate) || feeRate <= 0) {
+                 showAlert("Please fill in all fields correctly (Recipient Address, positive Amount, positive Fee Rate).", "warning");
+                 return;
+             }
+             // Add address validation if possible/needed
+             try {
+                bitcoin.address.toOutputScript(recipient, NETWORK); // Basic validation
+             } catch (e) {
+                 showAlert("Invalid recipient Bitcoin address.", "warning");
+                 return;
+             }
+
+             // Add a final confirmation for mainnet transactions
+             if (!isTestnet) {
+                 if (!confirm(`You are about to send ${amount} BTC on MAINNET to ${recipient}.\n\nTHIS IS REAL BITCOIN. Are you absolutely sure?`)) {
+                    showAlert("Mainnet transaction cancelled.", "info");
+                    return;
+                 }
+             }
+
+             sendTransaction(recipient, amount, feeRate);
+
+        });
+
+        // Replace the old RPC update listener with network detection logic
+        updateRpcBtn.addEventListener('click', async () => {
+            let targetRpc = '';
+            const selectedOption = rpcEndpointSelect.value;
+
+            if (selectedOption === 'DEFAULT_TESTNET') {
+                targetRpc = DEFAULT_TESTNET_RPC_ENDPOINT;
+            } else if (selectedOption === 'DEFAULT_MAINNET') {
+                targetRpc = DEFAULT_MAINNET_RPC_ENDPOINT;
+            } else if (selectedOption === 'CUSTOM') {
+                targetRpc = rpcEndpointCustomInput.value.trim();
+            } else {
+                showAlert("Invalid selection.", "warning");
+                return;
+            }
+
+            if (!targetRpc) {
+                 showAlert("RPC Endpoint URL cannot be empty.", "warning");
+                 return;
+            }
+            // Basic URL validation
+            if (!targetRpc.startsWith('http://') && !targetRpc.startsWith('https://')) {
+                 showAlert("Invalid RPC URL. Must start with http:// or https://", "warning");
+                 return;
+            }
+            // Ensure trailing slash for consistency with Esplora API paths
+            if (!targetRpc.endsWith('/')) {
+                targetRpc += '/';
+            }
+
+            console.log(`Attempting to update RPC and detect network for: ${targetRpc}`);
+            detectedNetworkInfo.textContent = `Network: Detecting...`;
+            showLoading(true);
+
+            try {
+                // Attempt to fetch current block height
+                const blockHeightUrl = `${targetRpc}blocks/tip/height`;
+                const response = await axios.get(blockHeightUrl, { timeout: 5000 }); // Add timeout
+                const blockHeight = parseInt(response.data, 10);
+                console.log(`Detected block height: ${blockHeight}`);
+
+                if (isNaN(blockHeight)) {
+                    throw new Error('Invalid block height received.');
+                }
+
+                // Simple heuristic: Testnet height is currently much higher than mainnet.
+                // Adjust threshold if needed based on current network states.
+                const detectedNetworkIsTestnet = blockHeight > 1_500_000; // Corrected Logic
+                const previousNetworkIsTestnet = isTestnet;
+
+                // Check if network changed and wallet exists
+                if (keyPair && detectedNetworkIsTestnet !== previousNetworkIsTestnet) {
+                     if (!confirm(`Detected network (${detectedNetworkIsTestnet ? 'Testnet' : 'Mainnet'}) is different from the current session. Switching networks will clear your current wallet session. Continue?`)) {
+                         // User cancelled, revert UI changes (optional, or just don't update state)
+                         detectedNetworkInfo.textContent = `Network: ${previousNetworkIsTestnet ? 'Testnet' : 'Mainnet'} (Detection Cancelled)`;
+                         // Restore previous RPC in UI?
+                         if (currentRpcEndpoint === DEFAULT_TESTNET_RPC_ENDPOINT) rpcEndpointSelect.value = 'DEFAULT_TESTNET';
+                         else if (currentRpcEndpoint === DEFAULT_MAINNET_RPC_ENDPOINT) rpcEndpointSelect.value = 'DEFAULT_MAINNET';
+                         else rpcEndpointSelect.value = 'CUSTOM';
+                         rpcEndpointCustomInput.value = currentRpcEndpoint;
+                         if (rpcEndpointSelect.value !== 'CUSTOM') rpcEndpointCustomInput.classList.add('d-none');
+                         else rpcEndpointCustomInput.classList.remove('d-none');
+
+                         showLoading(false);
+                         return;
+                     }
+                     // User confirmed, proceed to clear session
+                     clearSession(); // This already calls updateUI
+                }
+
+                // Update state
+                isTestnet = detectedNetworkIsTestnet;
+                NETWORK = isTestnet ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
+                currentRpcEndpoint = targetRpc;
+
+                showAlert(`RPC Endpoint updated. Detected Network: ${isTestnet ? 'Testnet' : 'Mainnet'}`, "success");
+                detectedNetworkInfo.textContent = `Network: ${isTestnet ? 'Testnet' : 'Mainnet'} (Detected)`;
+                detectedNetworkInfo.classList.remove('text-muted'); // Make it more prominent
+                detectedNetworkInfo.classList.add(isTestnet ? 'text-info' : 'text-primary');
+
+                // Refresh balance if wallet was loaded and not cleared
+                if (keyPair) {
+                     fetchBalance(getAddress(keyPair));
+                }
+                updateUI(); // Ensure UI reflects the potential RPC change in the input fields
+
+            } catch (error) {
+                console.error("Error detecting network or updating RPC:", error);
+                showAlert(`Failed to connect or detect network for ${targetRpc}. Please check the URL and try again. Error: ${error.message}`, "danger");
+                detectedNetworkInfo.textContent = `Network: Detection Failed`;
+                detectedNetworkInfo.classList.add('text-danger');
+                 // Optionally revert to previous RPC? For now, leave the user's input.
+                 // rpcEndpointInput.value = currentRpcEndpoint; // Revert if desired
+            } finally {
+                 showLoading(false);
+            }
+        });
+
+        // Add a function to clear the session state
+        function clearSession() {
+            keyPair = null;
+            currentWif = '';
+            isPkVisible = false;
+            console.log("Wallet session cleared.");
+            // No need for specific alert here, updateUI handles the visual change
+            updateUI();
+        }
+
+        // --- Add Listener for Clear Session Button ---
+        clearSessionBtn.addEventListener('click', () => {
+            clearSession();
+            showAlert('Wallet session cleared.', 'info');
+        });
+
+        // --- Add Listener for Current PK Toggle Visibility Button ---
+        toggleCurrentPkVisibilityBtn.addEventListener('click', () => {
+            isPkVisible = !isPkVisible; // Toggle state
+            updatePkVisibilityDisplay(); // Update display and icon
+        });
+
+        // --- Add Listener for Sender Address Copy Button ---
+        copySenderAddressBtn.addEventListener('click', () => {
+            if (senderAddressDisplaySpan.textContent && senderAddressDisplaySpan.textContent !== 'No wallet loaded') {
+                 navigator.clipboard.writeText(senderAddressDisplaySpan.textContent)
+                    .then(() => showAlert("Sender address copied to clipboard!", "success", 2000))
+                    .catch(err => showAlert("Failed to copy sender address.", "warning"));
+            }
+        });
+
+        // --- Initialization ---
+        function initializeApp() {
+            console.log("Initializing Bitcoin Wallet App...");
+             // Set initial theme icon based on system preference (optional)
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const htmlElement = document.documentElement;
+            const icon = themeToggleButton.querySelector('i');
+            // Uncomment below to default theme to system preference
+            /*
+            if (prefersDark) {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                icon.classList.remove('bi-sun-fill');
+                icon.classList.add('bi-moon-stars-fill');
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                icon.classList.remove('bi-moon-stars-fill');
+                icon.classList.add('bi-sun-fill');
+            }
+            */
+
+             // Use bitcoinjs-lib from the global scope
+            if (typeof bitcoin === 'undefined') {
+                console.error("bitcoinjs-lib not loaded!");
+                showAlert("Critical Error: BitcoinJS library failed to load. Wallet cannot function.", "danger", 0); // 0 duration = persistent
+                return;
+            }
+            console.log("BitcoinJS library loaded.");
+
+            // DO NOT load from local storage
+            /*
+            if (loadFromLocalStorage()) {
+                // Wallet loaded successfully
+            } else {
+                 // No wallet found in storage, set default RPC
+                 currentRpcEndpoint = DEFAULT_RPC_ENDPOINT;
+                 rpcEndpointInput.value = currentRpcEndpoint;
+            }
+            */
+            // Always start fresh
+            keyPair = null;
+            isTestnet = true; // Default state
+            NETWORK = bitcoin.networks.testnet;
+            currentRpcEndpoint = DEFAULT_TESTNET_RPC_ENDPOINT; // Set initial RPC state variable
+            // Set initial UI elements
+            rpcEndpointSelect.value = 'DEFAULT_TESTNET';
+            rpcEndpointCustomInput.classList.add('d-none');
+            rpcEndpointCustomInput.value = ''; // Clear custom input initially
+            detectedNetworkInfo.textContent = 'Network: Testnet (Default)'; // Set initial network info text
+
+            updateUI(); // Update UI based on initial state
+        }
+
+        // Wait for the DOM to be fully loaded before initializing
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+    </script>
+</body>
+</html>
