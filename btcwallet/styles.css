@@ -1,0 +1,77 @@
+body {
+            /* Removed padding-top: 2rem; to eliminate space above header */
+            padding-bottom: 2rem;
+           /* background-color: #f8f9fa; */ /* Use Bootstrap theme background */
+        }
+        .container {
+            max-width: 720px;
+        }
+        /* Removed initial-view styles */
+        #main-wallet-view {
+            margin-top: 1rem; /* Reduced top margin */
+        }
+        .card {
+            margin-bottom: 1.5rem;
+        }
+        .private-key-display {
+            word-break: break-all;
+            font-family: monospace;
+            background-color: var(--bs-secondary-bg);
+            padding: 0.75rem;
+            border-radius: var(--bs-border-radius);
+            border: 1px solid var(--bs-border-color);
+        }
+        .address-display {
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+        .balance-display {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        #alert-placeholder {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050;
+            min-width: 300px;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(var(--bs-body-bg-rgb), 0.7);
+            z-index: 1060;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #qrcode {
+            display: flex; /* Use flex to center canvas */
+            justify-content: center;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: white; /* QR code needs white background */
+            border-radius: var(--bs-border-radius);
+            max-width: 280px; /* Limit size */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #qrcode canvas {
+             max-width: 100%;
+             height: auto;
+        }
+        /* Input group styling for copying */
+        .input-group .btn {
+             z-index: 3; /* Ensure button is clickable */
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 1.2rem;
+        } 
