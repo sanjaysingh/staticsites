@@ -30,12 +30,15 @@ body {
             font-size: 1.5rem;
             font-weight: 500;
         }
+        /* Updated Alert Placeholder for Centering */
         #alert-placeholder {
             position: fixed;
             top: 1rem;
-            right: 1rem;
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Adjust for element width */
             z-index: 1050;
-            min-width: 300px;
+            width: auto; /* Allow width to adjust */
+            max-width: 90%; /* Prevent excessive width on large screens */
         }
         .loading-overlay {
             position: fixed;
@@ -49,22 +52,22 @@ body {
             justify-content: center;
             align-items: center;
         }
-        #qrcode {
-            display: flex; /* Use flex to center canvas */
-            justify-content: center;
-            align-items: center;
+        /* QR Code Container Styling */
+        .qr-code-container {
+            display: inline-block; /* Allows text-center to work */
             margin-top: 1rem;
-            padding: 1rem;
-            background-color: white; /* QR code needs white background */
+            padding: 1rem; /* Padding around the QR code */
+            background-color: white; /* Essential for QR code readability */
             border-radius: var(--bs-border-radius);
-            max-width: 280px; /* Limit size */
-            margin-left: auto;
-            margin-right: auto;
+            line-height: 0; /* Prevent extra space below image/canvas */
         }
-        #qrcode canvas {
-             max-width: 100%;
-             height: auto;
+        
+        .qr-code-container canvas,
+        .qr-code-container img { /* qrcode.js might use canvas or img */
+            max-width: 100%;
+            height: auto;
         }
+
         /* Input group styling for copying */
         .input-group .btn {
              z-index: 3; /* Ensure button is clickable */

@@ -43,6 +43,10 @@ createApp({
             showCustomRpcInput: false,
             currentTheme: 'light', // Added for theme toggling
 
+            // Network Status Display (Refactored)
+            networkStatusText: '',
+            networkStatusClass: '',
+
             // DOM Element Refs (alternative to getElementById)
             // We'll primarily use data binding, but might need refs for things like QR code canvas
         };
@@ -75,16 +79,20 @@ createApp({
             this.isLoading = show;
         },
         showAlert(message, type = 'info') {
-            const id = Date.now() + Math.random(); // Simple unique ID
-            const newAlert = { message, type, id };
+            const id = Date.now(); // Simple unique ID for keying
+            const newAlert = { message, type, id }; // Re-added id
+            
+            // Clear existing alerts before adding the new one
+            this.alerts = []; 
+            
             this.alerts.push(newAlert);
 
             setTimeout(() => {
-                this.dismissAlert(id);
+                this.dismissAlert();
             }, 4000);
         },
-        dismissAlert(id) {
-             this.alerts = this.alerts.filter(alert => alert.id !== id);
+        dismissAlert() {
+             this.alerts = [];
         },
         satoshisToBtc(satoshis) {
             return satoshis / 100_000_000;
@@ -107,8 +115,6 @@ createApp({
         updateRpcSelection() {
              if (this.rpcEndpointSelectValue === 'CUSTOM') {
                 this.showCustomRpcInput = true;
-                // Optional: Focus the input using $nextTick and refs if needed
-                // this.$nextTick(() => this.$refs.rpcCustomInput.focus());
             } else {
                 this.showCustomRpcInput = false;
             }
@@ -139,8 +145,6 @@ createApp({
             this.$nextTick(() => {
                  const qrCodeElement = this.$refs.qrCodeDiv;
                  if (!qrCodeElement) {
-                     // This might still log if the tab is hidden initially, which is expected.
-                     // console.warn("QR Code div ref not found, likely because tab is hidden.");
                      return; 
                  }
                  qrCodeElement.innerHTML = ''; // Clear previous QR code
@@ -177,7 +181,6 @@ createApp({
             if (this.isWalletLoaded) {
                 this.walletAddress = this.getAddress(this.keyPair);
                 this.fetchBalance(); 
-                // REMOVED: this.generateQrCode(); - Will be triggered by tab show event
             } else {
                  this.walletAddress = 'Not loaded';
                  this.walletBalance = 'N/A';
@@ -232,7 +235,6 @@ createApp({
         },
         clearSession() {
             this.keyPair = null;
-            // No need for specific alert here, UI updates reactively
             this.updateWalletStateUI(); 
             this.showAlert('Wallet session cleared.', 'info');
         },
@@ -244,7 +246,6 @@ createApp({
             try {
                 const url = `${this.currentRpcEndpoint}address/${this.walletAddress}/utxo`;
                 const response = await axios.get(url);
-                console.log("UTXOs fetched:", response.data);
                 return response.data;
             } catch (error) {
                 console.error(`Error fetching UTXOs for ${this.walletAddress}:`, error.response ? error.response.data : error.message);
@@ -279,7 +280,6 @@ createApp({
                     headers: { 'Content-Type': 'text/plain' }
                 });
                 const txid = response.data;
-                console.log("Transaction broadcasted:", txid);
                 this.txStatus = "Success!";
                 this.txId = txid;
                 this.txLink = `${this.blockExplorerUrlBase}tx/${txid}`;
@@ -375,9 +375,6 @@ createApp({
                     }
                 }
 
-                console.log(`Selected ${inputCount} UTXOs totaling ${totalInputSatoshis} satoshis.`);
-                console.log(`Target amount: ${amountSatoshis}, Estimated fee: ${estimatedFee}`);
-
                 if (totalInputSatoshis < amountSatoshis + estimatedFee) {
                     this.showAlert(`Insufficient funds. Need ${this.satoshisToBtc(amountSatoshis + estimatedFee).toFixed(8)} BTC (amount + estimated fee), but only have ${this.satoshisToBtc(totalInputSatoshis).toFixed(8)} BTC available in confirmed UTXOs.`, "warning");
                     this.showLoading(false);
@@ -391,7 +388,6 @@ createApp({
                 });
 
                 const changeAmount = totalInputSatoshis - amountSatoshis - estimatedFee;
-                console.log(`Calculated change: ${changeAmount} satoshis`);
 
                 const DUST_THRESHOLD = 546;
                 if (changeAmount >= DUST_THRESHOLD) {
@@ -399,9 +395,6 @@ createApp({
                         address: this.walletAddress,
                         value: changeAmount,
                     });
-                    console.log(`Adding change output: ${changeAmount} satoshis to ${this.walletAddress}`);
-                } else {
-                   console.log(`Change amount ${changeAmount} is below dust threshold, adding to fee.`);
                 }
 
                 for (let i = 0; i < inputCount; i++) {
@@ -410,7 +403,6 @@ createApp({
                 psbt.finalizeAllInputs();
 
                 const txHex = psbt.extractTransaction().toHex();
-                console.log("Transaction Hex:", txHex);
                 this.txStatus = "Signed. Broadcasting...";
 
                 await this.broadcastTransaction(txHex);
@@ -455,16 +447,14 @@ createApp({
                 targetRpc += '/';
             }
 
-            console.log(`Attempting to update RPC and detect network for: ${targetRpc}`);
-             const detectedNetworkInfoEl = document.getElementById('detected-network-info'); 
-             if(detectedNetworkInfoEl) detectedNetworkInfoEl.textContent = `Network: Detecting...`; 
+             this.networkStatusText = 'Network: Detecting...';
+             this.networkStatusClass = 'form-text text-muted d-block mt-2'; // Default class while detecting
             this.showLoading(true);
 
             try {
                 const blockHeightUrl = `${targetRpc}blocks/tip/height`;
                 const response = await axios.get(blockHeightUrl, { timeout: 5000 });
                 const blockHeight = parseInt(response.data, 10);
-                console.log(`Detected block height: ${blockHeight}`);
 
                 if (isNaN(blockHeight)) {
                     throw new Error('Invalid block height received.');
@@ -475,7 +465,6 @@ createApp({
 
                 // If network changed and wallet exists, clear session WITHOUT confirmation
                 if (this.isWalletLoaded && detectedNetworkIsTestnet !== previousNetworkIsTestnet) {
-                     console.log('Network changed with loaded wallet, clearing session automatically.')
                      this.clearSession(); // Clears wallet state - This will trigger reactive UI updates
                 }
 
@@ -485,10 +474,8 @@ createApp({
                 this.currentRpcEndpoint = targetRpc;
 
                 this.showAlert(`RPC Endpoint updated. Detected Network: ${this.networkName}`, "success");
-                 if(detectedNetworkInfoEl) {
-                     detectedNetworkInfoEl.textContent = `Network: ${this.networkName} (Detected)`;
-                     detectedNetworkInfoEl.className = `form-text d-block mt-2 ${this.isTestnet ? 'text-info' : 'text-primary'}`; 
-                 }
+                 this.networkStatusText = `Network: ${this.networkName} (Detected)`;
+                 this.networkStatusClass = `form-text d-block mt-2 ${this.isTestnet ? 'text-info' : 'text-primary'}`; 
 
                 // Refresh balance if wallet is STILL loaded (i.e., wasn't cleared)
                 if (this.isWalletLoaded) { 
@@ -498,10 +485,8 @@ createApp({
             } catch (error) {
                 console.error("Error detecting network or updating RPC:", error);
                 this.showAlert(`Failed to connect or detect network for ${targetRpc}. Please check the URL and try again. Error: ${error.message}`, "danger");
-                if(detectedNetworkInfoEl) {
-                     detectedNetworkInfoEl.textContent = `Network: Detection Failed`;
-                     detectedNetworkInfoEl.className = 'form-text text-danger d-block mt-2';
-                }
+                 this.networkStatusText = `Network: Detection Failed`;
+                 this.networkStatusClass = 'form-text text-danger d-block mt-2';
             } finally {
                  this.showLoading(false);
             }
@@ -509,15 +494,12 @@ createApp({
     },
     // Adding the mounted hook back
     mounted() {
-        console.log("Vue app mounted, initializing wallet logic...");
-
         // Check if libraries are loaded
         if (typeof bitcoin === 'undefined' || typeof axios === 'undefined' || typeof QRCode === 'undefined') {
              console.error("One or more required libraries (BitcoinJS, Axios, QRCode) not loaded!");
             this.showAlert("Critical Error: Required libraries failed to load. Wallet cannot function.", "danger"); 
             return;
         }
-        console.log("Required libraries loaded.");
 
         // Initialize state
         this.isTestnet = true; 
@@ -532,11 +514,14 @@ createApp({
         // Set initial UI state (replaces updateUI call)
          this.updateWalletStateUI();
 
+         // Set initial network status text
+         this.networkStatusText = `Network: ${this.networkName} (Default)`; // Initial text
+         this.networkStatusClass = `form-text d-block mt-2 ${this.isTestnet ? 'text-info' : 'text-primary'}`; // Initial class
+
         // Listen for Receive tab being shown to generate QR code
          const receiveTabTrigger = document.getElementById('receive-tab'); // Get the button that triggers the tab
          if (receiveTabTrigger) {
              receiveTabTrigger.addEventListener('shown.bs.tab', event => {
-                 console.log('Receive tab shown, generating QR code...');
                  if (this.isWalletLoaded) { // Only generate if wallet is loaded
                     this.generateQrCode();
                  }
@@ -544,7 +529,5 @@ createApp({
          } else {
              console.error("Could not find the receive tab trigger element (#receive-tab).");
          }
-
-        console.log("Wallet App Initialized via Vue.");
     }
 }).mount('#app');

@@ -20,8 +20,8 @@
         </header>
 
         <div class="container"> <!-- Main content container starts here -->
-            <!-- Alert Placeholder -->
-            <div id="alert-placeholder" style="position: fixed; top: 1rem; right: 1rem; z-index: 1050; min-width: 300px;">
+            <!-- Alert Placeholder - Removed inline styles for CSS centering -->
+            <div id="alert-placeholder">
                  <transition-group name="alert-fade" tag="div">
                      <div v-for="alert in alerts" :key="alert.id" :class="['alert', 'alert-' + alert.type, 'alert-dismissible', 'fade', 'show']" role="alert">
                         <div>{{ alert.message }}</div>
@@ -71,8 +71,8 @@
                                     <input type="text" class="form-control" v-show="showCustomRpcInput" v-model="rpcEndpointCustomInput" placeholder="Enter custom Esplora API URL" ref="rpcCustomInput">
                                 </div>
                                 <button class="btn btn-secondary" @click="updateRpcAndNetwork"><i class="bi bi-check-circle me-1"></i> Update</button>
-                                <!-- This element might still need manual update if not refactored into Vue data -->
-                                <small id="detected-network-info" class="form-text text-muted d-block mt-2">Network: {{ networkName }} ({{ currentRpcEndpoint === DEFAULT_TESTNET_RPC_ENDPOINT || currentRpcEndpoint === DEFAULT_MAINNET_RPC_ENDPOINT ? 'Default' : 'Custom' }})</small>
+                                <!-- Network status display bound to Vue data -->
+                                <small :class="networkStatusClass">{{ networkStatusText }}</small>
                            </div>
                        </div>
 
@@ -205,8 +205,8 @@
                                      <i class="bi bi-clipboard"></i>
                                  </button>
                             </div>
-                            <!-- QR Code Div - Handled by method -->
-                            <div ref="qrCodeDiv"></div>
+                            <!-- QR Code Div - Added class for styling -->
+                            <div ref="qrCodeDiv" class="qr-code-container"></div>
                         </div>
                      </div>
                      <div class="alert alert-warning" v-else>
@@ -227,7 +227,7 @@
     <!-- Add QR Code Library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <!-- Add Vue 3 CDN -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.prod.min.js" integrity="sha512-66fV4MXSQdGN0KQxZ0Bw627HalhTQYQbOoF24EtMXN2FaAoKMgAZ7nDi77d9xWwrRjEEUfE+7rxjTt+cA2IuJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- Add our application script -->
     <script src="app.js"></script>
 </body>
