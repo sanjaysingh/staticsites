@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:buffer": "browserify ./buffer-shim.js -s Buffer -o buffer-6.0.3.js",
+    "build:bitcoin": "browserify -r bitcoinjs-lib -s bitcoin -o bitcoinjs-lib-5.2.0.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "bitcoinjs-lib": "^5.2.0",
-    "browserify": "^17.0.1"
+    "bitcoinjs-lib": "5.2.0",
+    "browserify": "17.0.1",
+     "buffer": "6.0.3"
   }
 }
