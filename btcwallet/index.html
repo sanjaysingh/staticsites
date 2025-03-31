@@ -64,9 +64,10 @@
                                 <div class="mb-3">
                                     <label for="rpc-endpoint-select" class="form-label">RPC Endpoint</label>
                                     <select class="form-select mb-2" id="rpc-endpoint-select" v-model="rpcEndpointSelectValue" @change="updateRpcSelection">
-                                        <option value="DEFAULT_TESTNET">Default Testnet (Blockstream)</option>
-                                        <option value="DEFAULT_MAINNET">Default Mainnet (Blockstream)</option>
-                                        <option value="CUSTOM">Other...</option>
+                                        <!-- Dynamically generate options -->
+                                        <option v-for="option in rpcOptions" :key="option.value" :value="option.value">
+                                            {{ option.text }}
+                                        </option>
                                     </select>
                                     <input type="text" class="form-control" v-show="showCustomRpcInput" v-model="rpcEndpointCustomInput" placeholder="Enter custom Esplora API URL" ref="rpcCustomInput">
                                 </div>

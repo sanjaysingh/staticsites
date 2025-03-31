@@ -8,6 +8,22 @@ createApp({
             DEFAULT_TESTNET_RPC_ENDPOINT: 'https://blockstream.info/testnet/api/',
             MIN_CONFIRMATIONS: 1,
 
+            // RPC Options for dropdown
+            rpcOptions: [
+                {
+                    value: 'DEFAULT_TESTNET',
+                    text: 'https://blockstream.info/testnet/api/' // Use the URL directly
+                },
+                {
+                    value: 'DEFAULT_MAINNET',
+                    text: 'https://blockstream.info/api/' // Use the URL directly
+                },
+                {
+                    value: 'CUSTOM',
+                    text: 'Other...'
+                }
+            ],
+
             // State
             network: null, // bitcoinjs-lib network object
             keyPair: null, // bitcoinjs-lib keyPair object
