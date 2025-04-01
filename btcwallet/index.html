@@ -12,7 +12,7 @@
     <!-- Vue App Root -->
     <div id="app" v-cloak>
         <!-- Header - Full width, content aligned to page edges -->
-        <header class="mb-4 p-3 bg-info-subtle d-flex justify-content-between align-items-center"> <!-- Moved flex classes back, removed inner container -->
+        <header class="mb-4 p-2 bg-info-subtle d-flex justify-content-between align-items-center"> <!-- Changed p-3 to p-2 -->
             <h1 class="h3 mb-0"><i class="bi bi-bitcoin me-2"></i>Bitcoin Wallet (Testing Only)</h1> 
             <span class="theme-toggle" @click="toggleTheme" style="cursor: pointer;">
                 <i :class="['bi', currentTheme === 'dark' ? 'bi-moon-stars-fill' : 'bi-sun-fill']"></i>
@@ -71,7 +71,7 @@
                                     </select>
                                     <input type="text" class="form-control" v-show="showCustomRpcInput" v-model="rpcEndpointCustomInput" placeholder="Enter custom Esplora API URL" ref="rpcCustomInput">
                                 </div>
-                                <button class="btn btn-secondary" @click="updateRpcAndNetwork"><i class="bi bi-check-circle me-1"></i> Update</button>
+                                <button class="btn btn-primary" @click="updateRpcAndNetwork" :disabled="isRpcUpdateDisabled"><i class="bi bi-check-circle me-1"></i> Update</button>
                                 <!-- Network status display bound to Vue data -->
                                 <small :class="networkStatusClass">{{ networkStatusText }}</small>
                            </div>
@@ -94,7 +94,7 @@
                                              <button class="btn btn-outline-secondary" type="button" @click="togglePkInputVisibility" title="Show/Hide Key">
                                                 <i :class="['bi', pkInputType === 'password' ? 'bi-eye-fill' : 'bi-eye-slash-fill']"></i>
                                              </button>
-                                             <button class="btn btn-secondary" type="button" @click="importWallet"><i class="bi bi-box-arrow-in-right me-1"></i> Import</button>
+                                             <button class="btn btn-primary" type="button" @click="importWallet"><i class="bi bi-box-arrow-in-right me-1"></i> Import</button>
                                          </div>
                                     </div>
                                 </div>

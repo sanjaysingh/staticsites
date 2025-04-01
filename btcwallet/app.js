@@ -84,6 +84,22 @@ createApp({
         blockExplorerUrlBase() {
             return this.isTestnet ? 'https://mempool.space/testnet/' : 'https://mempool.space/';
         },
+        // Computed property to disable RPC update if selection hasn't changed
+        isRpcUpdateDisabled() {
+            let selectedRpc = '';
+            if (this.rpcEndpointSelectValue === 'DEFAULT_TESTNET') {
+                selectedRpc = this.DEFAULT_TESTNET_RPC_ENDPOINT;
+            } else if (this.rpcEndpointSelectValue === 'DEFAULT_MAINNET') {
+                selectedRpc = this.DEFAULT_MAINNET_RPC_ENDPOINT;
+            } else if (this.rpcEndpointSelectValue === 'CUSTOM') {
+                selectedRpc = this.rpcEndpointCustomInput.trim();
+                // Normalize custom input for comparison (add trailing slash if missing)
+                if (selectedRpc && !selectedRpc.endsWith('/')) {
+                     selectedRpc += '/';
+                }
+            } 
+            return selectedRpc === this.currentRpcEndpoint;
+        },
         // Optional: Computed property for theme icon class
         themeIconClass() {
             return this.currentTheme === 'dark' ? 'bi-moon-stars-fill' : 'bi-sun-fill';
@@ -261,7 +277,7 @@ createApp({
             this.showLoading(true);
             try {
                 const url = `${this.currentRpcEndpoint}address/${this.walletAddress}/utxo`;
-                const response = await axios.get(url);
+                const response = await axios.get(url, { timeout: 10000 });
                 return response.data;
             } catch (error) {
                 console.error(`Error fetching UTXOs for ${this.walletAddress}:`, error.response ? error.response.data : error.message);
@@ -293,7 +309,8 @@ createApp({
             try {
                 const url = `${this.currentRpcEndpoint}tx`;
                 const response = await axios.post(url, txHex, {
-                    headers: { 'Content-Type': 'text/plain' }
+                    headers: { 'Content-Type': 'text/plain' },
+                    timeout: 10000
                 });
                 const txid = response.data;
                 this.txStatus = "Success!";
@@ -463,13 +480,13 @@ createApp({
                 targetRpc += '/';
             }
 
-             this.networkStatusText = 'Network: Detecting...';
+             this.networkStatusText = 'Selected Network: Detecting...';
              this.networkStatusClass = 'form-text text-muted d-block mt-2'; // Default class while detecting
             this.showLoading(true);
 
             try {
                 const blockHeightUrl = `${targetRpc}blocks/tip/height`;
-                const response = await axios.get(blockHeightUrl, { timeout: 5000 });
+                const response = await axios.get(blockHeightUrl, { timeout: 10000 });
                 const blockHeight = parseInt(response.data, 10);
 
                 if (isNaN(blockHeight)) {
@@ -490,7 +507,7 @@ createApp({
                 this.currentRpcEndpoint = targetRpc;
 
                 this.showAlert(`RPC Endpoint updated. Detected Network: ${this.networkName}`, "success");
-                 this.networkStatusText = `Network: ${this.networkName} (Detected)`;
+                 this.networkStatusText = `Selected Network: ${this.networkName} (Detected)`;
                  this.networkStatusClass = `form-text d-block mt-2 ${this.isTestnet ? 'text-info' : 'text-primary'}`; 
 
                 // Refresh balance if wallet is STILL loaded (i.e., wasn't cleared)
@@ -501,7 +518,7 @@ createApp({
             } catch (error) {
                 console.error("Error detecting network or updating RPC:", error);
                 this.showAlert(`Failed to connect or detect network for ${targetRpc}. Please check the URL and try again. Error: ${error.message}`, "danger");
-                 this.networkStatusText = `Network: Detection Failed`;
+                 this.networkStatusText = `Selected Network: Detection Failed`;
                  this.networkStatusClass = 'form-text text-danger d-block mt-2';
             } finally {
                  this.showLoading(false);
@@ -531,8 +548,8 @@ createApp({
          this.updateWalletStateUI();
 
          // Set initial network status text
-         this.networkStatusText = `Network: ${this.networkName} (Default)`; // Initial text
-         this.networkStatusClass = `form-text d-block mt-2 ${this.isTestnet ? 'text-info' : 'text-primary'}`; // Initial class
+         this.networkStatusText = `Selected Network: ${this.networkName} (Default)`;
+         this.networkStatusClass = `form-text d-block mt-2 ${this.isTestnet ? 'text-info' : 'text-primary'}`;
 
         // Listen for Receive tab being shown to generate QR code
          const receiveTabTrigger = document.getElementById('receive-tab'); // Get the button that triggers the tab
