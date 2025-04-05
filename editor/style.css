@@ -65,16 +65,6 @@ body {
     align-items: center;
 }
 
-/* Action buttons group */
-#toolbar::after {
-    content: "";
-    display: inline-block;
-    height: 24px;
-    width: 1px;
-    background-color: var(--border-color);
-    margin: 0 var(--spacing-sm);
-}
-
 /* Controls */
 select,
 button {
