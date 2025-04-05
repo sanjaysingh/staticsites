@@ -20,13 +20,6 @@ The path to the HTML file to process.
 .EXAMPLE
 .\offlinify.ps1 .\index.html
 
-.NOTES
-Author: Gemini
-Date:   2024-03-08
-- Requires PowerShell 5.1 or later for Invoke-WebRequest features.
-- The URL parsing logic attempts common CDN patterns but might not cover all cases.
-- Ensure you have internet connectivity to download the resources.
-- The script modifies the input HTML file in place. Consider backing it up first.
 #>
 param(
     [Parameter(Mandatory=$true, Position=0)]
