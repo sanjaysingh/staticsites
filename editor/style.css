@@ -1,0 +1,237 @@
+:root {
+    /* Color variables */
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #2d2d2d;
+    --bg-control: #333;
+    --bg-control-hover: #444;
+    --text-primary: #fff;
+    --text-secondary: #aaa;
+    --overlay-bg: rgba(0, 0, 0, 0.8);
+    --border-color: #666;
+    --status-bar-bg: #007acc;
+    --icon-color: #ddd;
+    --icon-hover-color: #fff;
+    
+    /* Spacing variables */
+    --spacing-sm: 8px;
+    --spacing-md: 10px;
+    --spacing-lg: 20px;
+}
+
+/* Base styles */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--bg-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Header styles */
+#top-panel {
+    position: relative;
+    background: var(--bg-secondary);
+    height: 50px;
+    width: 100%;
+    display: flex;
+    padding: 0 var(--spacing-lg);
+    box-sizing: border-box;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+#title {
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: normal;
+    margin: 0;
+    white-space: nowrap;
+}
+
+#file-path {
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-align: center;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 var(--spacing-lg);
+}
+
+#toolbar {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+/* Action buttons group */
+#toolbar::after {
+    content: "";
+    display: inline-block;
+    height: 24px;
+    width: 1px;
+    background-color: var(--border-color);
+    margin: 0 var(--spacing-sm);
+}
+
+/* Controls */
+select,
+button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: 4px;
+    background: var(--bg-control);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+select:hover,
+button:hover {
+    background: var(--bg-control-hover);
+}
+
+/* Icon button styles */
+#open-file-btn,
+#format-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#open-file-btn i,
+#format-btn i {
+    font-size: 16px;
+    color: var(--icon-color);
+}
+
+#open-file-btn:hover i,
+#format-btn:hover i {
+    color: var(--icon-hover-color);
+    transform: scale(1.1);
+}
+
+/* Add a subtle highlight to format button */
+#format-btn {
+    background-color: #3a3a3a;
+}
+
+#format-btn:hover {
+    background-color: #4a4a4a;
+}
+
+/* Select elements styling */
+select {
+    min-width: 120px;
+    background-color: var(--bg-control);
+}
+
+/* Editor container */
+#editor-container {
+    width: 100vw;
+    height: calc(100vh - 50px - 25px); /* Account for status bar */
+    position: relative;
+}
+
+/* File input hidden by default */
+#file-input {
+    display: none;
+}
+
+/* Drop zone for drag-and-drop */
+#drop-zone {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--overlay-bg);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+#drop-zone.active {
+    display: flex;
+}
+
+#drop-zone-text {
+    color: var(--text-primary);
+    font-size: 24px;
+    padding: var(--spacing-lg);
+    border: 2px dashed var(--text-primary);
+    border-radius: 10px;
+}
+
+/* Status bar */
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 25px;
+    background-color: var(--status-bar-bg);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--spacing-md);
+    box-sizing: border-box;
+    font-size: 12px;
+    z-index: 10;
+}
+
+.status-item {
+    padding: 0 var(--spacing-md);
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+    #top-panel {
+        height: auto;
+        padding: var(--spacing-md);
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    #file-path {
+        display: none;
+    }
+
+    #toolbar {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    #toolbar::after {
+        display: none; /* Hide the divider on mobile */
+    }
+
+    select,
+    button {
+        font-size: 12px;
+        padding: 6px var(--spacing-md);
+    }
+    
+    #open-file-btn,
+    #format-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+    }
+    
+    select {
+        min-width: 100px;
+    }
+
+    #editor-container {
+        height: calc(100vh - 90px - 25px); /* Account for taller header and status bar */
+    }
+} 
