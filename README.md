@@ -61,3 +61,33 @@ python -m http.server 8080
 - Each app needs an `index.html` with a `<title>`
 - No setup needed - hooks work automatically
 - Works on Windows, Linux, and macOS 
+
+## Making Apps Work Offline
+
+A PowerShell script `offlineify.ps1` is included to help make HTML applications work offline by:
+
+1. Finding external resources (CSS, JS) loaded from CDNs
+2. Downloading them to a local `libs` folder
+3. Updating HTML to reference local copies
+4. Downloading secondary resources like fonts referenced in CSS files
+5. Cleaning up integrity and crossorigin attributes
+
+### Usage
+
+```powershell
+# Basic usage
+.\offlineify.ps1 -HtmlFilePath path\to\your\index.html
+
+# For example, to make the UUID generator work offline
+.\offlineify.ps1 -HtmlFilePath .\uuid\index.html
+```
+
+### Features
+
+- Downloads JS and CSS files from CDN links
+- Preserves version numbers in filenames where possible
+- Processes CSS files to find and download referenced fonts, images, etc.
+- Creates a clean HTML with minimal attributes for offline use
+- Works with ES6 module imports
+
+This tool is especially useful when you need to ensure apps work without internet connectivity. 
