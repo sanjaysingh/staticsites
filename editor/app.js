@@ -25,7 +25,7 @@ const supportedLanguages = {
 
 // Editor themes
 const editorThemes = {
-    'vs-dark': 'Dark (Default)',
+    'vs-dark': 'Dark',
     'vs': 'Light',
     'hc-black': 'High Contrast Dark',
     'hc-light': 'High Contrast Light'
@@ -109,10 +109,10 @@ function populateThemeDropdown() {
 // Initialize Monaco Editor
 const loadMonaco = () => {
     const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.js';
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.js';
     script.onload = () => {
         require.config({
-            paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }
+            paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' }
         });
         require(['vs/editor/editor.main'], initializeEditor);
     };
