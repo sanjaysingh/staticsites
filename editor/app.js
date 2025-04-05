@@ -18,7 +18,8 @@ const supportedLanguages = {
     ruby: { displayName: 'Ruby' },
     sql: { displayName: 'SQL' },
     typescript: { displayName: 'TypeScript' },
-    xml: { displayName: 'XML' }
+    xml: { displayName: 'XML' },
+    yaml: { displayName: 'YAML' },
     // Add new languages here
     // example: rust: { displayName: 'Rust' }
 };
@@ -141,61 +142,71 @@ const languageDetector = {
         'ps1': 'powershell',
         'psm1': 'powershell',
         'psd1': 'powershell',
-        'txt': 'plaintext'
+        'txt': 'plaintext',
+        'yaml': 'yaml',
+        'yml': 'yaml'
         // Add new extensions here as needed
     },
     
     // Language signatures for content-based detection
     signatures: {
         javascript: {
-            keywords: ['const', 'let', 'var', 'function', '=>', 'console.log', 'require', 'module.exports'],
-            patterns: [/^[\s\n]*(?:const|let|var)\s+\w+\s*=/, /\bfunction\s*\w*\s*\(.*\)\s*{/, /=>\s*{/]
+            keywords: ['const', 'let', 'var', 'function', '=>', 'console.log', 'require', 'module.exports', 'async', 'await'],
+            patterns: [/^[\s\n]*(?:const|let|var)\s+\w+\s*=/, /\bfunction\s*\w*\s*\(.*\)\s*{/, /=>\s*{/, /require\(['"]\w+['"]\)/]
         },
         typescript: {
-            keywords: ['interface', 'type', 'namespace', 'readonly', 'private', 'public', 'protected'],
-            patterns: [/:\s*(?:string|number|boolean|any)\b/, /interface\s+\w+\s*{/]
+            keywords: ['interface', 'type', 'namespace', 'readonly', 'private', 'public', 'protected', 'enum', 'declare'],
+            patterns: [/:\s*(?:string|number|boolean|any|void)\b/, /interface\s+\w+\s*{/, /:\s*(?:private|public|protected)\s+\w+\s*:/]
         },
         css: {
-            keywords: ['margin:', 'padding:', 'border:', 'background-color:', '@media'],
-            patterns: [/[.#][\w-]+\s*{/, /@media\s*/, /:\s*(?:hover|active|focus)\s*{/]
+            keywords: ['margin:', 'padding:', 'border:', 'background-color:', '@media', 'color:', 'font-size:', 'display:'],
+            patterns: [/[.#][\w-]+\s*{/, /@media\s*[({]/, /:\s*(?:hover|active|focus|nth-child)\s*{/]
         },
         python: {
-            keywords: ['def', 'class', 'import', 'from', 'if __name__', 'print('],
-            patterns: [/def\s+\w+\s*\(.*\):/, /class\s+\w+[:\s]/]
+            keywords: ['def', 'class', 'import', 'from', 'if __name__', 'print(', 'elif', 'else:', 'try:', 'except:', 'with', 'yield', 'async', 'await'],
+            patterns: [/def\s+\w+\s*\(.*\):/, /class\s+\w+[:(]/, /\\bimport\s+\w+/, /\\bfrom\s+\w+\s+import/]
+        },
+        csharp: {
+            keywords: ['namespace', 'using', 'class', 'public', 'static', 'void', 'string', 'int', 'bool', 'var', 'get', 'set', 'private', 'protected', 'internal', 'new', 'return'],
+            patterns: [/namespace\s+[\w.]+\s*{/, /using\s+System;/, /public\s+static\s+void\s+Main\s*\(String(\[\]|\.\.\.)\s+\w+\)/, /class\s+\w+\s*{/, /\b(?:get|set);/, /\[\w+\]/]
         },
         java: {
-            keywords: ['public class', 'private', 'protected', 'void', 'static'],
-            patterns: [/public\s+class\s+\w+/, /public\s+static\s+void\s+main/]
+            keywords: ['public class', 'private', 'protected', 'void', 'static', 'import', 'package', 'System.out.println', 'ArrayList', 'String', 'new', 'return', 'final', 'extends', 'implements'],
+            patterns: [/public\s+class\s+\w+/, /public\s+static\s+void\s+main\s*\(String(\[\]|\.\.\.)\s+\w+\)/, /import\s+java\.[\w.]+;/ , /package\s+[\w.]+;/]
+        },
+        go: {
+            keywords: ['package', 'import', 'func', 'fmt.Println', 'var', ':=', 'range', 'type', 'struct', 'map', 'chan', 'go', 'defer'],
+            patterns: [/^package\s+main/m, /import\s+"\w+"/, /import\s+\(.*\)/, /func\s+main\s*\(\)/, /func\s+\w+\s*\(.*\)/, /\w+\s+:=\s+/]
         },
         json: {
-            patterns: [/^[\s\n]*[{\[][\s\n]*"[^"]+"\s*:/, /^[\s\n]*{[\s\n]*$/, /^[\s\n]*\[[\s\n]*$/]
+            patterns: [/^[\s\n]*[{\[][\s\n]*"[^"]+"\s*:/, /^[\s\n]*\[[\s\n]*(?:{|"[^"]*")/]
         },
         sql: {
-            keywords: ['SELECT', 'INSERT INTO', 'UPDATE', 'DELETE FROM', 'WHERE', 'JOIN'],
-            patterns: [/SELECT\s+[\w\s,*]+\s+FROM/i, /INSERT\s+INTO\s+\w+/i]
+            keywords: ['SELECT', 'INSERT INTO', 'UPDATE', 'DELETE FROM', 'WHERE', 'JOIN', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE', 'GROUP BY', 'ORDER BY', 'LEFT JOIN', 'RIGHT JOIN'],
+            patterns: [/SELECT\s+[\w\s,*]+\s+FROM/i, /INSERT\s+INTO\s+\w+/i, /CREATE\s+TABLE/i, /UPDATE\s+\w+\s+SET/i]
         },
         powershell: {
-            keywords: ['function', 'param', '$PSScriptRoot', 'Write-Host', 'Get-Process', 'Set-Location'],
-            patterns: [/\$\w+/, /function\s+\w+-\w+/, /\[Parameter\(.*\)\]/, /\[CmdletBinding\(\)\]/]
+            keywords: ['function', 'param', '$PSScriptRoot', 'Write-Host', 'Get-Process', 'Set-Location', 'if', 'else', 'foreach', 'while', 'try', 'catch', 'finally', '$true', '$false', '$null'],
+            patterns: [/$\w+/, /function\s+\w+-\w+/, /\[Parameter\(.*\)\]/, /\[CmdletBinding\(\)\]/, /Write-(?:Host|Output|Warning|Error)/]
+        },
+        yaml: {
+            patterns: [/^\s*- /m, /^\s*\w+:\s/m, /^---[ \t]*$/m]
         }
         // Add new language signatures here as needed
     },
 
     // Detect language from content
     fromContent(content) {
-        // Check for HTML and XML first (most distinctive patterns)
+        // Check for HTML first (most distinctive pattern)
         if (/<!DOCTYPE\s+html>|<html[\s>]/i.test(content)) {
             return 'html';
-        }
-        if (/<[^>]+>/.test(content)) {
-            return 'xml';
         }
 
         // Helper functions
         const countMatches = (text, items) => items.filter(item => text.includes(item)).length;
         const matchesPatterns = (text, patterns) => patterns.some(pattern => pattern.test(text));
         
-        // Score each language
+        // Score each language based on signatures
         let maxScore = 0;
         let detectedLang = '';
 
@@ -205,7 +216,7 @@ const languageDetector = {
                 score += countMatches(content, tests.keywords) * 2;
             }
             if (tests.patterns && matchesPatterns(content, tests.patterns)) {
-                score += 5;
+                score += 5; // Give pattern matches higher weight
             }
             if (score > maxScore) {
                 maxScore = score;
@@ -213,7 +224,18 @@ const languageDetector = {
             }
         }
         
-        return maxScore > 0 ? detectedLang : 'plaintext';
+        // If a language was detected with a decent score, return it
+        if (maxScore > 0) { 
+            return detectedLang;
+        }
+
+        // Fallback: Check for generic XML pattern *after* specific signatures
+        if (/<[^>]+>/.test(content)) {
+            return 'xml';
+        }
+        
+        // Default to plaintext if nothing else matches
+        return 'plaintext';
     },
     
     // Get language from file
