@@ -350,38 +350,36 @@ Write-Host "Cleaning attributes from modified <link> and <script> tags..."
 # Clean <link> tags pointing to local libs (assuming rel="stylesheet")
 # Matches <link ... href="libs/..." ... > and keeps only rel and href
 $CleanedLinkCount = 0
-$HtmlContent = [regex]::Replace($HtmlContent, '(?i)(<link\s+)([^>]*?href\s*=\s*(["']))(libs/[^\3>]+)(\3[^>]*?>)', {
+# Fix regex syntax - using a simpler approach to match href attributes
+$HtmlContent = [regex]::Replace($HtmlContent, '(?i)<link\s+[^>]*href\s*=\s*([''"])(libs/[^''"]+)\1[^>]*>', {
     param($Match)
-    $HrefValue = $Match.Groups[4].Value
+    $HrefValue = $Match.Groups[2].Value
     $CleanedLinkCount++
     # Construct the cleaned tag. Assumes rel=stylesheet is desired.
-    '<link rel="stylesheet" href="{0}">' -f $HrefValue
+    "<link rel=`"stylesheet`" href=`"$HrefValue`">"
 })
 Write-Host "  Cleaned attributes from $CleanedLinkCount modified <link> tag(s)."
 
 # Clean <script> tags pointing to local libs
 # Matches <script ... src="libs/..." ... ></script> and keeps only src and optionally type
 $CleanedScriptCount = 0
-$HtmlContent = [regex]::Replace($HtmlContent, '(?is)(<script\s+)([^>]*?src\s*=\s*(["']))(libs/[^\3>]+)(\3[^>]*?>)(.*?)</script>', {
+# Fix regex syntax - using a simpler approach to match src attributes
+$HtmlContent = [regex]::Replace($HtmlContent, '(?is)<script\s+[^>]*src\s*=\s*([''"])(libs/[^''"]+)\1[^>]*>(.*?)</script>', {
     param($Match)
-    $AttributesBefore = $Match.Groups[2].Value
-    $SrcValue = $Match.Groups[4].Value
-    $AttributesAfter = $Match.Groups[5].Value
-    $ScriptContent = $Match.Groups[6].Value # Keep inner content if any, though unlikely for src tags
+    $SrcValue = $Match.Groups[2].Value
+    $ScriptContent = $Match.Groups[3].Value # Keep inner content if any, though unlikely for src tags
     
     $CleanedScriptCount++
     
     # Check if a type attribute exists in the original attributes
-    $TypeAttr = $null
-    if (($AttributesBefore + $AttributesAfter) -match '(?i)type\s*=\s*(["'])([^\1>]+)\1') {
-        $TypeAttr = 'type="{0}"' -f $Matches[2]
-    }
+    $TypeMatch = $Match.Value -match '(?i)type\s*=\s*([''"])([^''"]+)\1'
+    $TypeAttr = if ($TypeMatch) { "type=`"$($Matches[2])`"" } else { "" }
     
     # Construct the cleaned tag
     if ($TypeAttr) {
-        '<script {0} src="{1}">{2}</script>' -f $TypeAttr, $SrcValue, $ScriptContent
+        "<script $TypeAttr src=`"$SrcValue`">$ScriptContent</script>"
     } else {
-        '<script src="{0}">{1}</script>' -f $SrcValue, $ScriptContent
+        "<script src=`"$SrcValue`">$ScriptContent</script>"
     }
 })
 Write-Host "  Cleaned attributes from $CleanedScriptCount modified <script> tag(s)."
