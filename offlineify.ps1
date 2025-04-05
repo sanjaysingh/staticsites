@@ -299,7 +299,7 @@ function Process-CssContent {
 }
 
 # --- Process <link href="..."> ---
-$LinkRegex = '(?i)<link.*?href\s*=\s*["''](https?://.*?)["'']'
+$LinkRegex = '(?is)<link.*?href\s*=\s*["''](https?://.*?)["'']'
 $Matches = [regex]::Matches($HtmlContent, $LinkRegex)
 Write-Host ("Found {0} potential <link> tags with external http(s) URLs." -f $Matches.Count)
 
