@@ -94,6 +94,7 @@ h1 {
     background-color: #fff;
     color: #333;
     overflow: auto;
+    position: relative; /* Make this a positioning context */
 }
 
 /* Line number container and styling */
@@ -102,6 +103,9 @@ h1 {
     border-right: 1px solid #ddd;
     padding: 0.5rem 0;
     user-select: none;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE/Edge */
     text-align: right;
     color: #999;
     min-width: 2.5rem;
@@ -109,11 +113,18 @@ h1 {
     font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     font-size: 0.9rem;
     flex-shrink: 0;
+    pointer-events: none; /* Prevents any mouse interaction */
+    cursor: default;
+    position: sticky;
+    left: 0;
+    z-index: 1;
 }
 
 .line-number {
     padding: 0 0.5rem;
     line-height: 1.5;
+    display: block; /* Ensure each line number is on its own line */
+    height: 1.5em; /* Match the height of code lines */
 }
 
 /* Code content container */
@@ -122,6 +133,9 @@ h1 {
     padding: 0.5rem;
     width: 100%;
     white-space: pre;
+    min-width: 0; /* Allow flex container to shrink this */
+    overflow-wrap: normal;
+    overflow-x: auto;
 }
 
 .code-line {
@@ -129,6 +143,8 @@ h1 {
     line-height: 1.5;
     white-space: pre;
     width: 100%;
+    display: block; /* Ensure each code line is on its own line */
+    position: relative;
 }
 
 /* Syntax highlighting colors */

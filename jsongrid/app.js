@@ -39,7 +39,7 @@ createApp({
             const formattedJson = JSON.stringify(sampleJsonData, null, 2);
             this.jsonInput = formattedJson;
             
-            jsonEditor.textContent = formattedJson;
+            jsonEditor.innerHTML = '';
             
             try {
                 const container = document.createElement('div');
@@ -47,9 +47,11 @@ createApp({
                 
                 const lineNumbers = document.createElement('div');
                 lineNumbers.className = 'line-number-container';
+                lineNumbers.setAttribute('contenteditable', 'false');
                 
                 const codeContent = document.createElement('div');
                 codeContent.className = 'code-content';
+                codeContent.setAttribute('contenteditable', 'true');
                 
                 const lines = formattedJson.split('\n');
                 for (let i = 0; i < lines.length; i++) {
@@ -67,7 +69,6 @@ createApp({
                 container.appendChild(lineNumbers);
                 container.appendChild(codeContent);
                 
-                jsonEditor.innerHTML = '';
                 jsonEditor.appendChild(container);
             } catch (err) {
                 jsonEditor.textContent = formattedJson;
@@ -81,13 +82,34 @@ createApp({
             if (!jsonEditor) return;
             
             try {
+                // Save selection state before any DOM changes
+                const selection = window.getSelection();
+                const selectionState = this.saveSelectionState(selection);
+                
                 const formattedJson = this.formatJson(jsonString);
                 
-                jsonEditor.textContent = formattedJson;
+                // Don't update if content hasn't changed
+                const currentContent = this.getEditorTextContent(jsonEditor);
+                if (currentContent === formattedJson) {
+                    return;
+                }
                 
+                this.isUpdatingFromInput = true;
+                
+                // Apply syntax highlighting
                 this.applySyntaxHighlighting(jsonEditor);
                 
+                // Update input
                 this.jsonInput = formattedJson;
+                
+                // Restore selection state after DOM update
+                if (selectionState) {
+                    setTimeout(() => {
+                        this.restoreSelectionState(jsonEditor, selectionState);
+                    }, 0);
+                }
+                
+                this.isUpdatingFromInput = false;
             } catch (err) {
                 jsonEditor.textContent = jsonString;
             }
@@ -129,9 +151,11 @@ createApp({
                 
                 const lineNumbers = document.createElement('div');
                 lineNumbers.className = 'line-number-container';
+                lineNumbers.setAttribute('contenteditable', 'false');
                 
                 const codeContent = document.createElement('div');
                 codeContent.className = 'code-content';
+                codeContent.setAttribute('contenteditable', 'true');
                 
                 const lines = content.split('\n');
                 for (let i = 0; i < lines.length; i++) {
@@ -176,9 +200,11 @@ createApp({
                     
                     const lineNumbers = document.createElement('div');
                     lineNumbers.className = 'line-number-container';
+                    lineNumbers.setAttribute('contenteditable', 'false');
                     
                     const codeContent = document.createElement('div');
                     codeContent.className = 'code-content';
+                    codeContent.setAttribute('contenteditable', 'true');
                     
                     for (let i = 0; i < lines.length; i++) {
                         const lineNumber = document.createElement('div');
@@ -225,9 +251,15 @@ createApp({
         handleEditorInput(event) {
             if (this.isUpdatingFromInput) return;
             
-            const rawContent = this.getEditorTextContent(event.target);
+            // Make sure we're only handling input in the code-content area
+            const codeContent = event.target.closest('.code-content');
+            if (!codeContent) return;
+            
+            // Get the raw content from the code content area
+            const rawContent = this.getEditorTextContent(event.target.closest('#jsonEditor'));
             this.jsonInput = rawContent;
             
+            // Save current selection state
             const selection = window.getSelection();
             const selectionState = this.saveSelectionState(selection);
             
@@ -240,7 +272,7 @@ createApp({
                 } catch (err) {
                     this.isUpdatingFromInput = true;
                     
-                    const editor = event.target;
+                    const editor = event.target.closest('#jsonEditor');
                     const lines = rawContent.split('\n');
                     
                     const container = document.createElement('div');
@@ -248,9 +280,11 @@ createApp({
                     
                     const lineNumbers = document.createElement('div');
                     lineNumbers.className = 'line-number-container';
+                    lineNumbers.setAttribute('contenteditable', 'false');
                     
                     const codeContent = document.createElement('div');
                     codeContent.className = 'code-content';
+                    codeContent.setAttribute('contenteditable', 'true');
                     
                     for (let i = 0; i < lines.length; i++) {
                         const lineNumber = document.createElement('div');
@@ -273,7 +307,9 @@ createApp({
                     this.isUpdatingFromInput = false;
                     
                     if (selectionState) {
-                        this.restoreSelectionState(event.target, selectionState);
+                        setTimeout(() => {
+                            this.restoreSelectionState(editor, selectionState);
+                        }, 0);
                     }
                 }
             }, 300);
@@ -303,10 +339,35 @@ createApp({
             if (selection.rangeCount === 0) return null;
             
             const range = selection.getRangeAt(0);
+            
+            // Find line index for better position restoration
+            let lineIndex = -1;
+            const startNode = range.startContainer;
+            
+            // Find the parent code-line element
+            let parentLine = startNode;
+            while (parentLine && !parentLine.classList?.contains('code-line')) {
+                parentLine = parentLine.parentNode;
+            }
+            
+            // If we found the parent line, determine its index
+            if (parentLine) {
+                const parentContent = parentLine.parentNode;
+                if (parentContent && parentContent.children) {
+                    for (let i = 0; i < parentContent.children.length; i++) {
+                        if (parentContent.children[i] === parentLine) {
+                            lineIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+            
             return {
                 startContainer: range.startContainer,
                 startOffset: range.startOffset,
-                collapsed: range.collapsed
+                collapsed: range.collapsed,
+                lineIndex: lineIndex
             };
         },
         
@@ -320,13 +381,24 @@ createApp({
                 const codeContent = editor.querySelector('.code-content');
                 if (!codeContent) return;
                 
+                // Find all text nodes in the code content area only (not line numbers)
                 const allTextNodes = this.getAllTextNodes(codeContent);
+                
                 if (allTextNodes.length === 0) {
-                    range.selectNodeContents(codeContent.firstChild || codeContent);
-                    range.collapse(true);
+                    // If no text nodes found, select the first code line
+                    const firstCodeLine = codeContent.querySelector('.code-line');
+                    if (firstCodeLine) {
+                        range.selectNodeContents(firstCodeLine);
+                        range.collapse(true);
+                    } else {
+                        range.selectNodeContents(codeContent);
+                        range.collapse(true);
+                    }
                 } else {
+                    // Try to find the exact node that was previously selected
                     let targetNode = allTextNodes[0];
                     let targetOffset = 0;
+                    let nodeFound = false;
                     
                     for (const node of allTextNodes) {
                         if (node === state.startContainer || 
@@ -334,7 +406,20 @@ createApp({
                              node.textContent === state.startContainer.textContent)) {
                             targetNode = node;
                             targetOffset = Math.min(state.startOffset, node.textContent.length);
+                            nodeFound = true;
                             break;
+                        }
+                    }
+                    
+                    // If we couldn't find the exact node, try to maintain relative position
+                    if (!nodeFound && state.lineIndex !== undefined && state.lineIndex < codeContent.children.length) {
+                        const targetLine = codeContent.children[state.lineIndex];
+                        if (targetLine) {
+                            const lineTextNodes = this.getAllTextNodes(targetLine);
+                            if (lineTextNodes.length > 0) {
+                                targetNode = lineTextNodes[0];
+                                targetOffset = Math.min(state.startOffset, targetNode.textContent.length);
+                            }
                         }
                     }
                     
@@ -418,9 +503,11 @@ createApp({
                     
                     const lineNumbers = document.createElement('div');
                     lineNumbers.className = 'line-number-container';
+                    lineNumbers.setAttribute('contenteditable', 'false');
                     
                     const codeContent = document.createElement('div');
                     codeContent.className = 'code-content';
+                    codeContent.setAttribute('contenteditable', 'true');
                     
                     for (let i = 0; i < lines.length; i++) {
                         const lineNumber = document.createElement('div');
@@ -508,11 +595,58 @@ createApp({
                 }
                 this.displayData(newDataArray);
                 
-                const jsonEditor = document.getElementById('jsonEditor');
+                // Update the editor with direct rendering
                 if (jsonEditor) {
-                    this.isUpdatingFromInput = true;
-                    this.updateEditorContent(formattedJson);
-                    this.isUpdatingFromInput = false;
+                    // Clear the editor
+                    jsonEditor.innerHTML = '';
+                    
+                    // Build container for editor
+                    const container = document.createElement('div');
+                    container.className = 'editor-container';
+                    
+                    const lineNumbers = document.createElement('div');
+                    lineNumbers.className = 'line-number-container';
+                    lineNumbers.setAttribute('contenteditable', 'false');
+                    
+                    const codeContent = document.createElement('div');
+                    codeContent.className = 'code-content';
+                    codeContent.setAttribute('contenteditable', 'true');
+                    
+                    // Process each line separately
+                    const lines = formattedJson.split('\n');
+                    for (let i = 0; i < lines.length; i++) {
+                        // Create line number element
+                        const lineNumber = document.createElement('div');
+                        lineNumber.className = 'line-number';
+                        lineNumber.textContent = (i + 1).toString();
+                        lineNumbers.appendChild(lineNumber);
+                        
+                        // Create code line element
+                        const codeLine = document.createElement('div');
+                        codeLine.className = 'code-line';
+                        
+                        // Apply syntax highlighting if possible
+                        try {
+                            const line = lines[i];
+                            codeLine.textContent = line; // Fallback content
+                            
+                            if (line.trim()) {
+                                codeLine.textContent = '';
+                                const grammar = Prism.languages.json;
+                                const tokens = Prism.tokenize(line, grammar);
+                                this.renderTokensToElement(tokens, codeLine);
+                            }
+                        } catch (err) {
+                            // Fallback already in place
+                        }
+                        
+                        codeContent.appendChild(codeLine);
+                    }
+                    
+                    // Assemble and update the editor
+                    container.appendChild(lineNumbers);
+                    container.appendChild(codeContent);
+                    jsonEditor.appendChild(container);
                 }
             } catch (e) {
                 this.setError(`Invalid JSON or structure: ${e.message}`);
@@ -545,7 +679,60 @@ createApp({
                         this.jsonInput = formattedJson;
                         this.lastValidJson = formattedJson;
                         
-                        this.updateEditorContent(formattedJson);
+                        // Update the editor with direct rendering
+                        const jsonEditor = document.getElementById('jsonEditor');
+                        if (jsonEditor) {
+                            // Clear the editor
+                            jsonEditor.innerHTML = '';
+                            
+                            // Build container for editor
+                            const container = document.createElement('div');
+                            container.className = 'editor-container';
+                            
+                            const lineNumbers = document.createElement('div');
+                            lineNumbers.className = 'line-number-container';
+                            lineNumbers.setAttribute('contenteditable', 'false');
+                            
+                            const codeContent = document.createElement('div');
+                            codeContent.className = 'code-content';
+                            codeContent.setAttribute('contenteditable', 'true');
+                            
+                            // Process each line separately
+                            const lines = formattedJson.split('\n');
+                            for (let i = 0; i < lines.length; i++) {
+                                // Create line number element
+                                const lineNumber = document.createElement('div');
+                                lineNumber.className = 'line-number';
+                                lineNumber.textContent = (i + 1).toString();
+                                lineNumbers.appendChild(lineNumber);
+                                
+                                // Create code line element
+                                const codeLine = document.createElement('div');
+                                codeLine.className = 'code-line';
+                                
+                                // Apply syntax highlighting if possible
+                                try {
+                                    const line = lines[i];
+                                    codeLine.textContent = line; // Fallback content
+                                    
+                                    if (line.trim()) {
+                                        codeLine.textContent = '';
+                                        const grammar = Prism.languages.json;
+                                        const tokens = Prism.tokenize(line, grammar);
+                                        this.renderTokensToElement(tokens, codeLine);
+                                    }
+                                } catch (err) {
+                                    // Fallback already in place
+                                }
+                                
+                                codeContent.appendChild(codeLine);
+                            }
+                            
+                            // Assemble and update the editor
+                            container.appendChild(lineNumbers);
+                            container.appendChild(codeContent);
+                            jsonEditor.appendChild(container);
+                        }
                         
                         const parsedData = this.parseAndValidate(formattedJson);
                         this.jsonData = parsedData.originalStructure;
@@ -677,6 +864,7 @@ createApp({
                 
                 const lineNumbers = document.createElement('div');
                 lineNumbers.className = 'line-number-container';
+                lineNumbers.setAttribute('contenteditable', 'false');
                 
                 const lineNum = document.createElement('div');
                 lineNum.className = 'line-number';
@@ -685,6 +873,7 @@ createApp({
                 
                 const codeContent = document.createElement('div');
                 codeContent.className = 'code-content';
+                codeContent.setAttribute('contenteditable', 'true');
                 
                 const codeLine = document.createElement('div');
                 codeLine.className = 'code-line';
@@ -705,7 +894,7 @@ createApp({
             const oldValue = row[header];
 
             if (newValue !== String(oldValue)) {
-                 console.log(`Updating ${header} from '${oldValue}' to '${newValue}'`);
+                console.log(`Updating ${header} from '${oldValue}' to '${newValue}'`);
                 
                 let typedValue = newValue;
                 if (!isNaN(newValue) && newValue.trim() !== '') {
@@ -720,24 +909,82 @@ createApp({
                 this.rows = [...this.rows];
 
                 try {
+                    // Format the JSON properly with indentation
+                    let formattedJson = '';
                     if (this.jsonData && !Array.isArray(this.jsonData)) {
-                         const key = Object.keys(this.jsonData)[0];
-                         this.jsonData[key] = this.rows; 
-                         this.jsonInput = JSON.stringify(this.jsonData, null, 2);
+                        const key = Object.keys(this.jsonData)[0];
+                        this.jsonData[key] = this.rows; 
+                        formattedJson = JSON.stringify(this.jsonData, null, 2);
                     } else {
-                         this.jsonData = this.rows; 
-                         this.jsonInput = JSON.stringify(this.rows, null, 2);
+                        this.jsonData = this.rows; 
+                        formattedJson = JSON.stringify(this.rows, null, 2);
                     }
                     
-                    this.updateEditorContent(this.jsonInput);
-                    this.lastValidJson = this.jsonInput;
+                    // Update the input values
+                    this.jsonInput = formattedJson;
+                    this.lastValidJson = formattedJson;
                     
-                    console.log("jsonInput updated after cell edit.");
+                    // Manually rebuild the editor to ensure proper formatting
+                    const jsonEditor = document.getElementById('jsonEditor');
+                    if (jsonEditor) {
+                        // Clear the editor
+                        jsonEditor.innerHTML = '';
+                        
+                        // Build the container structure
+                        const container = document.createElement('div');
+                        container.className = 'editor-container';
+                        
+                        const lineNumbers = document.createElement('div');
+                        lineNumbers.className = 'line-number-container';
+                        lineNumbers.setAttribute('contenteditable', 'false');
+                        
+                        const codeContent = document.createElement('div');
+                        codeContent.className = 'code-content';
+                        codeContent.setAttribute('contenteditable', 'true');
+                        
+                        // Process each line separately to maintain formatting
+                        const lines = formattedJson.split('\n');
+                        for (let i = 0; i < lines.length; i++) {
+                            // Create line number element
+                            const lineNumber = document.createElement('div');
+                            lineNumber.className = 'line-number';
+                            lineNumber.textContent = (i + 1).toString();
+                            lineNumbers.appendChild(lineNumber);
+                            
+                            // Create code line element
+                            const codeLine = document.createElement('div');
+                            codeLine.className = 'code-line';
+                            
+                            // Apply syntax highlighting if possible
+                            try {
+                                const line = lines[i];
+                                codeLine.textContent = line; // Fallback content
+                                
+                                if (line.trim()) {
+                                    codeLine.textContent = '';
+                                    const grammar = Prism.languages.json;
+                                    const tokens = Prism.tokenize(line, grammar);
+                                    this.renderTokensToElement(tokens, codeLine);
+                                }
+                            } catch (highlightErr) {
+                                // Fallback already in place with plain text
+                            }
+                            
+                            codeContent.appendChild(codeLine);
+                        }
+                        
+                        // Assemble and update the editor
+                        container.appendChild(lineNumbers);
+                        container.appendChild(codeContent);
+                        jsonEditor.appendChild(container);
+                    }
+                    
+                    console.log("JSON editor updated after cell edit with proper formatting.");
                 } catch (e) {
-                     console.error("Error updating jsonInput after cell edit:", e);
+                    console.error("Error updating JSON after cell edit:", e);
                 }
             } else {
-                 event.target.value = oldValue;
+                event.target.value = oldValue;
             }
         },
         sortBy(key) {
@@ -785,7 +1032,56 @@ createApp({
             
             const jsonEditor = document.getElementById('jsonEditor');
             if (jsonEditor) {
-                this.updateEditorContent(sampleJsonString);
+                // Clear the editor
+                jsonEditor.innerHTML = '';
+                
+                // Build container for editor
+                const container = document.createElement('div');
+                container.className = 'editor-container';
+                
+                const lineNumbers = document.createElement('div');
+                lineNumbers.className = 'line-number-container';
+                lineNumbers.setAttribute('contenteditable', 'false');
+                
+                const codeContent = document.createElement('div');
+                codeContent.className = 'code-content';
+                codeContent.setAttribute('contenteditable', 'true');
+                
+                // Process each line separately
+                const lines = sampleJsonString.split('\n');
+                for (let i = 0; i < lines.length; i++) {
+                    // Create line number element
+                    const lineNumber = document.createElement('div');
+                    lineNumber.className = 'line-number';
+                    lineNumber.textContent = (i + 1).toString();
+                    lineNumbers.appendChild(lineNumber);
+                    
+                    // Create code line element
+                    const codeLine = document.createElement('div');
+                    codeLine.className = 'code-line';
+                    
+                    // Apply syntax highlighting if possible
+                    try {
+                        const line = lines[i];
+                        codeLine.textContent = line; // Fallback content
+                        
+                        if (line.trim()) {
+                            codeLine.textContent = '';
+                            const grammar = Prism.languages.json;
+                            const tokens = Prism.tokenize(line, grammar);
+                            this.renderTokensToElement(tokens, codeLine);
+                        }
+                    } catch (err) {
+                        // Fallback already in place
+                    }
+                    
+                    codeContent.appendChild(codeLine);
+                }
+                
+                // Assemble and update the editor
+                container.appendChild(lineNumbers);
+                container.appendChild(codeContent);
+                jsonEditor.appendChild(container);
             }
             
             this.processJsonInput();
