@@ -333,7 +333,7 @@ pre[class*="language-"] {
 
 /* Table container */
 .table-responsive {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     flex: 1; /* Allow table container to grow */
     overflow-y: auto; /* Ensure scrollbar appears when needed */
     min-height: 200px; /* Reasonable minimum height */
@@ -423,8 +423,6 @@ tbody td {
 /* Style for better visual separation */
 .grid-section {
     position: relative; /* Needed for loading overlay positioning */
-    border-top: 1px solid #dee2e6;
-    padding-top: 1rem;
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -498,4 +496,29 @@ tbody td {
     .table-responsive {
         max-height: 400px; /* Limit height on smaller screens */
     }
+}
+
+/* Card header buttons */
+.card-header .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* File name display */
+.file-name {
+    display: inline-block;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* Ensure card header has enough room for buttons */
+.card-header {
+    padding: 0.75rem 1rem;
+}
+
+.card-header .d-flex.gap-2 {
+    flex-wrap: nowrap;
 } 

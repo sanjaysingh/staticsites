@@ -6,12 +6,7 @@ const sampleJsonData = [
   { "id": 2, "productName": "Bluetooth Keyboard", "category": "Electronics", "price": 49.50, "inStock": false },
   { "id": 3, "productName": "Laptop Stand", "category": "Accessories", "price": 19.00, "inStock": true },
   { "id": 4, "productName": "USB-C Hub", "category": "Accessories", "price": 35.20, "inStock": true },
-  { "id": 5, "productName": "Monitor 27\"", "category": "Electronics", "price": 299.99, "inStock": true },
-  { "id": 6, "productName": "Webcam HD", "category": "Electronics", "price": 55.00, "inStock": false },
-  { "id": 7, "productName": "Ergonomic Chair", "category": "Furniture", "price": 240.00, "inStock": true },
-  { "id": 8, "productName": "Desk Lamp", "category": "Furniture", "price": 32.80, "inStock": true },
-  { "id": 9, "productName": "Notebook", "category": "Stationery", "price": 5.99, "inStock": true },
-  { "id": 10, "productName": "Pen Set", "category": "Stationery", "price": 12.50, "inStock": true }
+  { "id": 5, "productName": "Monitor 27\"", "category": "Electronics", "price": 299.99, "inStock": true }
 ];
 
 const sampleJsonString = JSON.stringify(sampleJsonData, null, 2); // Pretty print
@@ -953,6 +948,25 @@ createApp({
         },
         checkScreenSize() {
             this.isLargeScreen = window.innerWidth >= 992;
+        },
+        
+        // Load sample data into the editor
+        loadSampleData() {
+            console.log("Loading sample data");
+            
+            // Set sample data
+            this.jsonInput = sampleJsonString;
+            this.lastValidJson = sampleJsonString;
+            this.fileName = '';
+            
+            // Update the editor
+            const jsonEditor = document.getElementById('jsonEditor');
+            if (jsonEditor) {
+                this.updateEditorContent(sampleJsonString);
+            }
+            
+            // Process the data
+            this.processJsonInput();
         }
     },
     computed: {
