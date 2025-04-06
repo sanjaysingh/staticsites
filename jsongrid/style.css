@@ -131,34 +131,53 @@ h1 {
     width: 100%;
 }
 
-/* Add styling for tokens within code-line */
+/* Syntax highlighting colors */
 .code-line .token.comment,
 .code-line .token.prolog,
 .code-line .token.doctype,
-.code-line .token.cdata {
+.code-line .token.cdata,
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
     color: #6a9955;
     font-style: italic;
 }
 
-.code-line .token.punctuation {
+.code-line .token.punctuation,
+.token.punctuation {
     color: #666;
 }
 
 .code-line .token.property,
 .code-line .token.tag,
 .code-line .token.constant,
-.code-line .token.symbol {
+.code-line .token.symbol,
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.language-json .token.property {
     color: #0550ae;
+    font-weight: bold;
 }
 
 .code-line .token.boolean,
-.code-line .token.number {
+.code-line .token.number,
+.token.boolean,
+.token.number,
+.language-json .token.boolean,
+.language-json .token.number {
     color: #098658;
 }
 
 .code-line .token.string,
 .code-line .token.char,
-.code-line .token.attr-value {
+.code-line .token.attr-value,
+.token.string,
+.token.char,
+.token.attr-value,
+.language-json .token.string {
     color: #a31515;
 }
 
@@ -166,24 +185,45 @@ h1 {
 .code-line .token.entity,
 .code-line .token.url,
 .code-line .language-css .token.string,
-.code-line .style .token.string {
+.code-line .style .token.string,
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
     color: #5e5e5e;
 }
 
 .code-line .token.selector,
 .code-line .token.attr-name,
-.code-line .token.builtin {
+.code-line .token.builtin,
+.token.selector,
+.token.attr-name,
+.token.builtin {
     color: #264f78;
 }
 
-.code-line .token.keyword {
+.code-line .token.keyword,
+.token.keyword,
+.language-json .token.null {
     color: #569cd6;
     font-weight: bold;
 }
 
 .code-line .token.regex,
-.code-line .token.important {
+.code-line .token.important,
+.token.regex,
+.token.important {
     color: #e90;
+}
+
+.token.important,
+.token.bold {
+    font-weight: bold;
+}
+
+.token.italic {
+    font-style: italic;
 }
 
 /* JSON Text Input */
@@ -243,94 +283,6 @@ pre[class*="language-"] {
     border-radius: 0.25rem;
 }
 
-/* Enhanced Syntax Highlighting */
-.token.comment,
-.token.prolog,
-.token.doctype,
-.token.cdata {
-    color: #6a9955;
-    font-style: italic;
-}
-
-.token.punctuation {
-    color: #666;
-}
-
-.token.property,
-.token.tag,
-.token.constant,
-.token.symbol {
-    color: #0550ae;
-}
-
-.token.boolean,
-.token.number {
-    color: #098658;
-}
-
-.token.string,
-.token.char,
-.token.attr-value {
-    color: #a31515;
-}
-
-.token.operator,
-.token.entity,
-.token.url,
-.language-css .token.string,
-.style .token.string {
-    color: #5e5e5e;
-}
-
-.token.selector,
-.token.attr-name,
-.token.builtin {
-    color: #264f78;
-}
-
-.token.keyword {
-    color: #569cd6;
-    font-weight: bold;
-}
-
-.token.regex,
-.token.important {
-    color: #e90;
-}
-
-.token.important,
-.token.bold {
-    font-weight: bold;
-}
-
-.token.italic {
-    font-style: italic;
-}
-
-/* Improve readability of JSON structure */
-.language-json .token.property {
-    color: #0550ae;
-    font-weight: bold;
-}
-
-.language-json .token.string {
-    color: #a31515;
-}
-
-.language-json .token.number {
-    color: #098658;
-}
-
-.language-json .token.boolean {
-    color: #0550ae;
-    font-weight: bold;
-}
-
-.language-json .token.null {
-    color: #569cd6;
-    font-weight: bold;
-}
-
 /* Table container */
 .table-responsive {
     margin-top: 0.5rem;
@@ -381,6 +333,12 @@ tbody td {
 }
 
 .file-name {
+    display: inline-block;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
     font-style: italic;
     color: #6c757d;
     margin-left: 10px;
@@ -502,16 +460,6 @@ tbody td {
 .card-header .btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
-}
-
-/* File name display */
-.file-name {
-    display: inline-block;
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    vertical-align: middle;
 }
 
 /* Ensure card header has enough room for buttons */

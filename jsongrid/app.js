@@ -9,12 +9,12 @@ const sampleJsonData = [
   { "id": 5, "productName": "Monitor 27\"", "category": "Electronics", "price": 299.99, "inStock": true }
 ];
 
-const sampleJsonString = JSON.stringify(sampleJsonData, null, 2); // Pretty print
+const sampleJsonString = JSON.stringify(sampleJsonData, null, 2);
 
 createApp({
     data() {
         return {
-            jsonInput: sampleJsonString, // Store the raw JSON input as string
+            jsonInput: sampleJsonString,
             jsonData: null,
             headers: [],
             rows: [],
@@ -25,27 +25,22 @@ createApp({
             sortKey: '',
             sortAsc: true,
             isUpdatingFromInput: false,
-            viewMode: 'both', // 'both', 'jsonOnly', 'gridOnly'
-            isLargeScreen: window.innerWidth >= 992, // Check initial screen size
-            lastValidJson: sampleJsonString, // Track the last valid JSON string
+            viewMode: 'both',
+            isLargeScreen: window.innerWidth >= 992,
+            lastValidJson: sampleJsonString,
             isEditorInitialized: false
         };
     },
     methods: {
-        // Initialize the editor with syntax highlighting
         initializeEditor() {
             const jsonEditor = document.getElementById('jsonEditor');
             if (!jsonEditor || this.isEditorInitialized) return;
             
-            // Force direct content setting with the sample data without using complex methods
-            // This is the most direct way to ensure content is visible
             const formattedJson = JSON.stringify(sampleJsonData, null, 2);
             this.jsonInput = formattedJson;
             
-            // Directly set content first
             jsonEditor.textContent = formattedJson;
             
-            // Apply basic syntax highlighting
             try {
                 const container = document.createElement('div');
                 container.className = 'editor-container';
@@ -72,93 +67,63 @@ createApp({
                 container.appendChild(lineNumbers);
                 container.appendChild(codeContent);
                 
-                // Clear and set new content
                 jsonEditor.innerHTML = '';
                 jsonEditor.appendChild(container);
-                
-                console.log("JSON Editor initialized using direct method");
             } catch (err) {
-                // Fallback to plain text
                 jsonEditor.textContent = formattedJson;
-                console.error("Error in basic editor initialization:", err);
             }
             
             this.isEditorInitialized = true;
         },
         
-        // Update editor content with syntax highlighting
         updateEditorContent(jsonString) {
             const jsonEditor = document.getElementById('jsonEditor');
             if (!jsonEditor) return;
             
             try {
-                // Try to format the JSON before displaying
                 const formattedJson = this.formatJson(jsonString);
                 
-                // Update the editor content with the raw text first
                 jsonEditor.textContent = formattedJson;
                 
-                // Apply syntax highlighting
                 this.applySyntaxHighlighting(jsonEditor);
                 
-                // Update our model with the formatted JSON
                 this.jsonInput = formattedJson;
-                
-                console.log("Editor content updated successfully");
             } catch (err) {
-                // If parsing fails, just set the raw text
                 jsonEditor.textContent = jsonString;
-                console.warn("Error formatting JSON:", err);
             }
         },
         
-        // Apply syntax highlighting to the editor content
         applySyntaxHighlighting(editor) {
             try {
-                // Get the current content
                 let content = '';
                 if (editor.textContent && editor.textContent.trim() !== '') {
                     content = editor.textContent;
                 } else if (this.jsonInput && this.jsonInput.trim() !== '') {
                     content = this.jsonInput;
                 } else {
-                    // Fallback to sample data
                     content = JSON.stringify(sampleJsonData, null, 2);
                     this.jsonInput = content;
                 }
                 
-                // Skip if content is empty
                 if (!content || content.trim() === '') {
-                    console.warn('No content to highlight');
                     return;
                 }
                 
-                console.log('Applying syntax highlighting to content:', content.substring(0, 50) + '...');
-                
-                // Try to clean up common JSON errors
                 let cleanContent = content;
                 if (content.includes('[') && content.includes(']')) {
-                    // Fix trailing commas in arrays
                     cleanContent = content.replace(/,(\s*\])/g, '$1');
                 }
                 if (content.includes('{') && content.includes('}')) {
-                    // Fix trailing commas in objects
                     cleanContent = cleanContent.replace(/,(\s*\})/g, '$1');
                 }
                 
                 try {
-                    // Format JSON if possible using the cleaned content
                     const parsedJson = JSON.parse(cleanContent);
                     content = JSON.stringify(parsedJson, null, 2);
                 } catch (parseErr) {
-                    // If cleaning didn't help, still keep the original formatting
-                    console.warn('Could not parse JSON for formatting:', parseErr);
-                    
-                    // Preserve original content with line breaks
-                    // Don't try further JSON formatting
+                    // Preserve original formatting
                 }
                 
-                // Create simple DOM structure
                 const container = document.createElement('div');
                 container.className = 'editor-container';
                 
@@ -168,61 +133,44 @@ createApp({
                 const codeContent = document.createElement('div');
                 codeContent.className = 'code-content';
                 
-                // Split into lines and add line numbers 
                 const lines = content.split('\n');
                 for (let i = 0; i < lines.length; i++) {
-                    // Create line number
                     const lineNumber = document.createElement('div');
                     lineNumber.className = 'line-number';
                     lineNumber.textContent = (i + 1).toString();
                     lineNumbers.appendChild(lineNumber);
                     
-                    // Create code line with basic highlighting
                     const codeLine = document.createElement('div');
                     codeLine.className = 'code-line';
                     
-                    // Always set raw text as fallback
                     codeLine.textContent = lines[i];
                     
                     try {
-                        // Only if we have valid JSON, attempt token highlighting
                         const line = lines[i];
-                        if (line.trim()) {  // Skip empty lines for token handling
-                            // Clear existing content
+                        if (line.trim()) {
                             codeLine.textContent = '';
                             
-                            // Apply Prism highlighting if available
                             const grammar = Prism.languages.json;
                             const tokens = Prism.tokenize(line, grammar);
                             this.renderTokensToElement(tokens, codeLine);
                         }
                     } catch (err) {
-                        // Fallback is already in place with raw text
-                        console.warn(`Skipping highlighting for line ${i+1}:`, err);
+                        // Text fallback already in place
                     }
                     
                     codeContent.appendChild(codeLine);
                 }
                 
-                // Assemble the structure
                 container.appendChild(lineNumbers);
                 container.appendChild(codeContent);
                 
-                // Clear and update the editor
                 editor.innerHTML = '';
                 editor.appendChild(container);
-                
-                console.log('Syntax highlighting applied successfully');
             } catch (err) {
-                console.error('Error applying syntax highlighting:', err);
-                
-                // Preserve line breaks even if highlighting fails
                 if (!editor.textContent || editor.textContent.trim() === '') {
-                    // If editor is empty, use last input
                     const content = this.jsonInput || sampleJsonString;
                     const lines = content.split('\n');
                     
-                    // Create a basic line structure
                     const container = document.createElement('div');
                     container.className = 'editor-container';
                     
@@ -232,7 +180,6 @@ createApp({
                     const codeContent = document.createElement('div');
                     codeContent.className = 'code-content';
                     
-                    // Add each line
                     for (let i = 0; i < lines.length; i++) {
                         const lineNumber = document.createElement('div');
                         lineNumber.className = 'line-number';
@@ -254,7 +201,6 @@ createApp({
             }
         },
         
-        // Helper method to render tokens to an element
         renderTokensToElement(tokens, element) {
             tokens.forEach(token => {
                 if (typeof token === 'string') {
@@ -276,86 +222,56 @@ createApp({
             });
         },
         
-        // Handle input in the editor
         handleEditorInput(event) {
-            if (this.isUpdatingFromInput) return; // Prevent recursive updates
+            if (this.isUpdatingFromInput) return;
             
-            // Get the raw text content - simpler approach
             const rawContent = this.getEditorTextContent(event.target);
-            
-            // Store the current input value
             this.jsonInput = rawContent;
             
-            // Save selection state before any DOM changes
             const selection = window.getSelection();
             const selectionState = this.saveSelectionState(selection);
             
-            // Debounce the highlighting to improve performance
             clearTimeout(this._highlightTimeout);
             this._highlightTimeout = setTimeout(() => {
                 try {
-                    // Try to parse it to validate
                     const parsedJson = JSON.parse(rawContent);
-                    
-                    // If valid, update the lastValidJson and process
                     this.lastValidJson = rawContent;
-                    
-                    // Always process valid JSON immediately without requiring button press
                     this.processJsonInput();
-                    
-                    console.log("JSON is valid - auto-processing grid");
                 } catch (err) {
-                    // Invalid JSON, don't update the grid but still preserve formatting
-                    console.log("JSON is invalid - preserving format only");
-                    
-                    // Just reapply syntax highlighting without trying to reformat
                     this.isUpdatingFromInput = true;
                     
-                    // Try to preserve formatting even when JSON is invalid
-                    // Create a simple structure that maintains line breaks
                     const editor = event.target;
-                    
-                    // Keep original structure with line breaks
                     const lines = rawContent.split('\n');
                     
-                    // Create container
                     const container = document.createElement('div');
                     container.className = 'editor-container';
                     
-                    // Create line number column
                     const lineNumbers = document.createElement('div');
                     lineNumbers.className = 'line-number-container';
                     
-                    // Create code content column
                     const codeContent = document.createElement('div');
                     codeContent.className = 'code-content';
                     
-                    // Process each line
                     for (let i = 0; i < lines.length; i++) {
-                        // Line number
                         const lineNumber = document.createElement('div');
                         lineNumber.className = 'line-number';
                         lineNumber.textContent = (i + 1).toString();
                         lineNumbers.appendChild(lineNumber);
                         
-                        // Code line
                         const codeLine = document.createElement('div');
                         codeLine.className = 'code-line';
                         codeLine.textContent = lines[i];
                         codeContent.appendChild(codeLine);
                     }
                     
-                    // Assemble structure
                     container.appendChild(lineNumbers);
                     container.appendChild(codeContent);
                     
-                    // Update editor
                     editor.innerHTML = '';
                     editor.appendChild(container);
                     
                     this.isUpdatingFromInput = false;
                     
-                    // Restore cursor position after highlighting
                     if (selectionState) {
                         this.restoreSelectionState(event.target, selectionState);
                     }
@@ -363,9 +279,7 @@ createApp({
             }, 300);
         },
         
-        // Helper to get text content from the editor regardless of structure
         getEditorTextContent(editor) {
-            // Try to extract from code-line elements first
             const codeContent = editor.querySelector('.code-content');
             if (codeContent) {
                 const lines = codeContent.querySelectorAll('.code-line');
@@ -374,22 +288,17 @@ createApp({
                 }
             }
             
-            // If no structured content yet, or we're in the middle of editing,
-            // get the direct text content
             if (editor.textContent && editor.textContent.trim() !== '') {
                 return editor.textContent;
             }
             
-            // Fallback - try to use the existing jsonInput
             if (this.jsonInput && this.jsonInput.trim() !== '') {
                 return this.jsonInput;
             }
             
-            // Ultimate fallback - use the sample data
             return sampleJsonString;
         },
         
-        // Save selection state in a format that can be restored later
         saveSelectionState(selection) {
             if (selection.rangeCount === 0) return null;
             
@@ -401,7 +310,6 @@ createApp({
             };
         },
         
-        // Restore selection state
         restoreSelectionState(editor, state) {
             if (!state) return;
             
@@ -409,22 +317,17 @@ createApp({
                 const selection = window.getSelection();
                 const range = document.createRange();
                 
-                // Find code content
                 const codeContent = editor.querySelector('.code-content');
                 if (!codeContent) return;
                 
-                // Get all text nodes in the editor
                 const allTextNodes = this.getAllTextNodes(codeContent);
                 if (allTextNodes.length === 0) {
-                    // No text nodes, just put cursor at the start
                     range.selectNodeContents(codeContent.firstChild || codeContent);
                     range.collapse(true);
                 } else {
-                    // Find the best matching text node
                     let targetNode = allTextNodes[0];
                     let targetOffset = 0;
                     
-                    // Try to find the original text node or something close
                     for (const node of allTextNodes) {
                         if (node === state.startContainer || 
                             (node.textContent && state.startContainer && 
@@ -442,11 +345,10 @@ createApp({
                 selection.removeAllRanges();
                 selection.addRange(range);
             } catch (err) {
-                console.error('Error restoring selection:', err);
+                // Selection state couldn't be restored
             }
         },
         
-        // Get all text nodes in an element
         getAllTextNodes(element) {
             const textNodes = [];
             const walker = document.createTreeWalker(
@@ -464,83 +366,53 @@ createApp({
             return textNodes;
         },
         
-        // Validate JSON on blur
         validateJson(event) {
             try {
-                // Get the raw text content
                 const jsonString = this.getEditorTextContent(event.target);
                 
-                // Check if this is a potentially incomplete array with a trailing comma
                 let fixedJsonString = jsonString;
                 if (jsonString.includes('[') && jsonString.includes(']')) {
-                    // Replace trailing commas before closing bracket which are invalid JSON
                     fixedJsonString = jsonString.replace(/,(\s*\])/g, '$1');
                 }
                 
                 try {
-                    // Try with fixed string first
                     const parsedJson = JSON.parse(fixedJsonString);
-                    
-                    // Update with properly formatted JSON
                     const formattedJson = JSON.stringify(parsedJson, null, 2);
                     
-                    // Only update if it changed the formatting substantially
                     if (formattedJson !== jsonString) {
                         this.updateEditorContent(formattedJson);
                         this.jsonInput = formattedJson;
                         this.lastValidJson = formattedJson;
                     }
                     
-                    // Clear any previous errors
                     this.error = null;
-                    
-                    // Always process valid JSON immediately
-                    console.log("Processing valid JSON on blur");
                     this.processJsonInput();
                 } catch (firstErr) {
-                    // Try the original string as fallback
                     const parsedJson = JSON.parse(jsonString);
-                    
-                    // Update with properly formatted JSON
                     const formattedJson = JSON.stringify(parsedJson, null, 2);
                     
-                    // Only update if it changed the formatting
                     if (formattedJson !== jsonString) {
                         this.updateEditorContent(formattedJson);
                     }
                     
-                    // Clear any previous errors
                     this.error = null;
-                    
-                    // Always process valid JSON immediately
-                    console.log("Processing valid JSON on blur (from original string)");
                     this.processJsonInput();
                 }
             } catch (err) {
-                // Show validation error
                 this.setError(`Invalid JSON: ${err.message}`);
                 
-                // Don't revert to last valid JSON immediately, but preserve current content
-                // Only if we lose focus on a completely invalid JSON, revert to last valid
-                // This gives user a chance to fix it
-                
-                // Simple check for massively broken JSON vs. editing in progress
                 const currentContent = this.getEditorTextContent(event.target);
                 const simpleValidation = currentContent.trim().startsWith('[') || 
                                          currentContent.trim().startsWith('{');
                 
                 if (!simpleValidation && this.lastValidJson) {
-                    // Only revert if severely malformed
                     this.updateEditorContent(this.lastValidJson);
                 } else {
-                    // Otherwise preserve formatting by manually rebuilding editor
                     this.isUpdatingFromInput = true;
                     
-                    // Use the same approach as in handleEditorInput to preserve line breaks
                     const lines = currentContent.split('\n');
                     const editor = event.target;
                     
-                    // Create structure
                     const container = document.createElement('div');
                     container.className = 'editor-container';
                     
@@ -550,7 +422,6 @@ createApp({
                     const codeContent = document.createElement('div');
                     codeContent.className = 'code-content';
                     
-                    // Add lines
                     for (let i = 0; i < lines.length; i++) {
                         const lineNumber = document.createElement('div');
                         lineNumber.className = 'line-number';
@@ -574,28 +445,20 @@ createApp({
             }
         },
         
-        // Format JSON with indentation, but keep line breaks even with invalid JSON
         formatJson(jsonString) {
             if (!jsonString || !jsonString.trim()) return '';
             
             try {
-                // Try to parse and format
                 const obj = JSON.parse(jsonString);
                 return JSON.stringify(obj, null, 2);
             } catch (err) {
-                // For invalid JSON, at least preserve the line breaks
-                // This ensures we don't collapse everything into one line
                 return jsonString;
             }
         },
         
         processJsonInput() {
-            console.log("Processing JSON input from button click or API call");
-            
-            // Make sure we have the latest content from the editor
             const jsonEditor = document.getElementById('jsonEditor');
             if (jsonEditor) {
-                // Get the text content from the editor
                 const editorContent = this.getEditorTextContent(jsonEditor);
                 if (editorContent && editorContent.trim() !== '') {
                     this.jsonInput = editorContent;
@@ -607,26 +470,20 @@ createApp({
                 return;
             }
 
-            // Try to clean up common JSON errors
             let cleanedInput = this.jsonInput;
             if (this.jsonInput.includes('[') && this.jsonInput.includes(']')) {
-                // Fix trailing commas in arrays
                 cleanedInput = this.jsonInput.replace(/,(\s*\])/g, '$1');
             }
             if (this.jsonInput.includes('{') && this.jsonInput.includes('}')) {
-                // Fix trailing commas in objects
                 cleanedInput = cleanedInput.replace(/,(\s*\})/g, '$1');
             }
 
-            // Try to parse the cleaned version
             let parsedJson;
             try {
                 parsedJson = JSON.parse(cleanedInput);
-                // If successful, update the input to the cleaned version
                 this.jsonInput = cleanedInput;
             } catch (parseErr) {
                 try {
-                    // Try original as fallback
                     parsedJson = JSON.parse(this.jsonInput);
                 } catch (originalErr) {
                     this.setError(`Invalid JSON: ${originalErr.message}`);
@@ -638,16 +495,12 @@ createApp({
             this.isUpdatingFromInput = true;
 
             try {
-                // Format for display
                 const formattedJson = JSON.stringify(parsedJson, null, 2);
                 this.jsonInput = formattedJson;
                 this.lastValidJson = formattedJson;
 
-                // Parse and get both parts
                 const { dataArray: newDataArray, originalStructure: newOriginalStructure } = this.parseAndValidate(formattedJson);
                 
-                // Always update the display on button click
-                console.log("Updating display with parsed data");
                 this.jsonData = newOriginalStructure;
                 this.clearGridAndError();
                 if (this.sortKey && !Object.keys(newDataArray[0] || {}).includes(this.sortKey)) {
@@ -655,7 +508,6 @@ createApp({
                 }
                 this.displayData(newDataArray);
                 
-                // Update the editor with syntax highlighting if needed
                 const jsonEditor = document.getElementById('jsonEditor');
                 if (jsonEditor) {
                     this.isUpdatingFromInput = true;
@@ -663,7 +515,6 @@ createApp({
                     this.isUpdatingFromInput = false;
                 }
             } catch (e) {
-                console.error("Error during processing:", e);
                 this.setError(`Invalid JSON or structure: ${e.message}`);
             } finally {
                 this.loading = false;
@@ -672,7 +523,6 @@ createApp({
         },
         
         handleFileUpload(event) {
-            console.log("Handling file upload");
             const file = event.target.files[0];
             if (!file) {
                 return;
@@ -688,27 +538,18 @@ createApp({
                 try {
                     const fileContent = e.target.result;
                     
-                    // Try to parse the content first to validate
-                    let parsedJson;
                     try {
-                        parsedJson = JSON.parse(fileContent);
-                        // Format it properly
+                        const parsedJson = JSON.parse(fileContent);
                         const formattedJson = JSON.stringify(parsedJson, null, 2);
                         
-                        // Update jsonInput
                         this.jsonInput = formattedJson;
                         this.lastValidJson = formattedJson;
                         
-                        // Update the editor
                         this.updateEditorContent(formattedJson);
                         
-                        // Process the data
                         const parsedData = this.parseAndValidate(formattedJson);
                         this.jsonData = parsedData.originalStructure;
                         this.displayData(parsedData.dataArray);
-                        
-                        // Success message
-                        console.log("File loaded successfully");
                     } catch (parseErr) {
                         this.setError(`Invalid JSON in file: ${parseErr.message}`);
                     }
@@ -717,7 +558,6 @@ createApp({
                 } finally {
                     this.loading = false;
                     this.isUpdatingFromInput = false;
-                    // Reset file input to allow uploading the same file again
                     event.target.value = null;
                 }
             };
@@ -740,18 +580,18 @@ createApp({
             }
 
             let dataArray;
-            let originalStructure = data; // Keep the original structure
+            let originalStructure = data;
 
             if (Array.isArray(data)) {
                 if (data.length > 0 && typeof data[0] === 'object' && data[0] !== null) {
                     if (data.every(item => typeof item === 'object' && item !== null)) {
-                        dataArray = data; // It's a valid array of objects
+                        dataArray = data;
                     } else {
                          throw new Error('Invalid structure: All items in the array must be objects.');
                     }
                 }
                  else if (data.length === 0) {
-                    dataArray = []; // Empty array is valid
+                    dataArray = [];
                  }
                  else {
                     throw new Error('Invalid structure: Array must contain objects or be empty.');
@@ -765,13 +605,13 @@ createApp({
                     if (Array.isArray(potentialArray)) {
                          if (potentialArray.length > 0 && typeof potentialArray[0] === 'object' && potentialArray[0] !== null) {
                             if (potentialArray.every(item => typeof item === 'object' && item !== null)) {
-                                dataArray = potentialArray; // It's an object with a single valid array property
+                                dataArray = potentialArray;
                             } else {
                                 throw new Error(`Invalid structure: All items in the array property '${key}' must be objects.`);
                             }
                          }
                          else if (potentialArray.length === 0) {
-                             dataArray = []; // Empty array is valid
+                             dataArray = [];
                          }
                          else {
                             throw new Error(`Invalid structure: Object's array property '${key}' must contain objects or be empty.`);
@@ -786,28 +626,23 @@ createApp({
                 throw new Error('Unsupported JSON structure. Input must be an array of objects or an object with a single property that is an array of objects.');
             }
             
-            // Return both the array part and the original structure
             return { dataArray, originalStructure }; 
         },
         displayData(dataArray) {
-            if (!dataArray) { // Should not happen if parseAndValidate works correctly
+            if (!dataArray) {
                 this.setError('Validation Error: Unexpected null data received.');
                 return;
             }
 
-            // Clear previous error FIRST
             this.error = null; 
 
             if (dataArray.length === 0) {
                 this.headers = [];
                 this.rows = [];
-                 // Use a specific info message, not an error that clears the grid via setError
-                 this.error = "Info: JSON data is valid but resulted in an empty grid."; 
+                this.error = "Info: JSON data is valid but resulted in an empty grid."; 
             } else {
-                // Valid, non-empty data
                 this.headers = Object.keys(dataArray[0]);
                 this.rows = dataArray;
-                // jsonData is already set in parseAndValidate with the original structure
             }
         },
         setError(message) {
@@ -830,16 +665,13 @@ createApp({
             this.fileName = '';
             this.filterText = '';
             this.sortKey = '';
-            this.viewMode = 'both'; // Reset view on clear
+            this.viewMode = 'both';
             this.lastValidJson = '';
             
-            // Update the editor content with empty content
             const jsonEditor = document.getElementById('jsonEditor');
             if (jsonEditor) {
-                // Clear the editor
                 jsonEditor.innerHTML = '';
                 
-                // Create basic structure
                 const container = document.createElement('div');
                 container.className = 'editor-container';
                 
@@ -872,11 +704,9 @@ createApp({
             const newValue = event.target.value;
             const oldValue = row[header];
 
-            // Update only if the value has actually changed
-            if (newValue !== String(oldValue)) { // Compare as strings for simplicity
+            if (newValue !== String(oldValue)) {
                  console.log(`Updating ${header} from '${oldValue}' to '${newValue}'`);
                 
-                // Attempt to convert back to original type if possible (simple heuristic)
                 let typedValue = newValue;
                 if (!isNaN(newValue) && newValue.trim() !== '') {
                     typedValue = Number(newValue);
@@ -886,22 +716,19 @@ createApp({
                     typedValue = false;
                 }
                 
-                row[header] = typedValue; // Update the row data directly
-                this.rows = [...this.rows]; // Update rows array reference for reactivity
+                row[header] = typedValue;
+                this.rows = [...this.rows];
 
                 try {
-                    // Check if the original data was wrapped in an object
                     if (this.jsonData && !Array.isArray(this.jsonData)) {
                          const key = Object.keys(this.jsonData)[0];
                          this.jsonData[key] = this.rows; 
                          this.jsonInput = JSON.stringify(this.jsonData, null, 2);
                     } else {
-                         // Original data was just an array
                          this.jsonData = this.rows; 
                          this.jsonInput = JSON.stringify(this.rows, null, 2);
                     }
                     
-                    // Update the editor with syntax highlighting if needed
                     this.updateEditorContent(this.jsonInput);
                     this.lastValidJson = this.jsonInput;
                     
@@ -910,7 +737,6 @@ createApp({
                      console.error("Error updating jsonInput after cell edit:", e);
                 }
             } else {
-                 // Restore original value in input if no change occurred on blur
                  event.target.value = oldValue;
             }
         },
@@ -932,7 +758,7 @@ createApp({
                 this.viewMode = 'both';
             } else if (this.viewMode === 'both') {
                 this.viewMode = 'gridOnly';
-            } else { // gridOnly
+            } else {
                 this.viewMode = 'both';
             }
         },
@@ -942,7 +768,7 @@ createApp({
                 this.viewMode = 'both';
             } else if (this.viewMode === 'both') {
                 this.viewMode = 'jsonOnly';
-            } else { // jsonOnly
+            } else {
                 this.viewMode = 'both';
             }
         },
@@ -950,31 +776,25 @@ createApp({
             this.isLargeScreen = window.innerWidth >= 992;
         },
         
-        // Load sample data into the editor
         loadSampleData() {
             console.log("Loading sample data");
             
-            // Set sample data
             this.jsonInput = sampleJsonString;
             this.lastValidJson = sampleJsonString;
             this.fileName = '';
             
-            // Update the editor
             const jsonEditor = document.getElementById('jsonEditor');
             if (jsonEditor) {
                 this.updateEditorContent(sampleJsonString);
             }
             
-            // Process the data
             this.processJsonInput();
         }
     },
     computed: {
         filteredAndSortedRows() {
-            // Create a shallow copy to avoid mutating the original 'rows' array
-            let result = [...this.rows]; // Use spread syntax for shallow copy
+            let result = [...this.rows];
 
-            // Filtering (operates on the copy)
             if (this.filterText) {
                 const lowerFilter = this.filterText.toLowerCase();
                 result = result.filter(row => {
@@ -985,7 +805,6 @@ createApp({
                 });
             }
 
-            // Sorting (operates on the copy)
             if (this.sortKey) {
                  result.sort((a, b) => {
                     let valA = a[this.sortKey];
@@ -1010,72 +829,62 @@ createApp({
                 });
             }
 
-            return result; // Return the filtered and sorted copy
+            return result;
         },
         jsonColumnClass() {
             switch (this.viewMode) {
                 case 'jsonOnly': return 'col-12';
-                case 'gridOnly': return 'd-none'; // Hide completely
-                default:         return 'col-12 col-lg-4'; // Default split
+                case 'gridOnly': return 'd-none';
+                default:         return 'col-12 col-lg-4';
             }
         },
         gridColumnClass() {
             switch (this.viewMode) {
-                case 'jsonOnly': return 'd-none'; // Hide completely
+                case 'jsonOnly': return 'd-none';
                 case 'gridOnly': return 'col-12';
-                default:         return 'col-12 col-lg-8'; // Default split
+                default:         return 'col-12 col-lg-8';
             }
         },
         jsonCollapseIcon() {
-            if (this.viewMode === 'jsonOnly') return 'bi bi-arrows-angle-contract'; // Or 'bi-chevron-double-down'
-            if (this.viewMode === 'gridOnly') return 'bi bi-arrows-angle-expand'; // Or 'bi-chevron-double-right / down'
-            // When both are visible, icon depends on screen size
+            if (this.viewMode === 'jsonOnly') return 'bi bi-arrows-angle-contract';
+            if (this.viewMode === 'gridOnly') return 'bi bi-arrows-angle-expand';
             return this.isLargeScreen ? 'bi bi-chevron-double-left' : 'bi bi-chevron-double-up'; 
         },
         gridCollapseIcon() {
-            if (this.viewMode === 'gridOnly') return 'bi bi-arrows-angle-contract'; // Or 'bi-chevron-double-down'
-            if (this.viewMode === 'jsonOnly') return 'bi bi-arrows-angle-expand'; // Or 'bi-chevron-double-left / up'
-            // When both are visible, icon depends on screen size
+            if (this.viewMode === 'gridOnly') return 'bi bi-arrows-angle-contract';
+            if (this.viewMode === 'jsonOnly') return 'bi bi-arrows-angle-expand';
             return this.isLargeScreen ? 'bi bi-chevron-double-right' : 'bi bi-chevron-double-down';
         },
         jsonCollapseTitle() {
             if (this.viewMode === 'jsonOnly') return 'Show Both Sections'; 
             if (this.viewMode === 'gridOnly') return 'Show JSON Section';
-            // When both are visible, title depends on screen size
             return this.isLargeScreen ? 'Collapse JSON Section (Show Grid Only)' : 'Collapse JSON Section Up (Show Grid Only)';
         },
          gridCollapseTitle() {
             if (this.viewMode === 'gridOnly') return 'Show Both Sections';
             if (this.viewMode === 'jsonOnly') return 'Show Grid Section';
-            // When both are visible, title depends on screen size
             return this.isLargeScreen ? 'Collapse Grid Section (Show JSON Only)' : 'Collapse Grid Section Down (Show JSON Only)';
         }
     },
     watch: {
         isLargeScreen(newValue) {
-            // Adjust view mode if screen size changes and only one view is visible
             if (!newValue && (this.viewMode === 'jsonOnly' || this.viewMode === 'gridOnly')) {
-                this.viewMode = 'both'; // Force both views on smaller screens if one was hidden
+                this.viewMode = 'both';
             }
         }
     },
     mounted() {
-        // Initialize the editor immediately when component is mounted
         this.initializeEditor();
         
-        // Process the data after a short delay
         setTimeout(() => {
             this.processJsonInput();
         }, 100);
         
-        // Check screen size
         this.checkScreenSize();
         
-        // Add window resize listener
         window.addEventListener('resize', this.checkScreenSize);
     },
     beforeUnmount() {
-        // Remove window resize listener
         window.removeEventListener('resize', this.checkScreenSize);
     }
 }).mount('#app'); 
