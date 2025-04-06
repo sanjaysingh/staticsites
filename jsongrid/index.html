@@ -75,7 +75,7 @@
                         </div>
 
                         <!-- Grid Section Content -->
-                        <div v-if="jsonData !== null || loading" class="grid-section flex-grow-1 d-flex flex-column" :class="{ 'position-relative': loading }">
+                        <div v-show="jsonData !== null || loading" class="grid-section flex-grow-1 d-flex flex-column" :class="{ 'position-relative': loading }">
                             <div v-if="loading" class="loading-overlay">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -107,7 +107,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(row, index) in filteredAndSortedRows" :key="index">
+                                        <tr v-for="(row, index) in filteredAndSortedRows" :key="row.id">
                                             <td v-for="header in headers" :key="header">
                                                 <input 
                                                     type="text" 
@@ -120,7 +120,7 @@
                                     </tbody>
                                 </table>
                                 <!-- Message inside container if no rows match filter -->
-                                <div v-else-if="filterText" class="text-center text-muted pt-3">
+                                <div v-else-if="filterText && rows.length > 0" class="text-center text-muted pt-3">
                                     <p>No records match your filter "{{ filterText }}".</p>
                                 </div>
                                  <!-- Message inside container if data is empty array -->

@@ -40,22 +40,103 @@ createApp({
                 this.setError('JSON input cannot be empty.');
                 return;
             }
+
+            // Quick check: If input string hasn't changed from current data, do nothing.
+            try {
+                if (this.jsonData !== null && JSON.stringify(this.jsonData, null, 2) === this.jsonInput) {
+                     console.log("Skipping processing: jsonInput matches current jsonData.");
+                     return; // Exit early
+                }
+            } catch (e) { 
+                console.warn("Error comparing existing jsonData, proceeding with parse.");
+            }
+
             this.loading = true;
             this.isUpdatingFromInput = true;
-            this.clearGridAndError();
-            setTimeout(() => { // Simulate processing time and allow UI update
-                try {
-                    const parsedData = this.parseAndValidate(this.jsonInput);
-                    this.filterText = '';
-                    this.sortKey = '';
-                    this.displayData(parsedData);
-                } catch (e) {
-                    this.setError(`Invalid JSON or structure: ${e.message}`);
-                } finally {
-                    this.loading = false;
-                    this.isUpdatingFromInput = false;
+
+            try {
+                // Parse and get both parts
+                const { dataArray: newDataArray, originalStructure: newOriginalStructure } = this.parseAndValidate(this.jsonInput);
+
+                // Deep comparison: Only update if the parsed data is different from current
+                if (this.jsonData === null || !this.areDeeplyEqual(this.jsonData, newOriginalStructure)) {
+                    console.log("Data has changed, applying delta update.");
+                    
+                    if (this.jsonData === null) {
+                        // Initial load: Just display the data directly
+                         console.log("Initial data load.");
+                         this.jsonData = newOriginalStructure;
+                         this.clearGridAndError();
+                         this.filterText = '';
+                         this.sortKey = '';
+                         this.displayData(newDataArray);
+                    } else {
+                        // Delta update logic
+                        const currentRowsMap = new Map(this.rows.map(row => [row.id, row]));
+                        const newRowsMap = new Map(newDataArray.map(row => [row.id, row]));
+                        const updatedIds = new Set();
+                        let requiresHeaderUpdate = false;
+
+                        // 1. Handle Updates and Additions
+                        for (const [id, newRow] of newRowsMap.entries()) {
+                            if (currentRowsMap.has(id)) {
+                                // Update existing row if changed
+                                const currentRow = currentRowsMap.get(id);
+                                if (!this.areDeeplyEqual(currentRow, newRow)) {
+                                    // Update properties of the existing object in this.rows
+                                    Object.assign(currentRow, newRow);
+                                    console.log(`Updated row ID: ${id}`);
+                                }
+                                updatedIds.add(id); // Mark as processed
+                            } else {
+                                // Add new row
+                                this.rows.push(newRow);
+                                console.log(`Added row ID: ${id}`);
+                                if (this.rows.length === 1) requiresHeaderUpdate = true; // Headers needed if first row added
+                            }
+                        }
+
+                        // 2. Handle Deletions
+                        let i = this.rows.length;
+                        while (i--) { // Iterate backwards for safe removal
+                            const currentRow = this.rows[i];
+                            if (!newRowsMap.has(currentRow.id)) {
+                                this.rows.splice(i, 1);
+                                console.log(`Removed row ID: ${currentRow.id}`);
+                                 if (this.rows.length === 0) requiresHeaderUpdate = true; // Headers changed if last row removed
+                            }
+                        }
+
+                        // 3. Update Headers if needed
+                        const newHeaders = newDataArray.length > 0 ? Object.keys(newDataArray[0]) : [];
+                        if (requiresHeaderUpdate || !this.areDeeplyEqual(this.headers, newHeaders)) {
+                            console.log("Updating headers.");
+                            this.headers = newHeaders;
+                        }
+
+                        // 4. Update canonical jsonData
+                        this.jsonData = newOriginalStructure;
+                        
+                        // 5. Conditionally reset sortKey and clear errors
+                        this.clearGridAndError(); // Clear errors
+                        // Remove filter reset: this.filterText = '';     
+                        // Only reset sortKey if it's no longer a valid header
+                        if (this.sortKey && !newHeaders.includes(this.sortKey)) {
+                            console.log(`Resetting sortKey because '${this.sortKey}' is no longer a valid header.`);
+                            this.sortKey = '';   
+                        }
+                    }
+                } else {
+                     console.log("Parsed data is identical to existing data. Skipping grid update.");
+                     this.error = null; // Ensure error is cleared
                 }
-            }, 50); // Small delay
+            } catch (e) {
+                console.error("Error during processing:", e);
+                this.setError(`Invalid JSON or structure: ${e.message}`);
+            } finally {
+                this.loading = false;
+                this.isUpdatingFromInput = false;
+            }
         },
         handleFileUpload(event) {
             const file = event.target.files[0];
@@ -148,11 +229,11 @@ createApp({
                 throw new Error('Unsupported JSON structure. Input must be an array of objects or an object with a single property that is an array of objects.');
             }
             
-            // Store the original parsed structure separately
-            this.jsonData = originalStructure; 
+            // No longer set this.jsonData here
+            // this.jsonData = originalStructure; 
             
-            // Return only the array part for the table
-            return dataArray; 
+            // Return both the array part and the original structure
+            return { dataArray, originalStructure }; 
         },
         displayData(dataArray) {
             if (!dataArray) { // Should not happen if parseAndValidate works correctly
@@ -215,11 +296,53 @@ createApp({
             // Update only if the value has actually changed
             if (newValue !== String(oldValue)) { // Compare as strings for simplicity, could add type checking
                  console.log(`Updating ${header} from '${oldValue}' to '${newValue}'`);
-                row[header] = newValue;
+                
+                // Attempt to convert back to original type if possible (simple heuristic)
+                let typedValue = newValue;
+                if (!isNaN(newValue) && newValue.trim() !== '') {
+                    typedValue = Number(newValue);
+                } else if (newValue.toLowerCase() === 'true') {
+                    typedValue = true;
+                } else if (newValue.toLowerCase() === 'false') {
+                    typedValue = false;
+                }
+                
+                row[header] = typedValue; // Update the row data directly
 
-                // Important: Trigger reactivity by creating a new array reference.
-                // This ensures the watcher detects the change in the nested object.
+                // Update rows array reference AFTER modifying the row
+                // This line might not even be strictly necessary if Vue detects the deep change, 
+                // but it's safer for reactivity across versions/scenarios.
+                // We might test removing this later if performance is critical.
                 this.rows = [...this.rows]; 
+
+                // --- New Code: Update jsonInput directly ---
+                try {
+                    // Check if the original data was wrapped in an object
+                    if (this.jsonData && !Array.isArray(this.jsonData)) {
+                         const key = Object.keys(this.jsonData)[0];
+                         // Update the array within the wrapper object
+                         // Note: This assumes this.rows IS the array inside jsonData[key]
+                         // If parseAndValidate cloned it, this needs adjustment.
+                         // Let's assume for now they are the same reference or Vue handles it.
+                         this.jsonData[key] = this.rows; 
+                         this.jsonInput = JSON.stringify(this.jsonData, null, 2);
+                    } else {
+                         // Original data was just an array
+                         // Update jsonData to match the potentially modified rows array
+                         this.jsonData = this.rows; 
+                         this.jsonInput = JSON.stringify(this.rows, null, 2);
+                    }
+                    console.log("jsonInput updated after cell edit.");
+                } catch (e) {
+                     console.error("Error updating jsonInput after cell edit:", e);
+                     // Optionally set an error message for the user
+                     // this.setError("Failed to update JSON input after edit.");
+                }
+                // --- End New Code ---
+
+            } else {
+                 // Restore original value in input if no change occurred on blur
+                 event.target.value = oldValue;
             }
         },
         sortBy(key) {
@@ -340,34 +463,37 @@ createApp({
         }
     },
     watch: {
-        rows: {
-            handler(newRows) {
-                if (this.isUpdatingFromInput) {
-                    return; 
-                }
-                try {
-                    let dataToOutput = newRows;
-                    // Reconstruct object wrapper if necessary, using the stored jsonData
-                    if(this.jsonData && typeof this.jsonData === 'object' && !Array.isArray(this.jsonData)){
-                         const keys = Object.keys(this.jsonData);
-                         if(keys.length === 1 && Array.isArray(this.jsonData[keys[0]])){
-                             dataToOutput = { [keys[0]]: newRows };
-                         }
-                    }
+        // // Watch for deep changes in jsonData to update jsonInput
+        // jsonData: {
+        //     handler(newValue, oldValue) {
+        //         // Avoid updating jsonInput if the change originated from the textarea itself
+        //          if (this.isUpdatingFromInput) {
+        //             console.log("Watcher skipped: Update initiated from input.");
+        //             return;
+        //          }
+                 
+        //         // Avoid unnecessary updates if data hasn't actually changed meaningfully
+        //         // Stringify both to compare content, not just reference
+        //          const newJsonString = JSON.stringify(newValue, null, 2);
+        //          // console.log("Watcher trying to update jsonInput. Current:", this.jsonInput, "New String:", newJsonString)
 
-                    const newJsonString = JSON.stringify(dataToOutput, null, 2);
-                    
-                    // Simplified update: If string differs, update input.
-                    if (newJsonString !== this.jsonInput) {
-                        this.jsonInput = newJsonString;
-                    } 
-                } catch (e) {
-                    console.error("Error stringifying edited data:", e);
-                    // Potentially set an error message here if stringify fails
-                    // this.setError("Error preparing JSON text from grid changes.");
-                }
-            },
-            deep: true
+        //          // Check if the stringified versions are different before updating
+        //          if (newJsonString !== this.jsonInput) {
+        //               console.log("Watcher updating jsonInput because stringified values differ.");
+        //              this.jsonInput = newJsonString;
+        //          } else {
+        //               console.log("Watcher skipped: Stringified values are the same.");
+        //          }
+
+        //     },
+        //     deep: true // Watch for nested changes within the jsonData object/array
+        // },
+        // Watch for screen size changes
+        isLargeScreen(newValue) {
+            // Adjust view mode if screen size changes and only one view is visible
+            if (!newValue && (this.viewMode === 'jsonOnly' || this.viewMode === 'gridOnly')) {
+                this.viewMode = 'both'; // Force both views on smaller screens if one was hidden
+            }
         }
     },
     mounted() {
