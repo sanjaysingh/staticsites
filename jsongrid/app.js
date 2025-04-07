@@ -259,58 +259,89 @@ createApp({
             const rawContent = this.getEditorTextContent(event.target.closest('#jsonEditor'));
             this.jsonInput = rawContent;
             
-            // Save current selection state
+            // Save the current selection before any updates
             const selection = window.getSelection();
-            const selectionState = this.saveSelectionState(selection);
+            
+            // Calculate absolute character offset in the entire text
+            let absoluteOffset = 0;
+            let targetNode = null;
+            let relativeOffset = 0;
+            
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                targetNode = range.startContainer;
+                relativeOffset = range.startOffset;
+                
+                // Get all text nodes in the editor
+                const editor = event.target.closest('#jsonEditor');
+                const allTextNodes = this.getAllTextNodes(editor.querySelector('.code-content'));
+                
+                // Calculate the absolute offset by counting characters in nodes before the cursor
+                for (const node of allTextNodes) {
+                    if (node === targetNode) {
+                        absoluteOffset += relativeOffset;
+                        break;
+                    }
+                    absoluteOffset += node.textContent.length;
+                }
+            }
             
             clearTimeout(this._highlightTimeout);
             this._highlightTimeout = setTimeout(() => {
+                const editor = event.target.closest('#jsonEditor');
+                
                 try {
                     const parsedJson = JSON.parse(rawContent);
                     this.lastValidJson = rawContent;
-                    this.processJsonInput();
-                } catch (err) {
+                    
+                    // Re-enable real-time processing for valid JSON but preserve cursor position
+                    // This will update the grid view as you type
+                    
+                    // Process JSON input but don't reformat the editor content
                     this.isUpdatingFromInput = true;
                     
-                    const editor = event.target.closest('#jsonEditor');
-                    const lines = rawContent.split('\n');
-                    
-                    const container = document.createElement('div');
-                    container.className = 'editor-container';
-                    
-                    const lineNumbers = document.createElement('div');
-                    lineNumbers.className = 'line-number-container';
-                    lineNumbers.setAttribute('contenteditable', 'false');
-                    
-                    const codeContent = document.createElement('div');
-                    codeContent.className = 'code-content';
-                    codeContent.setAttribute('contenteditable', 'true');
-                    
-                    for (let i = 0; i < lines.length; i++) {
-                        const lineNumber = document.createElement('div');
-                        lineNumber.className = 'line-number';
-                        lineNumber.textContent = (i + 1).toString();
-                        lineNumbers.appendChild(lineNumber);
-                        
-                        const codeLine = document.createElement('div');
-                        codeLine.className = 'code-line';
-                        codeLine.textContent = lines[i];
-                        codeContent.appendChild(codeLine);
+                    // Remove invalid JSON class if it exists
+                    const container = editor.querySelector('.editor-container');
+                    if (container) {
+                        container.classList.remove('invalid-json');
                     }
                     
-                    container.appendChild(lineNumbers);
-                    container.appendChild(codeContent);
+                    // Clear any error message
+                    this.error = null;
                     
-                    editor.innerHTML = '';
-                    editor.appendChild(container);
+                    // Just process the JSON to update the grid, don't change the editor
+                    try {
+                        // Parse and validate for grid display
+                        const { dataArray, originalStructure } = this.parseAndValidate(rawContent);
+                        
+                        // Update grid data without reformatting the editor
+                        this.jsonData = originalStructure;
+                        this.clearGridAndError();
+                        this.displayData(dataArray);
+                    } catch (validationErr) {
+                        // Show validation error but don't change editor state
+                        this.setError(`Validation error: ${validationErr.message}`);
+                    }
                     
                     this.isUpdatingFromInput = false;
-                    
-                    if (selectionState) {
-                        setTimeout(() => {
-                            this.restoreSelectionState(editor, selectionState);
-                        }, 0);
+                } catch (err) {
+                    // Invalid JSON - add visual feedback without changing the DOM structure
+                    const container = editor.querySelector('.editor-container');
+                    if (container) {
+                        container.classList.add('invalid-json');
                     }
+                    
+                    // Set an error message
+                    this.setError(`Invalid JSON: ${err.message}`);
+                    
+                    // Update the input value but don't change the editor
+                    this.isUpdatingFromInput = true;
+                    this.isUpdatingFromInput = false;
+                }
+                
+                // Restore cursor position after all updates
+                if (selection.rangeCount > 0 && absoluteOffset >= 0) {
+                    this.restoreCursorPositionByOffset(editor, absoluteOffset);
                 }
             }, 300);
         },
@@ -455,80 +486,153 @@ createApp({
             try {
                 const jsonString = this.getEditorTextContent(event.target);
                 
+                // Save the current selection before any updates
+                const selection = window.getSelection();
+                
+                // Calculate absolute character offset in the entire text
+                let absoluteOffset = 0;
+                let targetNode = null;
+                let relativeOffset = 0;
+                
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    targetNode = range.startContainer;
+                    relativeOffset = range.startOffset;
+                    
+                    // Get all text nodes in the editor
+                    const editor = event.target.closest('#jsonEditor');
+                    const allTextNodes = this.getAllTextNodes(editor.querySelector('.code-content'));
+                    
+                    // Calculate the absolute offset by counting characters in nodes before the cursor
+                    for (const node of allTextNodes) {
+                        if (node === targetNode) {
+                            absoluteOffset += relativeOffset;
+                            break;
+                        }
+                        absoluteOffset += node.textContent.length;
+                    }
+                }
+                
                 let fixedJsonString = jsonString;
                 if (jsonString.includes('[') && jsonString.includes(']')) {
                     fixedJsonString = jsonString.replace(/,(\s*\])/g, '$1');
+                }
+                if (jsonString.includes('{') && jsonString.includes('}')) {
+                    fixedJsonString = fixedJsonString.replace(/,(\s*\})/g, '$1');
                 }
                 
                 try {
                     const parsedJson = JSON.parse(fixedJsonString);
                     const formattedJson = JSON.stringify(parsedJson, null, 2);
                     
-                    if (formattedJson !== jsonString) {
-                        this.updateEditorContent(formattedJson);
-                        this.jsonInput = formattedJson;
-                        this.lastValidJson = formattedJson;
-                    }
-                    
-                    this.error = null;
-                    this.processJsonInput();
-                } catch (firstErr) {
-                    const parsedJson = JSON.parse(jsonString);
-                    const formattedJson = JSON.stringify(parsedJson, null, 2);
-                    
-                    if (formattedJson !== jsonString) {
-                        this.updateEditorContent(formattedJson);
-                    }
-                    
-                    this.error = null;
-                    this.processJsonInput();
-                }
-            } catch (err) {
-                this.setError(`Invalid JSON: ${err.message}`);
-                
-                const currentContent = this.getEditorTextContent(event.target);
-                const simpleValidation = currentContent.trim().startsWith('[') || 
-                                         currentContent.trim().startsWith('{');
-                
-                if (!simpleValidation && this.lastValidJson) {
-                    this.updateEditorContent(this.lastValidJson);
-                } else {
+                    // Always process the JSON for grid display
                     this.isUpdatingFromInput = true;
                     
-                    const lines = currentContent.split('\n');
-                    const editor = event.target;
+                    // Update the JSON data and lastValidJson
+                    this.jsonInput = formattedJson;
+                    this.lastValidJson = formattedJson;
                     
-                    const container = document.createElement('div');
-                    container.className = 'editor-container';
-                    
-                    const lineNumbers = document.createElement('div');
-                    lineNumbers.className = 'line-number-container';
-                    lineNumbers.setAttribute('contenteditable', 'false');
-                    
-                    const codeContent = document.createElement('div');
-                    codeContent.className = 'code-content';
-                    codeContent.setAttribute('contenteditable', 'true');
-                    
-                    for (let i = 0; i < lines.length; i++) {
-                        const lineNumber = document.createElement('div');
-                        lineNumber.className = 'line-number';
-                        lineNumber.textContent = (i + 1).toString();
-                        lineNumbers.appendChild(lineNumber);
-                        
-                        const codeLine = document.createElement('div');
-                        codeLine.className = 'code-line';
-                        codeLine.textContent = lines[i];
-                        codeContent.appendChild(codeLine);
+                    // Remove invalid JSON class if it exists
+                    const editor = event.target.closest('#jsonEditor');
+                    const container = editor.querySelector('.editor-container');
+                    if (container) {
+                        container.classList.remove('invalid-json');
                     }
                     
-                    container.appendChild(lineNumbers);
-                    container.appendChild(codeContent);
-                    
-                    editor.innerHTML = '';
-                    editor.appendChild(container);
+                    // Process the JSON for grid display
+                    try {
+                        const { dataArray, originalStructure } = this.parseAndValidate(formattedJson);
+                        this.jsonData = originalStructure;
+                        this.clearGridAndError();
+                        this.displayData(dataArray);
+                        this.error = null;
+                    } catch (validationErr) {
+                        this.setError(`Validation error: ${validationErr.message}`);
+                    }
                     
                     this.isUpdatingFromInput = false;
+                    
+                    // Only rebuild the editor if the format changed
+                    if (formattedJson !== jsonString) {
+                        const editor = event.target.closest('#jsonEditor');
+                        if (editor) {
+                            // Update using our direct rendering approach that preserves cursor
+                            this.isUpdatingFromInput = true;
+                            this.rebuildEditorContent(editor, formattedJson);
+                            this.isUpdatingFromInput = false;
+                            
+                            // Restore cursor position after update
+                            setTimeout(() => {
+                                // Try to use the absolute offset for restoration
+                                this.restoreCursorPositionByOffset(editor, absoluteOffset);
+                            }, 0);
+                        }
+                    }
+                } catch (firstErr) {
+                    try {
+                        // Try with the original string
+                        const parsedJson = JSON.parse(jsonString);
+                        const formattedJson = JSON.stringify(parsedJson, null, 2);
+                        
+                        // Always process the JSON for grid display
+                        this.isUpdatingFromInput = true;
+                        
+                        // Update the JSON data and lastValidJson
+                        this.jsonInput = formattedJson;
+                        this.lastValidJson = formattedJson;
+                        
+                        // Remove invalid JSON class if it exists
+                        const editor = event.target.closest('#jsonEditor');
+                        const container = editor.querySelector('.editor-container');
+                        if (container) {
+                            container.classList.remove('invalid-json');
+                        }
+                        
+                        // Process the JSON for grid display
+                        try {
+                            const { dataArray, originalStructure } = this.parseAndValidate(formattedJson);
+                            this.jsonData = originalStructure;
+                            this.clearGridAndError();
+                            this.displayData(dataArray);
+                            this.error = null;
+                        } catch (validationErr) {
+                            this.setError(`Validation error: ${validationErr.message}`);
+                        }
+                        
+                        this.isUpdatingFromInput = false;
+                        
+                        // Only rebuild the editor if the format changed
+                        if (formattedJson !== jsonString) {
+                            const editor = event.target.closest('#jsonEditor');
+                            if (editor) {
+                                // Update using our direct rendering approach that preserves cursor
+                                this.isUpdatingFromInput = true;
+                                this.rebuildEditorContent(editor, formattedJson);
+                                this.isUpdatingFromInput = false;
+                                
+                                // Restore cursor position after update
+                                setTimeout(() => {
+                                    // Try to use the absolute offset for restoration
+                                    this.restoreCursorPositionByOffset(editor, absoluteOffset);
+                                }, 0);
+                            }
+                        }
+                    } catch (err) {
+                        // Mark as invalid JSON with visual feedback
+                        const editor = event.target.closest('#jsonEditor');
+                        const container = editor.querySelector('.editor-container');
+                        if (container) {
+                            container.classList.add('invalid-json');
+                        }
+                        
+                        this.setError(`Invalid JSON: ${err.message}`);
+                        
+                        // For invalid JSON, we'll preserve the current editor state
+                        // Don't attempt to reformat or change anything to avoid cursor jumps
+                    }
                 }
+            } catch (err) {
+                this.setError(`Error: ${err.message}`);
             }
         },
         
@@ -909,74 +1013,79 @@ createApp({
                 this.rows = [...this.rows];
 
                 try {
-                    // Format the JSON properly with indentation
-                    let formattedJson = '';
-                    if (this.jsonData && !Array.isArray(this.jsonData)) {
-                        const key = Object.keys(this.jsonData)[0];
-                        this.jsonData[key] = this.rows; 
-                        formattedJson = JSON.stringify(this.jsonData, null, 2);
-                    } else {
-                        this.jsonData = this.rows; 
-                        formattedJson = JSON.stringify(this.rows, null, 2);
-                    }
-                    
-                    // Update the input values
-                    this.jsonInput = formattedJson;
-                    this.lastValidJson = formattedJson;
-                    
-                    // Manually rebuild the editor to ensure proper formatting
+                    // Calculate a reasonable cursor position to restore to after update
+                    // Since we're editing from the grid, position cursor near the edited value
                     const jsonEditor = document.getElementById('jsonEditor');
+                    let absoluteOffset = 0;
+                    
                     if (jsonEditor) {
-                        // Clear the editor
-                        jsonEditor.innerHTML = '';
-                        
-                        // Build the container structure
-                        const container = document.createElement('div');
-                        container.className = 'editor-container';
-                        
-                        const lineNumbers = document.createElement('div');
-                        lineNumbers.className = 'line-number-container';
-                        lineNumbers.setAttribute('contenteditable', 'false');
-                        
-                        const codeContent = document.createElement('div');
-                        codeContent.className = 'code-content';
-                        codeContent.setAttribute('contenteditable', 'true');
-                        
-                        // Process each line separately to maintain formatting
-                        const lines = formattedJson.split('\n');
-                        for (let i = 0; i < lines.length; i++) {
-                            // Create line number element
-                            const lineNumber = document.createElement('div');
-                            lineNumber.className = 'line-number';
-                            lineNumber.textContent = (i + 1).toString();
-                            lineNumbers.appendChild(lineNumber);
-                            
-                            // Create code line element
-                            const codeLine = document.createElement('div');
-                            codeLine.className = 'code-line';
-                            
-                            // Apply syntax highlighting if possible
-                            try {
-                                const line = lines[i];
-                                codeLine.textContent = line; // Fallback content
-                                
-                                if (line.trim()) {
-                                    codeLine.textContent = '';
-                                    const grammar = Prism.languages.json;
-                                    const tokens = Prism.tokenize(line, grammar);
-                                    this.renderTokensToElement(tokens, codeLine);
-                                }
-                            } catch (highlightErr) {
-                                // Fallback already in place with plain text
-                            }
-                            
-                            codeContent.appendChild(codeLine);
+                        // Format the JSON properly with indentation
+                        let formattedJson = '';
+                        if (this.jsonData && !Array.isArray(this.jsonData)) {
+                            const key = Object.keys(this.jsonData)[0];
+                            this.jsonData[key] = this.rows; 
+                            formattedJson = JSON.stringify(this.jsonData, null, 2);
+                        } else {
+                            this.jsonData = this.rows; 
+                            formattedJson = JSON.stringify(this.rows, null, 2);
                         }
                         
-                        // Assemble and update the editor
-                        container.appendChild(lineNumbers);
-                        container.appendChild(codeContent);
-                        jsonEditor.appendChild(container);
+                        // Try to find the position of the edited field to position cursor there
+                        const searchText = `"${header}": `;
+                        const rowIndex = this.rows.indexOf(row);
+                        
+                        // Update the input values
+                        this.jsonInput = formattedJson;
+                        this.lastValidJson = formattedJson;
+                        
+                        // Find a good position to place the cursor (near the edited value)
+                        let lines = formattedJson.split('\n');
+                        let lineFound = false;
+                        
+                        // Look for our header in the formatted JSON, focus on lines around the edited row
+                        for (let i = 0; i < lines.length; i++) {
+                            if (lines[i].includes(searchText) && 
+                                // Try to find the specific instance by looking nearby for row identifiers
+                                i > 0 && i < lines.length - 1) {
+                                
+                                // Look up to 10 lines before this for row index indicators
+                                for (let j = Math.max(0, i - 10); j <= i; j++) {
+                                    // Check if we're in the right row object by looking for patterns
+                                    if ((j < i) && 
+                                        (lines[j].includes(`{`) && rowIndex > 0 && lines[j-1].includes(`},`)) ||
+                                        (rowIndex === 0 && lines[j].includes(`[`) && lines[j+1].includes(`{`))) {
+                                        
+                                        // Set cursor after the property name, right at the value position
+                                        absoluteOffset = 0;
+                                        for (let k = 0; k < i; k++) {
+                                            absoluteOffset += lines[k].length + 1; // +1 for newline
+                                        }
+                                        // Position right after the property name + ": " part
+                                        absoluteOffset += lines[i].indexOf(searchText) + searchText.length;
+                                        lineFound = true;
+                                        break;
+                                    }
+                                }
+                                if (lineFound) break;
+                            }
+                        }
+                        
+                        // If we couldn't find the exact position, use a reasonable default
+                        if (!lineFound) {
+                            // Position at start of JSON as a fallback
+                            absoluteOffset = 0;
+                        }
+                        
+                        // Clear any existing content
+                        jsonEditor.innerHTML = '';
+                        
+                        // Rebuild using our structured approach
+                        this.rebuildEditorContent(jsonEditor, formattedJson);
+                        
+                        // Restore cursor to the calculated position
+                        setTimeout(() => {
+                            this.restoreCursorPositionByOffset(jsonEditor, absoluteOffset);
+                        }, 0);
                     }
                     
                     console.log("JSON editor updated after cell edit with proper formatting.");
@@ -1085,6 +1194,292 @@ createApp({
             }
             
             this.processJsonInput();
+        },
+        highlightEditorContent(editor, content, position) {
+            if (!editor || !content) return;
+            
+            // Don't recreate the entire structure, just update the existing code lines
+            const codeContent = editor.querySelector('.code-content');
+            const lineNumbers = editor.querySelector('.line-number-container');
+            
+            if (!codeContent || !lineNumbers) {
+                // If the structure doesn't exist, create it from scratch
+                this.rebuildEditorContent(editor, content);
+                return;
+            }
+            
+            const lines = content.split('\n');
+            const existingLines = codeContent.querySelectorAll('.code-line');
+            const existingNumbers = lineNumbers.querySelectorAll('.line-number');
+            
+            // Update existing lines and add new ones if needed
+            for (let i = 0; i < lines.length; i++) {
+                if (i < existingLines.length) {
+                    // Update existing line
+                    const codeLine = existingLines[i];
+                    
+                    // Only update if content changed
+                    if (codeLine.textContent !== lines[i]) {
+                        try {
+                            const line = lines[i];
+                            
+                            if (line.trim()) {
+                                // Apply syntax highlighting
+                                codeLine.innerHTML = '';
+                                const grammar = Prism.languages.json;
+                                const tokens = Prism.tokenize(line, grammar);
+                                this.renderTokensToElement(tokens, codeLine);
+                            } else {
+                                codeLine.textContent = line;
+                            }
+                        } catch (err) {
+                            // Fallback to plain text
+                            codeLine.textContent = lines[i];
+                        }
+                    }
+                    
+                    // Update line number (in case it's missing)
+                    if (i < existingNumbers.length) {
+                        existingNumbers[i].textContent = (i + 1).toString();
+                    }
+                } else {
+                    // Create new line and line number
+                    const lineNumber = document.createElement('div');
+                    lineNumber.className = 'line-number';
+                    lineNumber.textContent = (i + 1).toString();
+                    lineNumbers.appendChild(lineNumber);
+                    
+                    const codeLine = document.createElement('div');
+                    codeLine.className = 'code-line';
+                    
+                    try {
+                        const line = lines[i];
+                        codeLine.textContent = line; // Fallback
+                        
+                        if (line.trim()) {
+                            codeLine.textContent = '';
+                            const grammar = Prism.languages.json;
+                            const tokens = Prism.tokenize(line, grammar);
+                            this.renderTokensToElement(tokens, codeLine);
+                        }
+                    } catch (err) {
+                        codeLine.textContent = lines[i];
+                    }
+                    
+                    codeContent.appendChild(codeLine);
+                }
+            }
+            
+            // Remove extra lines if there are fewer lines now
+            while (existingLines.length > lines.length) {
+                if (existingLines[lines.length]) {
+                    codeContent.removeChild(existingLines[lines.length]);
+                }
+                if (existingNumbers[lines.length]) {
+                    lineNumbers.removeChild(existingNumbers[lines.length]);
+                }
+            }
+            
+            // Restore cursor position
+            if (position) {
+                setTimeout(() => {
+                    this.restoreCursorPosition(editor, position);
+                }, 0);
+            }
+        },
+        rebuildEditorContent(editor, content) {
+            if (!editor || !content) return;
+            
+            // Check if current container has invalid-json class
+            const currentContainer = editor.querySelector('.editor-container');
+            const isInvalid = currentContainer && currentContainer.classList.contains('invalid-json');
+            
+            // Clear the editor
+            editor.innerHTML = '';
+            
+            // Build container for editor
+            const container = document.createElement('div');
+            container.className = 'editor-container';
+            
+            // Preserve invalid state if it was set
+            if (isInvalid) {
+                container.classList.add('invalid-json');
+            }
+            
+            const lineNumbers = document.createElement('div');
+            lineNumbers.className = 'line-number-container';
+            lineNumbers.setAttribute('contenteditable', 'false');
+            
+            const codeContent = document.createElement('div');
+            codeContent.className = 'code-content';
+            codeContent.setAttribute('contenteditable', 'true');
+            
+            // Process each line separately
+            const lines = content.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                // Create line number element
+                const lineNumber = document.createElement('div');
+                lineNumber.className = 'line-number';
+                lineNumber.textContent = (i + 1).toString();
+                lineNumbers.appendChild(lineNumber);
+                
+                // Create code line element
+                const codeLine = document.createElement('div');
+                codeLine.className = 'code-line';
+                
+                // Apply syntax highlighting if possible
+                try {
+                    const line = lines[i];
+                    codeLine.textContent = line; // Fallback content
+                    
+                    if (line.trim()) {
+                        codeLine.textContent = '';
+                        const grammar = Prism.languages.json;
+                        const tokens = Prism.tokenize(line, grammar);
+                        this.renderTokensToElement(tokens, codeLine);
+                    }
+                } catch (err) {
+                    // Fallback already in place
+                }
+                
+                codeContent.appendChild(codeLine);
+            }
+            
+            // Assemble and update the editor
+            container.appendChild(lineNumbers);
+            container.appendChild(codeContent);
+            editor.appendChild(container);
+        },
+        restoreCursorPosition(editor, position) {
+            if (!position) return;
+            
+            try {
+                const selection = window.getSelection();
+                const range = document.createRange();
+                
+                const codeContent = editor.querySelector('.code-content');
+                if (!codeContent) return;
+                
+                // Try to restore by line index first
+                if (position.lineIndex >= 0 && position.lineIndex < codeContent.children.length) {
+                    const codeLine = codeContent.children[position.lineIndex];
+                    const allTextNodes = this.getAllTextNodes(codeLine);
+                    
+                    if (allTextNodes.length > 0) {
+                        // Find the right position within text nodes
+                        let currentOffset = 0;
+                        let targetNode = allTextNodes[0];
+                        let targetOffset = 0;
+                        
+                        // Calculate the local offset within this line
+                        const localOffset = position.characterOffset - 
+                            position.lines.slice(0, position.lineIndex)
+                                .reduce((sum, line) => sum + line.length + 1, 0);
+                        
+                        for (const node of allTextNodes) {
+                            const nodeLength = node.textContent.length;
+                            
+                            if (currentOffset + nodeLength >= localOffset) {
+                                targetNode = node;
+                                targetOffset = Math.min(localOffset - currentOffset, nodeLength);
+                                break;
+                            }
+                            
+                            currentOffset += nodeLength;
+                        }
+                        
+                        range.setStart(targetNode, targetOffset);
+                        range.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        return;
+                    }
+                }
+                
+                // Fallback to find correct position using character offset
+                const allTextNodes = this.getAllTextNodes(codeContent);
+                if (allTextNodes.length > 0) {
+                    let currentOffset = 0;
+                    let targetNode = allTextNodes[0];
+                    let targetOffset = 0;
+                    
+                    for (const node of allTextNodes) {
+                        const nodeLength = node.textContent.length;
+                        
+                        if (currentOffset + nodeLength >= position.characterOffset) {
+                            targetNode = node;
+                            targetOffset = Math.min(position.characterOffset - currentOffset, nodeLength);
+                            break;
+                        }
+                        
+                        currentOffset += nodeLength;
+                    }
+                    
+                    range.setStart(targetNode, targetOffset);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            } catch (err) {
+                // Selection state couldn't be restored
+                console.log("Could not restore selection:", err);
+            }
+        },
+        restoreCursorPositionByOffset(editor, absoluteOffset) {
+            if (absoluteOffset === undefined) return;
+            
+            try {
+                const selection = window.getSelection();
+                const range = document.createRange();
+                
+                const codeContent = editor.querySelector('.code-content');
+                if (!codeContent) return;
+                
+                // Find all text nodes in the editor
+                const allTextNodes = this.getAllTextNodes(codeContent);
+                
+                if (allTextNodes.length === 0) {
+                    // If no text nodes, select the first code line
+                    const firstCodeLine = codeContent.querySelector('.code-line');
+                    if (firstCodeLine) {
+                        range.selectNodeContents(firstCodeLine);
+                        range.collapse(true);
+                    } else {
+                        range.selectNodeContents(codeContent);
+                        range.collapse(true);
+                    }
+                    
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    return;
+                }
+                
+                // Find the node and offset based on absolute character position
+                let currentOffset = 0;
+                let targetNode = allTextNodes[0];
+                let targetOffset = 0;
+                
+                for (const node of allTextNodes) {
+                    const nodeLength = node.textContent.length;
+                    
+                    if (currentOffset + nodeLength >= absoluteOffset) {
+                        targetNode = node;
+                        targetOffset = absoluteOffset - currentOffset;
+                        break;
+                    }
+                    
+                    currentOffset += nodeLength;
+                }
+                
+                // Set the cursor at the calculated position
+                range.setStart(targetNode, targetOffset);
+                range.collapse(true);
+                
+                selection.removeAllRanges();
+                selection.addRange(range);
+            } catch (err) {
+                console.log("Error restoring cursor position:", err);
+            }
         }
     },
     computed: {

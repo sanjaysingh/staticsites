@@ -485,4 +485,17 @@ tbody td {
 
 .card-header .d-flex.gap-2 {
     flex-wrap: nowrap;
+}
+
+/* Add styling for invalid JSON indicator */
+.editor-container.invalid-json .code-content {
+    background-color: rgba(255, 220, 220, 0.15);
+}
+
+.editor-container.invalid-json .code-line {
+    color: #d44950 !important;  /* Force red color for invalid JSON */
+}
+
+.editor-container.invalid-json .token {
+    opacity: 0.7;  /* Reduce the opacity of syntax highlighting in invalid state */
 } 
