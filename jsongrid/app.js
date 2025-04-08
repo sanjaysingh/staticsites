@@ -694,7 +694,7 @@ createApp({
                 
                 this.jsonData = newOriginalStructure;
                 this.clearGridAndError();
-                if (this.sortKey && !Object.keys(newDataArray[0] || {}).includes(this.sortKey)) {
+                if (this.sortKey && !this.headers.includes(this.sortKey)) {
                     this.sortKey = '';
                 }
                 this.displayData(newDataArray);
@@ -932,8 +932,65 @@ createApp({
                 this.rows = [];
                 this.error = "Info: JSON data is valid but resulted in an empty grid."; 
             } else {
-                this.headers = Object.keys(dataArray[0]);
-                this.rows = dataArray;
+                // Map data to add unique id for each row if it doesn't already have one
+                this.rows = dataArray.map((item, index) => {
+                    // If the item already has an id field, preserve it
+                    if ('id' in item) {
+                        return {...item};
+                    } else {
+                        // Otherwise add a generated id
+                        return {...item, _rowId: index};
+                    }
+                });
+                
+                this.headers = [];
+                
+                // Extract all possible headers from all rows
+                this.rows.forEach(row => {
+                    Object.keys(row).forEach(key => {
+                        // Include id in headers but exclude our internal _rowId
+                        if (key !== '_rowId' && !this.headers.includes(key)) {
+                            this.headers.push(key);
+                        }
+                    });
+                });
+                
+                // Sort headers alphabetically but put id first if it exists
+                this.headers.sort((a, b) => {
+                    if (a === 'id') return -1;
+                    if (b === 'id') return 1;
+                    return a.localeCompare(b);
+                });
+            }
+            
+            // After rendering, ensure table is properly set up for mobile
+            this.$nextTick(() => {
+                this.setupResponsiveTable();
+            });
+        },
+        setupResponsiveTable() {
+            // Find the table and check if it exists
+            const table = document.querySelector('.table-responsive table');
+            if (!table) return;
+            
+            // Calculate appropriate widths for columns based on content
+            const headerCells = table.querySelectorAll('thead th');
+            if (headerCells.length === 0) return;
+            
+            // Set minimum width for each column
+            const minWidth = Math.max(100, Math.floor(table.clientWidth / headerCells.length));
+            
+            headerCells.forEach(th => {
+                // Set minimum width but allow flexible sizing
+                th.style.minWidth = `${minWidth}px`;
+                th.style.maxWidth = '250px'; // Set a reasonable max width
+            });
+            
+            // Ensure table has correct overall width
+            const totalWidth = headerCells.length * minWidth;
+            if (totalWidth > table.clientWidth) {
+                table.style.width = '100%';
+                table.style.minWidth = `${totalWidth}px`;
             }
         },
         setError(message) {
@@ -1023,16 +1080,35 @@ createApp({
                         let formattedJson = '';
                         if (this.jsonData && !Array.isArray(this.jsonData)) {
                             const key = Object.keys(this.jsonData)[0];
-                            this.jsonData[key] = this.rows; 
+                            
+                            // Create a copy of rows without the _rowId properties for JSON output
+                            const cleanRows = this.rows.map(r => {
+                                const cleanRow = {...r};
+                                if ('_rowId' in cleanRow) {
+                                    delete cleanRow._rowId;
+                                }
+                                return cleanRow;
+                            });
+                            
+                            this.jsonData[key] = cleanRows;
                             formattedJson = JSON.stringify(this.jsonData, null, 2);
                         } else {
-                            this.jsonData = this.rows; 
-                            formattedJson = JSON.stringify(this.rows, null, 2);
+                            // Create a copy of rows without the _rowId properties for JSON output
+                            const cleanRows = this.rows.map(r => {
+                                const cleanRow = {...r};
+                                if ('_rowId' in cleanRow) {
+                                    delete cleanRow._rowId;
+                                }
+                                return cleanRow;
+                            });
+                            
+                            this.jsonData = cleanRows;
+                            formattedJson = JSON.stringify(cleanRows, null, 2);
                         }
                         
                         // Try to find the position of the edited field to position cursor there
                         const searchText = `"${header}": `;
-                        const rowIndex = this.rows.indexOf(row);
+                        const rowIndex = this.rows.findIndex(r => r === row);
                         
                         // Update the input values
                         this.jsonInput = formattedJson;
@@ -1130,6 +1206,11 @@ createApp({
         },
         checkScreenSize() {
             this.isLargeScreen = window.innerWidth >= 992;
+            
+            // Whenever screen size changes, re-setup the table
+            this.$nextTick(() => {
+                this.setupResponsiveTable();
+            });
         },
         
         loadSampleData() {
@@ -1565,17 +1646,42 @@ createApp({
         }
     },
     mounted() {
+        // Set a flag to prevent UI errors during initialization
+        this.loading = true;
+        
+        // Initialize the editor
         this.initializeEditor();
         
+        // Process the initial JSON with a slight delay to ensure DOM is ready
         setTimeout(() => {
-            this.processJsonInput();
+            try {
+                this.processJsonInput();
+            } catch (err) {
+                console.error("Error during initial data processing:", err);
+                // Still show the UI even if there's an error
+            } finally {
+                // Always turn off loading state
+                this.loading = false;
+                
+                // Hide the initial loading screen (as a backup to the setTimeout in HTML)
+                const initialLoading = document.getElementById('initialLoading');
+                if (initialLoading) {
+                    initialLoading.style.opacity = '0';
+                    initialLoading.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => {
+                        initialLoading.style.display = 'none';
+                    }, 300);
+                }
+            }
         }, 100);
         
+        // Set up event listeners
         this.checkScreenSize();
-        
         window.addEventListener('resize', this.checkScreenSize);
+        window.addEventListener('resize', this.setupResponsiveTable);
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkScreenSize);
+        window.removeEventListener('resize', this.setupResponsiveTable);
     }
 }).mount('#app'); 

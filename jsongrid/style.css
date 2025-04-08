@@ -304,22 +304,35 @@ pre[class*="language-"] {
     margin-top: 0.5rem;
     flex: 1; /* Allow table container to grow */
     overflow-y: auto; /* Ensure scrollbar appears when needed */
+    overflow-x: auto; /* Ensure horizontal scrolling works properly */
     min-height: 200px; /* Reasonable minimum height */
+    width: 100%; /* Ensure full width */
+    display: block; /* Ensure proper display mode for scrolling */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 table {
     margin-bottom: 0; /* Remove default margin from bootstrap */
+    width: 100%; /* Ensure table takes up full width */
+    min-width: 650px; /* Ensure table has minimum width for scrolling */
+    table-layout: fixed; /* Use fixed table layout for better control */
 }
 
 thead th {
     background-color: #e9ecef;
     font-weight: 600;
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    min-width: 100px; /* Minimum column width */
 }
 
 tbody td {
      vertical-align: middle;
      word-break: break-word; /* Allow long words to break */
+     overflow: hidden; /* Prevent content from overflowing */
+     text-overflow: ellipsis; /* Add ellipsis for overflow text */
 }
 
 .btn-primary {
@@ -362,6 +375,16 @@ tbody td {
 
 .alert {
     margin-top: 1rem;
+    opacity: 0.95;
+    transition: opacity 0.3s ease;
+}
+
+.alert:hover {
+    opacity: 1;
+}
+
+.alert .btn-close:focus {
+    box-shadow: none;
 }
 
 .loading-overlay {
@@ -469,6 +492,58 @@ tbody td {
 
     .table-responsive {
         max-height: 400px; /* Limit height on smaller screens */
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    /* Ensure input fields in table cells are properly sized */
+    .editable-cell {
+        padding: 0.25rem;
+        font-size: 0.875rem; /* Slightly smaller font for mobile */
+        min-width: 0; /* Allow input to shrink */
+    }
+    
+    /* Improve table visibility on mobile */
+    table {
+        border-collapse: collapse;
+    }
+    
+    /* Make sure horizontal scrolling indicators are visible */
+    .card {
+        overflow: hidden; /* Ensure scrollbar appears only in table-responsive */
+    }
+}
+
+@media (max-width: 576px) {
+    /* Additional adjustments for very small screens */
+    .card-header {
+        padding: 0.5rem;
+    }
+    
+    .card-header .btn-sm {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.8rem;
+    }
+    
+    .card-header h2.h5 {
+        font-size: 1rem;
+    }
+    
+    .table-responsive {
+        max-height: 350px;
+    }
+    
+    .sticky-top {
+        top: 0;
+    }
+    
+    thead th {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    tbody td {
+        padding: 0.25rem;
     }
 }
 
@@ -498,4 +573,39 @@ tbody td {
 
 .editor-container.invalid-json .token {
     opacity: 0.7;  /* Reduce the opacity of syntax highlighting in invalid state */
+}
+
+/* Mobile scroll hint */
+.mobile-scroll-hint {
+    background-color: rgba(0, 123, 255, 0.1);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* Hide Vue content until compiled to prevent flicker */
+[v-cloak] {
+    display: none;
+}
+
+/* Error message styling improvement */
+.alert {
+    opacity: 0.95;
+    transition: opacity 0.3s ease;
+}
+
+.alert:hover {
+    opacity: 1;
+}
+
+/* Ensure faster error dismissal */
+.alert .btn-close:focus {
+    box-shadow: none;
 } 
