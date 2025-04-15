@@ -406,10 +406,29 @@
                     originalImage.onload = () => {
                         // Switch to original image view
                         showOriginalImage(e.target.result, file);
+                        
+                        // Add aspect ratio preservation handlers
+                        setupAspectRatioHandlers();
                     };
                     originalImage.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
+            }
+            
+            function setupAspectRatioHandlers() {
+                const aspectRatio = originalImage.width / originalImage.height;
+                
+                maxWidthInput.addEventListener('input', () => {
+                    if (maxWidthInput.value) {
+                        maxHeightInput.value = Math.round(parseInt(maxWidthInput.value) / aspectRatio);
+                    }
+                });
+                
+                maxHeightInput.addEventListener('input', () => {
+                    if (maxHeightInput.value) {
+                        maxWidthInput.value = Math.round(parseInt(maxHeightInput.value) * aspectRatio);
+                    }
+                });
             }
             
             function showOriginalImage(imageUrl, file) {
