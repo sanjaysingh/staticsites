@@ -151,46 +151,46 @@ const languageDetector = {
     // Language signatures for content-based detection
     signatures: {
         javascript: {
-            keywords: ['const', 'let', 'var', 'function', '=>', 'console.log', 'require', 'module.exports', 'async', 'await'],
-            patterns: [/^[\s\n]*(?:const|let|var)\s+\w+\s*=/, /\bfunction\s*\w*\s*\(.*\)\s*{/, /=>\s*{/, /require\(['"]\w+['"]\)/]
+            keywords: ['const', 'let', 'var', 'function', '=>', 'console.log', 'require', 'module.exports', 'async', 'await', 'export', 'import', 'this.', 'prototype'],
+            patterns: [/^[\s\n]*(?:const|let|var)\s+\w+\s*=/, /\bfunction\s*\w*\s*\(.*\)\s*{/, /=>\s*{/, /require\(['"]\w+['"]\)/, /export\s+(?:const|let|var|function|class)/, /import\s+.*from\s+['"]/]
         },
         typescript: {
-            keywords: ['interface', 'type', 'namespace', 'readonly', 'private', 'public', 'protected', 'enum', 'declare'],
-            patterns: [/:\s*(?:string|number|boolean|any|void)\b/, /interface\s+\w+\s*{/, /:\s*(?:private|public|protected)\s+\w+\s*:/]
+            keywords: ['interface', 'type', 'namespace', 'readonly', 'private', 'public', 'protected', 'enum', 'declare', 'implements', 'extends', 'abstract', 'as', 'unknown'],
+            patterns: [/:\s*(?:string|number|boolean|any|void|unknown|never)\b/, /interface\s+\w+\s*{/, /:\s*(?:private|public|protected)\s+\w+\s*:/, /type\s+\w+\s*=/, /declare\s+(?:class|interface|type|namespace)/]
         },
         css: {
-            keywords: ['margin:', 'padding:', 'border:', 'background-color:', '@media', 'color:', 'font-size:', 'display:'],
-            patterns: [/[.#][\w-]+\s*{/, /@media\s*[({]/, /:\s*(?:hover|active|focus|nth-child)\s*{/]
+            keywords: ['margin:', 'padding:', 'border:', 'background-color:', '@media', 'color:', 'font-size:', 'display:', '@keyframes', '@import', '@font-face', 'position:', 'z-index:'],
+            patterns: [/[.#][\w-]+\s*{/, /@media\s*[({]/, /:\s*(?:hover|active|focus|nth-child)\s*{/, /@keyframes\s+\w+\s*{/, /@import\s+url\(/, /@font-face\s*{/]
         },
         python: {
-            keywords: ['def', 'class', 'import', 'from', 'if __name__', 'print(', 'elif', 'else:', 'try:', 'except:', 'with', 'yield', 'async', 'await'],
-            patterns: [/def\s+\w+\s*\(.*\):/, /class\s+\w+[:(]/, /\\bimport\s+\w+/, /\\bfrom\s+\w+\s+import/]
+            keywords: ['def', 'class', 'import', 'from', 'if __name__', 'print(', 'elif', 'else:', 'try:', 'except:', 'with', 'yield', 'async', 'await', 'lambda', 'self.', 'super()'],
+            patterns: [/def\s+\w+\s*\(.*\):/, /class\s+\w+[:(]/, /\bimport\s+\w+/, /\bfrom\s+\w+\s+import/, /if\s+__name__\s*==\s*['"]__main__['"]:/, /@\w+\s*def/]
         },
         csharp: {
-            keywords: ['namespace', 'using', 'class', 'public', 'static', 'void', 'string', 'int', 'bool', 'var', 'get', 'set', 'private', 'protected', 'internal', 'new', 'return'],
-            patterns: [/namespace\s+[\w.]+\s*{/, /using\s+System;/, /public\s+static\s+void\s+Main\s*\(String(\[\]|\.\.\.)\s+\w+\)/, /class\s+\w+\s*{/, /\b(?:get|set);/, /\[\w+\]/]
+            keywords: ['namespace', 'using', 'class', 'public', 'static', 'void', 'string', 'int', 'bool', 'var', 'get', 'set', 'private', 'protected', 'internal', 'new', 'return', 'this.', 'base.', 'override'],
+            patterns: [/namespace\s+[\w.]+\s*{/, /using\s+System;/, /public\s+static\s+void\s+Main\s*\(String(\[\]|\.\.\.)\s+\w+\)/, /class\s+\w+\s*{/, /\b(?:get|set);/, /\[\w+\]/, /:\s*I[A-Z]\w+\b/]
         },
         java: {
-            keywords: ['public class', 'private', 'protected', 'void', 'static', 'import', 'package', 'System.out.println', 'ArrayList', 'String', 'new', 'return', 'final', 'extends', 'implements'],
-            patterns: [/public\s+class\s+\w+/, /public\s+static\s+void\s+main\s*\(String(\[\]|\.\.\.)\s+\w+\)/, /import\s+java\.[\w.]+;/ , /package\s+[\w.]+;/]
+            keywords: ['public class', 'private', 'protected', 'void', 'static', 'import', 'package', 'System.out.println', 'ArrayList', 'String', 'new', 'return', 'final', 'extends', 'implements', 'this.', 'super()'],
+            patterns: [/public\s+class\s+\w+/, /public\s+static\s+void\s+main\s*\(String(\[\]|\.\.\.)\s+\w+\)/, /import\s+java\.[\w.]+;/ , /package\s+[\w.]+;/, /@Override\s+public/, /implements\s+\w+/]
         },
         go: {
-            keywords: ['package', 'import', 'func', 'fmt.Println', 'var', ':=', 'range', 'type', 'struct', 'map', 'chan', 'go', 'defer'],
-            patterns: [/^package\s+main/m, /import\s+"\w+"/, /import\s+\(.*\)/, /func\s+main\s*\(\)/, /func\s+\w+\s*\(.*\)/, /\w+\s+:=\s+/]
+            keywords: ['package', 'import', 'func', 'fmt.Println', 'var', ':=', 'range', 'type', 'struct', 'map', 'chan', 'go', 'defer', 'interface{}', 'make(', 'append('],
+            patterns: [/^package\s+main/m, /import\s+"\w+"/, /import\s+\(.*\)/, /func\s+main\s*\(\)/, /func\s+\w+\s*\(.*\)/, /\w+\s+:=\s+/, /type\s+\w+\s+struct\s*{/]
         },
         json: {
-            patterns: [/^[\s\n]*[{\[][\s\n]*"[^"]+"\s*:/, /^[\s\n]*\[[\s\n]*(?:{|"[^"]*")/]
+            patterns: [/^[\s\n]*[{\[][\s\n]*"[^"]+"\s*:/, /^[\s\n]*\[[\s\n]*(?:{|"[^"]*")/, /"[\w-]+"\s*:\s*(?:null|true|false|"[^"]*"|\d+)/]
         },
         sql: {
-            keywords: ['SELECT', 'INSERT INTO', 'UPDATE', 'DELETE FROM', 'WHERE', 'JOIN', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE', 'GROUP BY', 'ORDER BY', 'LEFT JOIN', 'RIGHT JOIN'],
-            patterns: [/SELECT\s+[\w\s,*]+\s+FROM/i, /INSERT\s+INTO\s+\w+/i, /CREATE\s+TABLE/i, /UPDATE\s+\w+\s+SET/i]
+            keywords: ['SELECT', 'INSERT INTO', 'UPDATE', 'DELETE FROM', 'WHERE', 'JOIN', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE', 'GROUP BY', 'ORDER BY', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'UNION', 'HAVING'],
+            patterns: [/SELECT\s+[\w\s,*]+\s+FROM/i, /INSERT\s+INTO\s+\w+/i, /CREATE\s+TABLE/i, /UPDATE\s+\w+\s+SET/i, /JOIN\s+\w+\s+ON/i, /GROUP\s+BY\s+[\w\s,]+/i]
         },
         powershell: {
-            keywords: ['function', 'param', '$PSScriptRoot', 'Write-Host', 'Get-Process', 'Set-Location', 'if', 'else', 'foreach', 'while', 'try', 'catch', 'finally', '$true', '$false', '$null'],
-            patterns: [/$\w+/, /function\s+\w+-\w+/, /\[Parameter\(.*\)\]/, /\[CmdletBinding\(\)\]/, /Write-(?:Host|Output|Warning|Error)/]
+            keywords: ['function', 'param', '$PSScriptRoot', 'Write-Host', 'Get-Process', 'Set-Location', 'if', 'else', 'foreach', 'while', 'try', 'catch', 'finally', '$true', '$false', '$null', 'param(', 'begin {', 'process {', 'end {'],
+            patterns: [/$\w+/, /function\s+\w+-\w+/, /\[Parameter\(.*\)\]/, /\[CmdletBinding\(\)\]/, /Write-(?:Host|Output|Warning|Error)/, /begin\s*{/, /process\s*{/, /end\s*{/]
         },
         yaml: {
-            patterns: [/^\s*- /m, /^\s*\w+:\s/m, /^---[ \t]*$/m]
+            patterns: [/^\s*- /m, /^\s*\w+:\s/m, /^---[ \t]*$/m, /^\s*-\s*name:/m, /^\s*-\s*hosts:/m]
         }
         // Add new language signatures here as needed
     },
@@ -209,15 +209,32 @@ const languageDetector = {
         // Score each language based on signatures
         let maxScore = 0;
         let detectedLang = '';
+        const contentLines = content.split('\n').slice(0, 20); // Only check first 20 lines for better performance
 
         for (const [lang, tests] of Object.entries(this.signatures)) {
             let score = 0;
+            
+            // Check keywords in the first 20 lines
             if (tests.keywords) {
-                score += countMatches(content, tests.keywords) * 2;
+                score += countMatches(contentLines.join('\n'), tests.keywords) * 2;
             }
-            if (tests.patterns && matchesPatterns(content, tests.patterns)) {
-                score += 5; // Give pattern matches higher weight
+            
+            // Check patterns in the entire content
+            if (tests.patterns) {
+                const patternMatches = tests.patterns.filter(pattern => pattern.test(content)).length;
+                score += patternMatches * 5; // Give pattern matches higher weight
             }
+            
+            // Special case for JSON - must be valid JSON
+            if (lang === 'json') {
+                try {
+                    JSON.parse(content);
+                    score += 10; // Give JSON a big boost if it's valid
+                } catch (e) {
+                    score = 0; // If not valid JSON, don't consider it
+                }
+            }
+            
             if (score > maxScore) {
                 maxScore = score;
                 detectedLang = lang;
@@ -225,7 +242,7 @@ const languageDetector = {
         }
         
         // If a language was detected with a decent score, return it
-        if (maxScore > 0) { 
+        if (maxScore >= 5) { 
             return detectedLang;
         }
 
