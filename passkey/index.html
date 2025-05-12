@@ -84,23 +84,30 @@
                 }
                 
                 const options = await response.json();
-                console.log('Registration options:', options);
+                console.log('Raw registration options:', options);
 
-                // Convert challenge to base64url format
+                // The challenge is already in base64url format from the server
+                // We need to decode it first to get the raw bytes
                 if (options.challenge) {
-                    // If challenge is already a string, ensure it's base64url encoded
-                    if (typeof options.challenge === 'string') {
-                        options.challenge = btoa(options.challenge)
-                            .replace(/\+/g, '-')
-                            .replace(/\//g, '_')
-                            .replace(/=/g, '');
-                    } else if (options.challenge instanceof Uint8Array) {
-                        // If challenge is a Uint8Array, convert it to base64url
-                        options.challenge = btoa(String.fromCharCode.apply(null, options.challenge))
-                            .replace(/\+/g, '-')
-                            .replace(/\//g, '_')
-                            .replace(/=/g, '');
+                    try {
+                        // Decode the base64url challenge to get the raw bytes
+                        const base64 = options.challenge
+                            .replace(/-/g, '+')
+                            .replace(/_/g, '/');
+                        const padding = '='.repeat((4 - base64.length % 4) % 4);
+                        const base64WithPadding = base64 + padding;
+                        const binaryString = atob(base64WithPadding);
+                        const bytes = new Uint8Array(binaryString.length);
+                        for (let i = 0; i < binaryString.length; i++) {
+                            bytes[i] = binaryString.charCodeAt(i);
+                        }
+                        options.challenge = bytes;
+                    } catch (error) {
+                        console.error('Error processing challenge:', error);
+                        throw new Error('Failed to process challenge: ' + error.message);
                     }
+                } else {
+                    throw new Error('No challenge found in registration options');
                 }
 
                 // Start registration
