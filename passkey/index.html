@@ -84,8 +84,9 @@
                     throw new Error('Invalid server response format');
                 }
                 
-                // Convert challenge from base64 to ArrayBuffer
-                const challengeBuffer = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
+                // Convert challenge to ArrayBuffer
+                const challengeStr = options.challenge;
+                const challengeBuffer = new TextEncoder().encode(challengeStr);
                 options.challenge = challengeBuffer.buffer;
                 
                 // Convert user ID to ArrayBuffer if it's an array
@@ -93,7 +94,7 @@
                     if (Array.isArray(options.user.id) || options.user.id instanceof Uint8Array) {
                         options.user.id = new Uint8Array(Object.values(options.user.id)).buffer;
                     } else if (typeof options.user.id === 'string') {
-                        const userIdBuffer = Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0));
+                        const userIdBuffer = new TextEncoder().encode(options.user.id);
                         options.user.id = userIdBuffer.buffer;
                     }
                 }
