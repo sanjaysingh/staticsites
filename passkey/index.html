@@ -91,16 +91,22 @@
                     challenge: options.challenge,
                     rpName: options.rp.name,
                     rpID: options.rp.id,
-                    userID: options.user.id,
+                    userID: new Uint8Array(16), // Generate a random user ID
                     userName: options.user.name,
                     displayName: options.user.displayName,
                     pubKeyCredParams: options.pubKeyCredParams,
                     timeout: options.timeout,
                     attestation: options.attestation,
-                    authenticatorSelection: options.authenticatorSelection,
+                    authenticatorSelection: {
+                        authenticatorAttachment: 'platform',
+                        userVerification: 'required',
+                        requireResidentKey: true
+                    },
                     excludeCredentials: [], // No existing credentials to exclude
                     supportedAlgorithmIDs: [-7, -257] // ES256 and RS256
                 };
+
+                console.log('Structured registration options:', registrationOptions);
 
                 // Start registration
                 const credential = await SimpleWebAuthnBrowser.startRegistration(registrationOptions);
