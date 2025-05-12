@@ -78,13 +78,30 @@
                 });
                 
                 const options = await response.json();
+                console.log('Server response:', options);
+                
+                if (!options || !options.challenge) {
+                    throw new Error('Invalid server response format');
+                }
                 
                 // Convert challenge from base64 to ArrayBuffer
-                const challengeBuffer = Uint8Array.from(atob(options.publicKey.challenge), c => c.charCodeAt(0));
-                options.publicKey.challenge = challengeBuffer.buffer;
+                const challengeBuffer = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
+                options.challenge = challengeBuffer.buffer;
+                
+                // Convert user ID to ArrayBuffer if it's an array
+                if (options.user && options.user.id) {
+                    if (Array.isArray(options.user.id) || options.user.id instanceof Uint8Array) {
+                        options.user.id = new Uint8Array(Object.values(options.user.id)).buffer;
+                    } else if (typeof options.user.id === 'string') {
+                        const userIdBuffer = Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0));
+                        options.user.id = userIdBuffer.buffer;
+                    }
+                }
+                
+                console.log('Processed options:', options);
                 
                 const credential = await navigator.credentials.create({
-                    publicKey: options.publicKey
+                    publicKey: options
                 });
 
                 const verificationResponse = await fetch(`${API_BASE}/auth/verify-registration`, {
