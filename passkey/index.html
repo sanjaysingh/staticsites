@@ -93,6 +93,13 @@
                         options.user.id = btoa(String.fromCharCode.apply(null, Object.values(options.user.id)));
                     }
                 }
+
+                // Set RP ID to current domain
+                if (options.rp) {
+                    options.rp.id = window.location.hostname;
+                }
+                
+                console.log('Modified options:', options);
                 
                 // Start registration
                 const credential = await SimpleWebAuthnBrowser.startRegistration(options);
