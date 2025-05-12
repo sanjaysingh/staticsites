@@ -84,31 +84,30 @@
                 }
                 
                 const options = await response.json();
-                console.log('Server response:', options);
+                console.log('Registration options:', options);
 
-                // Ensure challenge is a string
-                if (options.challenge) {
-                    options.challenge = options.challenge.toString();
-                }
-
-                // Ensure user.id is a string
-                if (options.user && options.user.id) {
-                    if (typeof options.user.id === 'object') {
-                        options.user.id = btoa(String.fromCharCode.apply(null, Object.values(options.user.id)));
-                    }
-                }
-                
-                console.log('Modified options:', options);
-                
                 // Start registration
                 const credential = await SimpleWebAuthnBrowser.startRegistration(options);
                 console.log('Registration credential:', credential);
+
+                // Prepare the credential data
+                const credentialData = {
+                    id: credential.id,
+                    rawId: Array.from(new Uint8Array(credential.rawId)),
+                    response: {
+                        attestationObject: Array.from(new Uint8Array(credential.response.attestationObject)),
+                        clientDataJSON: Array.from(new Uint8Array(credential.response.clientDataJSON))
+                    },
+                    type: credential.type
+                };
+
+                console.log('Sending credential data:', credentialData);
 
                 // Send registration response to server
                 const verificationResponse = await fetch(`${API_BASE}/auth/verify-registration`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(credential)
+                    body: JSON.stringify(credentialData)
                 });
 
                 if (!verificationResponse.ok) {
