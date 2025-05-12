@@ -89,11 +89,15 @@
                 // Structure the options according to SimpleWebAuthn's requirements
                 const registrationOptions = {
                     challenge: options.challenge,
-                    rpName: options.rp.name,
-                    rpID: options.rp.id,
-                    userID: new Uint8Array(16), // Generate a random user ID
-                    userName: options.user.name,
-                    displayName: options.user.displayName,
+                    rp: {
+                        name: options.rp.name,
+                        id: options.rp.id
+                    },
+                    user: {
+                        id: new Uint8Array(16),
+                        name: options.user.name,
+                        displayName: options.user.displayName
+                    },
                     pubKeyCredParams: options.pubKeyCredParams,
                     timeout: options.timeout,
                     attestation: options.attestation,
