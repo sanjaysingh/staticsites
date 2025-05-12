@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Passkey Todo App</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
     <style>
         .hidden {
             display: none;
@@ -69,9 +70,10 @@
         // API endpoints
         const API_BASE = 'https://passkey-todo-app.itssanjay.workers.dev';
 
-        // Passkey Authentication
+        // Passkey Authentication using SimpleWebAuthn
         async function registerPasskey() {
             try {
+                // Get registration options from server
                 const response = await fetch(`${API_BASE}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
@@ -79,46 +81,27 @@
                 
                 const options = await response.json();
                 console.log('Server response:', options);
-                
-                if (!options || !options.challenge) {
-                    throw new Error('Invalid server response format');
+
+                // Ensure challenge is a string
+                if (options.challenge) {
+                    options.challenge = options.challenge.toString();
                 }
-                
-                // Convert challenge to ArrayBuffer
-                const challengeStr = options.challenge;
-                const challengeBuffer = new TextEncoder().encode(challengeStr);
-                options.challenge = challengeBuffer.buffer;
-                
-                // Convert user ID to ArrayBuffer if it's an array
+
+                // Ensure user.id is a string
                 if (options.user && options.user.id) {
-                    if (Array.isArray(options.user.id) || options.user.id instanceof Uint8Array) {
-                        options.user.id = new Uint8Array(Object.values(options.user.id)).buffer;
-                    } else if (typeof options.user.id === 'string') {
-                        const userIdBuffer = new TextEncoder().encode(options.user.id);
-                        options.user.id = userIdBuffer.buffer;
+                    if (typeof options.user.id === 'object') {
+                        options.user.id = btoa(String.fromCharCode.apply(null, Object.values(options.user.id)));
                     }
                 }
                 
-                console.log('Processed options:', options);
-                
-                const credential = await navigator.credentials.create({
-                    publicKey: options
-                });
+                // Start registration
+                const credential = await SimpleWebAuthnBrowser.startRegistration(options);
 
+                // Send registration response to server
                 const verificationResponse = await fetch(`${API_BASE}/auth/verify-registration`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        credential: {
-                            id: credential.id,
-                            rawId: Array.from(new Uint8Array(credential.rawId)),
-                            response: {
-                                attestationObject: Array.from(new Uint8Array(credential.response.attestationObject)),
-                                clientDataJSON: Array.from(new Uint8Array(credential.response.clientDataJSON))
-                            },
-                            type: credential.type
-                        }
-                    })
+                    body: JSON.stringify(credential)
                 });
 
                 if (verificationResponse.ok) {
@@ -132,6 +115,7 @@
 
         async function loginWithPasskey() {
             try {
+                // Get authentication options from server
                 const response = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
@@ -139,26 +123,14 @@
                 
                 const options = await response.json();
                 
-                const credential = await navigator.credentials.get({
-                    publicKey: options
-                });
+                // Start authentication
+                const credential = await SimpleWebAuthnBrowser.startAuthentication(options);
 
+                // Send authentication response to server
                 const verificationResponse = await fetch(`${API_BASE}/auth/verify-login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        credential: {
-                            id: credential.id,
-                            rawId: Array.from(new Uint8Array(credential.rawId)),
-                            response: {
-                                authenticatorData: Array.from(new Uint8Array(credential.response.authenticatorData)),
-                                clientDataJSON: Array.from(new Uint8Array(credential.response.clientDataJSON)),
-                                signature: Array.from(new Uint8Array(credential.response.signature)),
-                                userHandle: Array.from(new Uint8Array(credential.response.userHandle))
-                            },
-                            type: credential.type
-                        }
-                    })
+                    body: JSON.stringify(credential)
                 });
 
                 if (verificationResponse.ok) {
