@@ -79,6 +79,10 @@
                     headers: { 'Content-Type': 'application/json' }
                 });
                 
+                if (!response.ok) {
+                    throw new Error('Failed to get registration options');
+                }
+                
                 const options = await response.json();
                 console.log('Server response:', options);
 
@@ -98,6 +102,7 @@
                 
                 // Start registration
                 const credential = await SimpleWebAuthnBrowser.startRegistration(options);
+                console.log('Registration credential:', credential);
 
                 // Send registration response to server
                 const verificationResponse = await fetch(`${API_BASE}/auth/verify-registration`, {
@@ -106,14 +111,17 @@
                     body: JSON.stringify(credential)
                 });
 
-                if (verificationResponse.ok) {
-                    const { token } = await verificationResponse.json();
-                    localStorage.setItem('token', token);
-                    showTodoSection();
+                if (!verificationResponse.ok) {
+                    const errorData = await verificationResponse.json();
+                    throw new Error(errorData.error || 'Verification failed');
                 }
+
+                const { token } = await verificationResponse.json();
+                localStorage.setItem('token', token);
+                showTodoSection();
             } catch (error) {
                 console.error('Registration failed:', error);
-                alert('Registration failed. Please try again.');
+                alert('Registration failed: ' + error.message);
             }
         }
 
