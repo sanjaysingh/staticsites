@@ -93,11 +93,6 @@
                         options.user.id = btoa(String.fromCharCode.apply(null, Object.values(options.user.id)));
                     }
                 }
-
-                // Set RP ID to current domain
-                if (options.rp) {
-                    options.rp.id = window.location.hostname;
-                }
                 
                 console.log('Modified options:', options);
                 
@@ -112,6 +107,8 @@
                 });
 
                 if (verificationResponse.ok) {
+                    const { token } = await verificationResponse.json();
+                    localStorage.setItem('token', token);
                     showTodoSection();
                 }
             } catch (error) {
