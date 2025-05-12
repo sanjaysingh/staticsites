@@ -86,6 +86,14 @@
                 const options = await response.json();
                 console.log('Registration options:', options);
 
+                // Convert challenge to base64url format if it's not already
+                if (options.challenge && typeof options.challenge === 'string') {
+                    options.challenge = options.challenge
+                        .replace(/\+/g, '-')
+                        .replace(/\//g, '_')
+                        .replace(/=/g, '');
+                }
+
                 // Start registration
                 const credential = await SimpleWebAuthnBrowser.startRegistration(options);
                 console.log('Registration credential:', credential);
