@@ -86,12 +86,21 @@
                 const options = await response.json();
                 console.log('Registration options:', options);
 
-                // Convert challenge to base64url format if it's not already
-                if (options.challenge && typeof options.challenge === 'string') {
-                    options.challenge = options.challenge
-                        .replace(/\+/g, '-')
-                        .replace(/\//g, '_')
-                        .replace(/=/g, '');
+                // Convert challenge to base64url format
+                if (options.challenge) {
+                    // If challenge is already a string, ensure it's base64url encoded
+                    if (typeof options.challenge === 'string') {
+                        options.challenge = btoa(options.challenge)
+                            .replace(/\+/g, '-')
+                            .replace(/\//g, '_')
+                            .replace(/=/g, '');
+                    } else if (options.challenge instanceof Uint8Array) {
+                        // If challenge is a Uint8Array, convert it to base64url
+                        options.challenge = btoa(String.fromCharCode.apply(null, options.challenge))
+                            .replace(/\+/g, '-')
+                            .replace(/\//g, '_')
+                            .replace(/=/g, '');
+                    }
                 }
 
                 // Start registration
