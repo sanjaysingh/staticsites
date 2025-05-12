@@ -79,8 +79,12 @@
                 
                 const options = await response.json();
                 
+                // Convert challenge from base64 to ArrayBuffer
+                const challengeBuffer = Uint8Array.from(atob(options.publicKey.challenge), c => c.charCodeAt(0));
+                options.publicKey.challenge = challengeBuffer.buffer;
+                
                 const credential = await navigator.credentials.create({
-                    publicKey: options
+                    publicKey: options.publicKey
                 });
 
                 const verificationResponse = await fetch(`${API_BASE}/auth/verify-registration`, {
