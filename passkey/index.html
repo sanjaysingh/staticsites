@@ -86,31 +86,22 @@
                 const options = await response.json();
                 console.log('Raw registration options:', options);
 
-                // Structure the options according to SimpleWebAuthn's requirements
+                // Format options according to SimpleWebAuthn's requirements
                 const registrationOptions = {
+                    rpName: options.rp.name,
+                    rpID: options.rp.id,
+                    userID: options.user.id,
+                    userName: options.user.name,
+                    displayName: options.user.displayName,
                     challenge: options.challenge,
-                    rp: {
-                        name: options.rp.name,
-                        id: options.rp.id
-                    },
-                    user: {
-                        id: new Uint8Array(16),
-                        name: options.user.name,
-                        displayName: options.user.displayName
-                    },
                     pubKeyCredParams: options.pubKeyCredParams,
                     timeout: options.timeout,
                     attestation: options.attestation,
-                    authenticatorSelection: {
-                        authenticatorAttachment: 'platform',
-                        userVerification: 'required',
-                        requireResidentKey: true
-                    },
-                    excludeCredentials: [], // No existing credentials to exclude
-                    supportedAlgorithmIDs: [-7, -257] // ES256 and RS256
+                    authenticatorSelection: options.authenticatorSelection,
+                    excludeCredentials: options.excludeCredentials || []
                 };
 
-                console.log('Structured registration options:', registrationOptions);
+                console.log('Formatted registration options:', registrationOptions);
 
                 // Start registration
                 const credential = await SimpleWebAuthnBrowser.startRegistration(registrationOptions);
