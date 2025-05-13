@@ -86,12 +86,21 @@
                 const options = await response.json();
                 console.log('Raw registration options:', options);
 
-                // Pass the options directly as optionsJSON parameter
-                console.log('Starting registration with options:', options);
+                // Ensure the challenge is processed correctly
+                const processedOptions = JSON.parse(JSON.stringify(options));
+                
+                // Convert the challenge string to a properly encoded buffer
+                const base64Challenge = processedOptions.challenge;
+                const challengeBuffer = Uint8Array.from(atob(base64Challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+                
+                // Replace the challenge with the buffer
+                processedOptions.challenge = challengeBuffer;
+                
+                console.log('Starting registration with processed options:', processedOptions);
 
                 // Start registration
                 const credential = await SimpleWebAuthnBrowser.startRegistration({
-                    optionsJSON: options
+                    optionsJSON: processedOptions
                 });
                 console.log('Registration credential:', credential);
 
@@ -140,9 +149,21 @@
                 const options = await response.json();
                 console.log('Authentication options:', options);
                 
+                // Ensure the challenge is processed correctly
+                const processedOptions = JSON.parse(JSON.stringify(options));
+                
+                // Convert the challenge string to a properly encoded buffer
+                const base64Challenge = processedOptions.challenge;
+                const challengeBuffer = Uint8Array.from(atob(base64Challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+                
+                // Replace the challenge with the buffer
+                processedOptions.challenge = challengeBuffer;
+                
+                console.log('Starting authentication with processed options:', processedOptions);
+                
                 // Start authentication
                 const credential = await SimpleWebAuthnBrowser.startAuthentication({
-                    optionsJSON: options
+                    optionsJSON: processedOptions
                 });
 
                 // Send authentication response to server

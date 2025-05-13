@@ -1,0 +1,16 @@
+{
+  "name": "passkey-todo-app",
+  "version": "1.0.0",
+  "description": "A todo app with passkey authentication using Cloudflare Workers",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "jose": "^5.2.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+} 
