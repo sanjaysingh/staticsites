@@ -86,25 +86,13 @@
                 const options = await response.json();
                 console.log('Raw registration options:', options);
 
-                // Format options according to SimpleWebAuthn's requirements
-                const registrationOptions = {
-                    rpName: options.rp.name,
-                    rpID: options.rp.id,
-                    userID: options.user.id,
-                    userName: options.user.name,
-                    displayName: options.user.displayName,
-                    challenge: options.challenge,
-                    pubKeyCredParams: options.pubKeyCredParams,
-                    timeout: options.timeout,
-                    attestation: options.attestation,
-                    authenticatorSelection: options.authenticatorSelection,
-                    excludeCredentials: options.excludeCredentials || []
-                };
-
-                console.log('Formatted registration options:', registrationOptions);
+                // Pass the options directly as optionsJSON parameter
+                console.log('Starting registration with options:', options);
 
                 // Start registration
-                const credential = await SimpleWebAuthnBrowser.startRegistration(registrationOptions);
+                const credential = await SimpleWebAuthnBrowser.startRegistration({
+                    optionsJSON: options
+                });
                 console.log('Registration credential:', credential);
 
                 // Prepare the credential data
@@ -150,9 +138,12 @@
                 });
                 
                 const options = await response.json();
+                console.log('Authentication options:', options);
                 
                 // Start authentication
-                const credential = await SimpleWebAuthnBrowser.startAuthentication(options);
+                const credential = await SimpleWebAuthnBrowser.startAuthentication({
+                    optionsJSON: options
+                });
 
                 // Send authentication response to server
                 const verificationResponse = await fetch(`${API_BASE}/auth/verify-login`, {
@@ -230,8 +221,7 @@
                 const response = await fetch(`${API_BASE}/todos/${id}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`                    }
                 });
                 
                 if (response.ok) {
