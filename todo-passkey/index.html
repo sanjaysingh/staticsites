@@ -374,6 +374,36 @@
             return bytes.buffer;
         }
 
+        // Base64URL functions for WebAuthn compatibility
+        function base64URLToArrayBuffer(base64url) {
+            // Convert Base64URL to regular Base64
+            const base64 = base64url
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+            
+            // Add padding if needed
+            const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+            
+            const binary = window.atob(padded);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function arrayBufferToBase64URL(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary)
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+        }
+
         // WebAuthn Registration
         async function registerUser() {
             if (!window.PublicKeyCredential) {
@@ -401,8 +431,8 @@
                 const options = await response.json();
 
                 // Convert base64 strings to ArrayBuffers
-                options.challenge = base64ToArrayBuffer(options.challenge);
-                options.user.id = base64ToArrayBuffer(options.user.id);
+                options.challenge = base64URLToArrayBuffer(options.challenge);
+                options.user.id = base64URLToArrayBuffer(options.user.id);
 
                 // Create credential
                 const credential = await navigator.credentials.create({
@@ -412,10 +442,10 @@
                 // Prepare response for server
                 const credentialResponse = {
                     id: credential.id,
-                    rawId: arrayBufferToBase64(credential.rawId),
+                    rawId: arrayBufferToBase64URL(credential.rawId),
                     response: {
-                        clientDataJSON: arrayBufferToBase64(credential.response.clientDataJSON),
-                        attestationObject: arrayBufferToBase64(credential.response.attestationObject)
+                        clientDataJSON: arrayBufferToBase64URL(credential.response.clientDataJSON),
+                        attestationObject: arrayBufferToBase64URL(credential.response.attestationObject)
                     },
                     type: credential.type
                 };
@@ -436,7 +466,7 @@
 
                 const result = await verifyResponse.json();
                 
-                currentUser = { username, credentialId: credential.id };
+                currentUser = { username, credentialId: credential.id, token: result.token };
                 localStorage.setItem('passkeyTodoUser', JSON.stringify(currentUser));
                 
                 showMessage('Registration successful! Welcome to Passkey Todo!', 'success');
@@ -474,11 +504,11 @@
                 const options = await response.json();
 
                 // Convert base64 strings to ArrayBuffers
-                options.challenge = base64ToArrayBuffer(options.challenge);
+                options.challenge = base64URLToArrayBuffer(options.challenge);
                 if (options.allowCredentials) {
                     options.allowCredentials = options.allowCredentials.map(cred => ({
                         ...cred,
-                        id: base64ToArrayBuffer(cred.id)
+                        id: base64URLToArrayBuffer(cred.id)
                     }));
                 }
 
@@ -490,12 +520,12 @@
                 // Prepare response for server
                 const credentialResponse = {
                     id: credential.id,
-                    rawId: arrayBufferToBase64(credential.rawId),
+                    rawId: arrayBufferToBase64URL(credential.rawId),
                     response: {
-                        clientDataJSON: arrayBufferToBase64(credential.response.clientDataJSON),
-                        authenticatorData: arrayBufferToBase64(credential.response.authenticatorData),
-                        signature: arrayBufferToBase64(credential.response.signature),
-                        userHandle: credential.response.userHandle ? arrayBufferToBase64(credential.response.userHandle) : null
+                        clientDataJSON: arrayBufferToBase64URL(credential.response.clientDataJSON),
+                        authenticatorData: arrayBufferToBase64URL(credential.response.authenticatorData),
+                        signature: arrayBufferToBase64URL(credential.response.signature),
+                        userHandle: credential.response.userHandle ? arrayBufferToBase64URL(credential.response.userHandle) : null
                     },
                     type: credential.type
                 };
