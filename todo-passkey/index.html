@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passkey Todo App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .auth-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+            font-size: 14px;
+            min-width: 100px;
+            padding: 8px 16px;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-details h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .user-details p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .todo-section {
+            display: none;
+        }
+
+        .todo-input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .todo-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .todo-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            min-width: 120px;
+        }
+
+        .todo-list {
+            list-style: none;
+        }
+
+        .todo-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .todo-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .todo-item.completed {
+            opacity: 0.7;
+            text-decoration: line-through;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .complete-btn {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            font-size: 14px;
+            min-width: 80px;
+            padding: 8px 16px;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+            font-size: 14px;
+            min-width: 80px;
+            padding: 8px 16px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .auth-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .todo-input-container {
+                flex-direction: column;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .todo-item {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .todo-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Passkey Todo</h1>
+            <p>Secure, passwordless todo management</p>
+        </div>
+        
+        <div class="content">
+            <div id="messageContainer"></div>
+            
+            <!-- Authentication Section -->
+            <div id="authSection" class="auth-section">
+                <h2 style="margin-bottom: 20px; color: #333;">Welcome! Please authenticate to continue</h2>
+                <div class="auth-buttons">
+                    <button id="registerBtn" onclick="registerUser()">
+                        <span class="btn-text">Register with Passkey</span>
+                        <span class="loading hidden"></span>
+                    </button>
+                    <button id="loginBtn" onclick="loginUser()">
+                        <span class="btn-text">Login with Passkey</span>
+                        <span class="loading hidden"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Info Section -->
+            <div id="userSection" class="user-info hidden">
+                <div class="user-details">
+                    <h3 id="userName">Welcome back!</h3>
+                    <p id="userDetails">Authenticated with passkey</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- Todo Section -->
+            <div id="todoSection" class="todo-section">
+                <div class="todo-input-container">
+                    <input type="text" id="todoInput" class="todo-input" placeholder="What needs to be done?" onkeypress="handleKeyPress(event)">
+                    <button class="add-btn" onclick="addTodo()">
+                        <span class="btn-text">Add Todo</span>
+                        <span class="loading hidden"></span>
+                    </button>
+                </div>
+                
+                <ul id="todoList" class="todo-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'https://passkey-todo-api.itssanjay.workers.dev'; // Replace with your Cloudflare Worker URL
+        
+        let currentUser = null;
+        let todos = [];
+
+        // Utility functions
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function showLoading(buttonId, show = true) {
+            const btn = document.getElementById(buttonId);
+            const text = btn.querySelector('.btn-text');
+            const loading = btn.querySelector('.loading');
+            
+            if (show) {
+                text.style.display = 'none';
+                loading.classList.remove('hidden');
+                btn.disabled = true;
+            } else {
+                text.style.display = 'inline';
+                loading.classList.add('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binary = window.atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        // WebAuthn Registration
+        async function registerUser() {
+            if (!window.PublicKeyCredential) {
+                showMessage('WebAuthn is not supported in this browser', 'error');
+                return;
+            }
+
+            showLoading('registerBtn');
+            
+            try {
+                // Generate a username
+                const username = `user_${Date.now()}`;
+                
+                // Get registration options from server
+                const response = await fetch(`${API_BASE}/auth/register/begin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const options = await response.json();
+
+                // Convert base64 strings to ArrayBuffers
+                options.challenge = base64ToArrayBuffer(options.challenge);
+                options.user.id = base64ToArrayBuffer(options.user.id);
+
+                // Create credential
+                const credential = await navigator.credentials.create({
+                    publicKey: options
+                });
+
+                // Prepare response for server
+                const credentialResponse = {
+                    id: credential.id,
+                    rawId: arrayBufferToBase64(credential.rawId),
+                    response: {
+                        clientDataJSON: arrayBufferToBase64(credential.response.clientDataJSON),
+                        attestationObject: arrayBufferToBase64(credential.response.attestationObject)
+                    },
+                    type: credential.type
+                };
+
+                // Send to server for verification
+                const verifyResponse = await fetch(`${API_BASE}/auth/register/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        credential: credentialResponse
+                    })
+                });
+
+                if (!verifyResponse.ok) {
+                    throw new Error(`Registration failed: ${verifyResponse.status}`);
+                }
+
+                const result = await verifyResponse.json();
+                
+                currentUser = { username, credentialId: credential.id };
+                localStorage.setItem('passkeyTodoUser', JSON.stringify(currentUser));
+                
+                showMessage('Registration successful! Welcome to Passkey Todo!', 'success');
+                showUserSection();
+                await loadTodos();
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                showMessage(`Registration failed: ${error.message}`, 'error');
+            } finally {
+                showLoading('registerBtn', false);
+            }
+        }
+
+        // WebAuthn Authentication
+        async function loginUser() {
+            if (!window.PublicKeyCredential) {
+                showMessage('WebAuthn is not supported in this browser', 'error');
+                return;
+            }
+
+            showLoading('loginBtn');
+
+            try {
+                // Get authentication options from server
+                const response = await fetch(`${API_BASE}/auth/login/begin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const options = await response.json();
+
+                // Convert base64 strings to ArrayBuffers
+                options.challenge = base64ToArrayBuffer(options.challenge);
+                if (options.allowCredentials) {
+                    options.allowCredentials = options.allowCredentials.map(cred => ({
+                        ...cred,
+                        id: base64ToArrayBuffer(cred.id)
+                    }));
+                }
+
+                // Get credential
+                const credential = await navigator.credentials.get({
+                    publicKey: options
+                });
+
+                // Prepare response for server
+                const credentialResponse = {
+                    id: credential.id,
+                    rawId: arrayBufferToBase64(credential.rawId),
+                    response: {
+                        clientDataJSON: arrayBufferToBase64(credential.response.clientDataJSON),
+                        authenticatorData: arrayBufferToBase64(credential.response.authenticatorData),
+                        signature: arrayBufferToBase64(credential.response.signature),
+                        userHandle: credential.response.userHandle ? arrayBufferToBase64(credential.response.userHandle) : null
+                    },
+                    type: credential.type
+                };
+
+                // Send to server for verification
+                const verifyResponse = await fetch(`${API_BASE}/auth/login/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ credential: credentialResponse })
+                });
+
+                if (!verifyResponse.ok) {
+                    throw new Error(`Login failed: ${verifyResponse.status}`);
+                }
+
+                const result = await verifyResponse.json();
+                
+                currentUser = { username: result.username, credentialId: credential.id, token: result.token };
+                localStorage.setItem('passkeyTodoUser', JSON.stringify(currentUser));
+                
+                showMessage('Login successful! Welcome back!', 'success');
+                showUserSection();
+                await loadTodos();
+
+            } catch (error) {
+                console.error('Login error:', error);
+                showMessage(`Login failed: ${error.message}`, 'error');
+            } finally {
+                showLoading('loginBtn', false);
+            }
+        }
+
+        // Show user section after authentication
+        function showUserSection() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('userSection').classList.remove('hidden');
+            document.getElementById('todoSection').style.display = 'block';
+            
+            document.getElementById('userName').textContent = `Welcome, ${currentUser.username}!`;
+            document.getElementById('userDetails').textContent = `Authenticated with passkey • ${new Date().toLocaleString()}`;
+        }
+
+        // Logout
+        function logout() {
+            currentUser = null;
+            todos = [];
+            localStorage.removeItem('passkeyTodoUser');
+            
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('userSection').classList.add('hidden');
+            document.getElementById('todoSection').style.display = 'none';
+            document.getElementById('todoList').innerHTML = '';
+            document.getElementById('todoInput').value = '';
+            
+            showMessage('Logged out successfully', 'success');
+        }
+
+        // Todo Functions
+        async function loadTodos() {
+            if (!currentUser || !currentUser.token) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/todos`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentUser.token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load todos: ${response.status}`);
+                }
+
+                todos = await response.json();
+                renderTodos();
+            } catch (error) {
+                console.error('Load todos error:', error);
+                showMessage('Failed to load todos', 'error');
+            }
+        }
+
+        async function addTodo() {
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                showMessage('Please enter a todo item', 'error');
+                return;
+            }
+
+            if (!currentUser || !currentUser.token) {
+                showMessage('Please login first', 'error');
+                return;
+            }
+
+            showLoading('addTodo');
+
+            try {
+                const response = await fetch(`${API_BASE}/todos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentUser.token}`
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to add todo: ${response.status}`);
+                }
+
+                const newTodo = await response.json();
+                todos.push(newTodo);
+                input.value = '';
+                renderTodos();
+                showMessage('Todo added successfully!', 'success');
+            } catch (error) {
+                console.error('Add todo error:', error);
+                showMessage('Failed to add todo', 'error');
+            } finally {
+                showLoading('addTodo', false);
+            }
+        }
+
+        async function toggleTodo(id) {
+            if (!currentUser || !currentUser.token) return;
+
+            try {
+                const todo = todos.find(t => t.id === id);
+                const response = await fetch(`${API_BASE}/todos/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentUser.token}`
+                    },
+                    body: JSON.stringify({ completed: !todo.completed })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to update todo: ${response.status}`);
+                }
+
+                const updatedTodo = await response.json();
+                const index = todos.findIndex(t => t.id === id);
+                todos[index] = updatedTodo;
+                renderTodos();
+            } catch (error) {
+                console.error('Toggle todo error:', error);
+                showMessage('Failed to update todo', 'error');
+            }
+        }
+
+        async function deleteTodo(id) {
+            if (!currentUser || !currentUser.token) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/todos/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${currentUser.token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to delete todo: ${response.status}`);
+                }
+
+                todos = todos.filter(t => t.id !== id);
+                renderTodos();
+                showMessage('Todo deleted successfully!', 'success');
+            } catch (error) {
+                console.error('Delete todo error:', error);
+                showMessage('Failed to delete todo', 'error');
+            }
+        }
+
+        function renderTodos() {
+            const todoList = document.getElementById('todoList');
+            todoList.innerHTML = '';
+
+            if (todos.length === 0) {
+                todoList.innerHTML = '<li style="text-align: center; color: #666; padding: 40px;">No todos yet. Add one above!</li>';
+                return;
+            }
+
+            todos.forEach(todo => {
+                const li = document.createElement('li');
+                li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                li.innerHTML = `
+                    <span class="todo-text">${todo.text}</span>
+                    <div class="todo-actions">
+                        <button class="complete-btn" onclick="toggleTodo('${todo.id}')">
+                            ${todo.completed ? 'Undo' : 'Complete'}
+                        </button>
+                        <button class="delete-btn" onclick="deleteTodo('${todo.id}')">Delete</button>
+                    </div>
+                `;
+                todoList.appendChild(li);
+            });
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                addTodo();
+            }
+        }
+
+        // Initialize app
+        window.addEventListener('load', () => {
+            // Check for existing session
+            const savedUser = localStorage.getItem('passkeyTodoUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                if (currentUser.token) {
+                    showUserSection();
+                    loadTodos();
+                } else {
+                    // Clear invalid session
+                    localStorage.removeItem('passkeyTodoUser');
+                    currentUser = null;
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
