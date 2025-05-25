@@ -313,7 +313,7 @@
             <div id="todoSection" class="todo-section">
                 <div class="todo-input-container">
                     <input type="text" id="todoInput" class="todo-input" placeholder="What needs to be done?" onkeypress="handleKeyPress(event)">
-                    <button class="add-btn" onclick="addTodo()">
+                    <button id="addTodoBtn" class="add-btn" onclick="addTodo()">
                         <span class="btn-text">Add Todo</span>
                         <span class="loading hidden"></span>
                     </button>
@@ -590,7 +590,7 @@
                 return;
             }
 
-            showLoading('addTodo');
+            showLoading('addTodoBtn');
 
             try {
                 const response = await fetch(`${API_BASE}/todos`, {
@@ -615,7 +615,7 @@
                 console.error('Add todo error:', error);
                 showMessage('Failed to add todo', 'error');
             } finally {
-                showLoading('addTodo', false);
+                showLoading('addTodoBtn', false);
             }
         }
 
