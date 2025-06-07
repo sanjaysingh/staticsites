@@ -1,1 +1,4 @@
 https://github.com/sanjaysingh/house-direction
+https://github.com/sanjaysingh/ethwallet
+https://github.com/sanjaysingh/btcwallet
+https://github.com/sanjaysingh/qrcode
