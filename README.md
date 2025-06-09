@@ -1,6 +1,6 @@
 # Static Web Apps
 
-Collection of static web applications hosted at [static.sanjaysingh.net](https://static.sanjaysingh.net).
+Collection of static web applications hosted at [apps.sanjaysingh.net](https://apps.sanjaysingh.net).
 
 ## How It Works
 
@@ -23,13 +23,13 @@ Collection of static web applications hosted at [static.sanjaysingh.net](https:/
    git commit -m "Add new app"
    ```
 
-Your app will appear at `static.sanjaysingh.net/my-app`
+Your app will appear at `apps.sanjaysingh.net/my-app`
 
 ## Local Setup
 
 1. Clone and setup:
    ```bash
-   git clone https://github.com/sanjaybv/staticsites.git
+   git clone https://github.com/sanjaysingh/staticsites.git
    cd staticsites
    ```
 
