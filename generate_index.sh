@@ -13,7 +13,7 @@ for dir in */; do
         if [ -z "$title" ]; then
             title=${dir%/}  # Use directory name if no title found
         fi
-        echo "                        <li><a href=\"/${dir%/}\">${title}</a></li>" >> "$temp_file_apps"
+        echo "                        <li><a href=\"/${dir%/}\" target=\"_blank\" rel=\"noopener\">${title}</a></li>" >> "$temp_file_apps"
     fi
 done
 

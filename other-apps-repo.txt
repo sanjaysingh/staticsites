@@ -3,3 +3,5 @@ https://github.com/sanjaysingh/ethwallet/blob/main/index.html
 https://github.com/sanjaysingh/btcwallet/blob/main/index.html
 https://github.com/sanjaysingh/qrcode/blob/main/index.html
 https://github.com/sanjaysingh/ethtimedlock/blob/main/app/index.html
+https://github.com/sanjaysingh/editor/blob/main/index.html
+https://github.com/sanjaysingh/splitexp/blob/main/index.html
