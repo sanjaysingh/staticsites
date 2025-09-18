@@ -7,3 +7,4 @@ https://github.com/sanjaysingh/editor/blob/main/client/index.html
 https://github.com/sanjaysingh/splitexp/blob/main/index.html
 https://github.com/sanjaysingh/timedashboard/blob/main/index.html
 https://github.com/sanjaysingh/gql-playground/blob/main/index.html
+https://github.com/sanjaysingh/pdf-tools/blob/main/index.html
