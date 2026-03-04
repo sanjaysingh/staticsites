@@ -1,8 +1,0 @@
-#!/bin/sh
-
-# Run the generator script
-chmod +x ./generate_index.sh
-./generate_index.sh
-
-# Add the generated index.html to the commit
-git add index.html 
