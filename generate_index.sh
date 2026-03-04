@@ -79,6 +79,18 @@ if [ -f "other-apps-repo.txt" ]; then
     done < "other-apps-repo.txt"
 fi
 
+# Generate from other-apps-direct.txt (title and url pipe-separated)
+if [ -f "other-apps-direct.txt" ]; then
+    echo "Generating Direct Apps section..."
+    while IFS='|' read -r title url _; do
+        title=$(echo "$title" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        url=$(echo "$url" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        if [ -n "$title" ] && [ -n "$url" ]; then
+            echo "                        <li><a href=\"$url\" target=\"_blank\" rel=\"noopener\">$title</a></li>" >> "$temp_file_apps"
+        fi
+    done < "other-apps-direct.txt"
+fi
+
 # Sort the combined apps list alphabetically by title
 sort_temp_file=$(mktemp)
 sed 's|.*<a.*>\(.*\)</a.*|\1|' "$temp_file_apps" | paste -d'|' - "$temp_file_apps" | sort | cut -d'|' -f2- > "$sort_temp_file"
