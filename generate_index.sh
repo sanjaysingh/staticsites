@@ -97,8 +97,23 @@ sed 's|.*<a.*>\(.*\)</a.*|\1|' "$temp_file_apps" | paste -d'|' - "$temp_file_app
 mv "$sort_temp_file" "$temp_file_apps"
 
 
-# Replace content between <ol id="pages"> and </ol> tags for General Apps
-sed -i${sed_backup:+' '} -e '/<ol id="pages">/,/<\/ol>/{/<ol id="pages">/!{/<\/ol>/!d}}' -e "/<ol id=\"pages\">/r $temp_file_apps" index.html
+# Replace content between <ol id="pages"> and </ol> tags (awk: portable macOS/Linux)
+awk -v listfile="$temp_file_apps" '
+    /<ol id="pages">/ {
+        print
+        while ((getline line < listfile) > 0) print line
+        close(listfile)
+        skip = 1
+        next
+    }
+    skip && /<\/ol>/ {
+        print
+        skip = 0
+        next
+    }
+    skip { next }
+    { print }
+' index.html > index.html.tmp && mv index.html.tmp index.html
 
 echo "Generated $(wc -l < "$temp_file_apps") Apps"
 
