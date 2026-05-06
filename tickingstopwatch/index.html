@@ -36,7 +36,12 @@
         class="text-4xl px-5 py-3 mr-4 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-500">{{ buttonLabel
         }}</button>
       <button id="reset" @click="reset"
-        class="text-4xl px-5 py-3 bg-red-600 text-white rounded cursor-pointer hover:bg-red-500">Reset</button>
+        class="text-4xl px-5 py-3 mr-4 bg-red-600 text-white rounded cursor-pointer hover:bg-red-500">Reset</button>
+      <button id="mute" @click="toggleMute"
+        class="text-4xl px-5 py-3 bg-gray-600 text-white rounded cursor-pointer hover:bg-gray-500">{{ muteLabel }}</button>
+    </div>
+    <div v-if="wakeLockSupported" class="text-sm text-gray-500 mt-2">
+      Screen will stay awake while running
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
@@ -50,7 +55,10 @@
         time: 0,
         timer: null,
         tick: null,
-        tickAudioFile: "clock-tick.mp3"
+        tickAudioFile: "clock-tick.mp3",
+        muted: false,
+        wakeLock: null,
+        wakeLockSupported: 'wakeLock' in navigator
       },
       computed: {
         elapsedTime() {
@@ -69,31 +77,80 @@
         },
         buttonLabel() {
           return this.running ? 'Stop' : 'Start';
+        },
+        muteLabel() {
+          return this.muted ? '🔇' : '🔊';
         }
       },
+      mounted() {
+        // Re-acquire wake lock when page becomes visible again
+        document.addEventListener('visibilitychange', this.handleVisibilityChange);
+      },
+      beforeDestroy() {
+        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+        this.releaseWakeLock();
+      },
       methods: {
-        startStop() {
+        async requestWakeLock() {
+          if (this.wakeLockSupported && !this.wakeLock) {
+            try {
+              this.wakeLock = await navigator.wakeLock.request('screen');
+              this.wakeLock.addEventListener('release', () => {
+                this.wakeLock = null;
+              });
+            } catch (err) {
+              console.log('Wake Lock request failed:', err.message);
+            }
+          }
+        },
+        releaseWakeLock() {
+          if (this.wakeLock) {
+            this.wakeLock.release();
+            this.wakeLock = null;
+          }
+        },
+        handleVisibilityChange() {
+          if (document.visibilityState === 'visible' && this.running) {
+            this.requestWakeLock();
+          }
+        },
+        toggleMute() {
+          this.muted = !this.muted;
+        },
+        playTick() {
+          if (this.muted) return;
+          if (this.tick == null) {
+            this.tick = new Audio(this.tickAudioFile);
+          }
+          this.tick.src = this.tickAudioFile;
+          this.tick.currentTime = 0;
+          this.tick.play().catch(err => {
+            // Audio play failed (common if user hasn't interacted yet)
+            console.log('Audio play failed:', err.message);
+          });
+        },
+        async startStop() {
           if (!this.running) {
             this.running = true;
-            if (this.tick == null) {
-              this.tick = new Audio(this.tickAudioFile);
-            }
+            await this.requestWakeLock();
             this.timer = setInterval(() => {
               this.time++;
-              this.tick.src = this.tickAudioFile;
-              this.tick.currentTime = 0;
-              this.tick.play();
+              this.playTick();
             }, 1000);
           } else {
             this.running = false;
             clearInterval(this.timer);
-            this.tick.pause();
+            this.releaseWakeLock();
+            if (this.tick) {
+              this.tick.pause();
+            }
           }
         },
         reset() {
           this.running = false;
           this.time = 0;
           clearInterval(this.timer);
+          this.releaseWakeLock();
         },
       },
     });
