@@ -3,7 +3,7 @@
 
 <head>
   <title>Ticking Stopwatch</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,11 +16,12 @@
       letter-spacing: 0.05em;
     }
 
-    /* Full-width time display - fits exactly 8 chars (HH:MM:SS) */
+    /* Full-width time display - fits exactly 5 chars (MM:SS) - bigger since fewer chars */
     .time-display {
-      font-size: clamp(3rem, 20vw, 15rem);
+      font-size: clamp(4rem, 28vw, 20rem);
       line-height: 1;
       white-space: nowrap;
+      padding: 0 max(20px, env(safe-area-inset-left), env(safe-area-inset-right));
     }
 
     /* Neon glow effect for dark mode */
@@ -100,29 +101,29 @@
       box-shadow: 0 6px 20px rgba(107, 114, 128, 0.5);
     }
 
-    /* Mute button - top right corner */
+    /* Mute button - top right corner with safe area support */
     .mute-btn {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
+      top: max(10px, env(safe-area-inset-top));
+      right: max(10px, env(safe-area-inset-right));
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       transition: all 0.2s ease;
       z-index: 100;
     }
 
     @media (prefers-color-scheme: dark) {
       .mute-btn {
-        background: rgba(0, 0, 0, 0.3);
+        background: rgba(0, 0, 0, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.1);
       }
     }
@@ -130,12 +131,20 @@
     .mute-btn:hover {
       transform: scale(1.1);
     }
+
+    /* Landscape mode: increase margins to avoid camera notch and mute button overlap */
+    @media (orientation: landscape) {
+      .time-display {
+        padding-left: max(60px, env(safe-area-inset-left));
+        padding-right: max(70px, env(safe-area-inset-right));
+      }
+    }
   </style>
 </head>
 
 <body class="h-screen flex flex-col justify-center items-center bg-auto overflow-hidden">
 
-  <div id="app" class="w-full h-full flex flex-col justify-center items-center px-4 relative">
+  <div id="app" class="w-full h-full flex flex-col justify-center items-center relative">
     <!-- Mute Button - Top Right (inside Vue app) -->
     <button @click="toggleMute" class="mute-btn" :title="muted ? 'Unmute' : 'Mute'">
       <span v-if="muted">🔇</span>
@@ -187,10 +196,10 @@
       },
       computed: {
         formattedTime() {
-          const hours = Math.floor(this.time / 3600);
-          const minutes = Math.floor((this.time % 3600) / 60);
+          const totalMinutes = Math.floor(this.time / 60);
+          const minutes = totalMinutes % 100; // Wrap around at 99 minutes
           const seconds = this.time % 60;
-          return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
       },
       mounted() {
