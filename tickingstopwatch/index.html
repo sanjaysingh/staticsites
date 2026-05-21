@@ -102,7 +102,7 @@
 
     /* Mute button - top right corner */
     .mute-btn {
-      position: fixed;
+      position: absolute;
       top: 20px;
       right: 20px;
       width: 60px;
@@ -130,58 +130,41 @@
     .mute-btn:hover {
       transform: scale(1.1);
     }
-
-    /* Status indicator */
-    .status-pill {
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.875rem;
-      background: rgba(128, 128, 128, 0.15);
-      backdrop-filter: blur(5px);
-    }
   </style>
 </head>
 
 <body class="h-screen flex flex-col justify-center items-center bg-auto overflow-hidden">
 
-  <!-- Mute Button - Fixed Top Right -->
-  <button id="mute" @click="toggleMute" class="mute-btn" :title="muted ? 'Unmute' : 'Mute'">
-    {{ muteLabel }}
-  </button>
+  <div id="app" class="w-full h-full flex flex-col justify-center items-center px-4 relative">
+    <!-- Mute Button - Top Right (inside Vue app) -->
+    <button @click="toggleMute" class="mute-btn" :title="muted ? 'Unmute' : 'Mute'">
+      <span v-if="muted">🔇</span>
+      <span v-else>🔊</span>
+    </button>
 
-  <div id="app" class="w-full h-full flex flex-col justify-center items-center px-4">
     <!-- Main Time Display - Full Width -->
     <div class="time-display digital-font text-auto mb-8 select-none" aria-live="polite">
       {{ formattedTime }}
     </div>
 
     <!-- Control Buttons -->
-    <div class="button-group flex justify-center items-center gap-6 mb-6">
-      <button id="start" @click="startStop"
+    <div class="button-group flex justify-center items-center gap-6">
+      <button @click="startStop"
         :class="running ? 'btn-stop' : 'btn-start'"
         class="icon-btn text-white"
         :title="running ? 'Stop' : 'Start'">
-        {{ running ? '&#9724;' : '&#9654;' }}
+        <span v-if="running">⏹</span>
+        <span v-else>▶</span>
       </button>
-      <button id="reset" @click="reset"
+      <button @click="reset"
         class="icon-btn btn-reset text-white"
         title="Reset">
-        &#8634;
+        ↺
       </button>
-    </div>
-
-    <!-- Status Indicators -->
-    <div class="flex flex-col items-center gap-2">
-      <div v-if="wakeLockSupported" class="status-pill text-dim">
-        &#9733; Screen stays awake
-      </div>
-      <div v-if="running" class="status-pill text-dim">
-        &#9679; Running
-      </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
 
   <script>
     new Vue({
@@ -189,7 +172,7 @@
       data: {
         running: false,
         time: 0,
-        timer: null,
+        animationFrame: null,
         tick: null,
         tickAudioFile: "clock-tick.mp3",
         muted: false,
@@ -197,7 +180,10 @@
         wakeLockSupported: 'wakeLock' in navigator,
         // Timestamp-based timing
         startTime: null,
-        lastSecond: -1
+        lastSecond: -1,
+        // Audio scheduling
+        nextTickTime: 0,
+        audioContext: null
       },
       computed: {
         formattedTime() {
@@ -205,20 +191,24 @@
           const minutes = Math.floor((this.time % 3600) / 60);
           const seconds = this.time % 60;
           return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        },
-        muteLabel() {
-          return this.muted ? '&#128263;' : '&#128266;';
         }
       },
       mounted() {
         document.addEventListener('visibilitychange', this.handleVisibilityChange);
+        // Preload audio
+        this.preloadAudio();
       },
       beforeDestroy() {
         document.removeEventListener('visibilitychange', this.handleVisibilityChange);
         this.releaseWakeLock();
-        cancelAnimationFrame(this.timer);
+        cancelAnimationFrame(this.animationFrame);
       },
       methods: {
+        preloadAudio() {
+          // Preload the audio file to reduce latency
+          this.tick = new Audio(this.tickAudioFile);
+          this.tick.load();
+        },
         async requestWakeLock() {
           if (this.wakeLockSupported && !this.wakeLock) {
             try {
@@ -249,28 +239,21 @@
         playTick() {
           if (this.muted) return;
 
-          // Pre-load audio on first use
-          if (this.tick == null) {
-            this.tick = new Audio(this.tickAudioFile);
-            this.tick.load();
-          }
+          // Create a new audio instance each time for precise timing
+          const tickSound = new Audio(this.tickAudioFile);
+          tickSound.volume = 0.7;
 
-          // Clone audio node for overlapping sounds
-          const tickClone = this.tick.cloneNode();
-          tickClone.currentTime = 0;
-          tickClone.volume = 0.7;
-
-          // Play with error handling
-          const playPromise = tickClone.play();
+          // Play immediately
+          const playPromise = tickSound.play();
           if (playPromise !== undefined) {
             playPromise.catch(err => {
               console.log('Audio play failed:', err.message);
             });
           }
 
-          // Auto-cleanup
-          tickClone.addEventListener('ended', () => {
-            tickClone.remove();
+          // Auto-cleanup after play
+          tickSound.addEventListener('ended', () => {
+            tickSound.remove();
           });
         },
         // Precision timing loop using requestAnimationFrame + Date.now()
@@ -290,8 +273,8 @@
             this.playTick();
           }
 
-          // Continue loop - check every frame for precision
-          this.timer = requestAnimationFrame(() => this.tickLoop());
+          // Continue loop
+          this.animationFrame = requestAnimationFrame(() => this.tickLoop());
         },
         async startStop() {
           if (!this.running) {
@@ -304,7 +287,7 @@
           } else {
             // STOP
             this.running = false;
-            cancelAnimationFrame(this.timer);
+            cancelAnimationFrame(this.animationFrame);
             this.releaseWakeLock();
           }
         },
@@ -313,7 +296,7 @@
           this.time = 0;
           this.startTime = null;
           this.lastSecond = -1;
-          cancelAnimationFrame(this.timer);
+          cancelAnimationFrame(this.animationFrame);
           this.releaseWakeLock();
         }
       }
