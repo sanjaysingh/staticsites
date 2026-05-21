@@ -3,51 +3,187 @@
 
 <head>
   <title>Ticking Stopwatch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
+    /* 7-segment digital clock font - strictly monospace for no layout bounce */
+    .digital-font {
+      font-family: 'Share Tech Mono', monospace;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.05em;
+    }
+
+    /* Full-width time display - fits exactly 8 chars (HH:MM:SS) */
+    .time-display {
+      font-size: clamp(3rem, 20vw, 15rem);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* Neon glow effect for dark mode */
     @media (prefers-color-scheme: dark) {
       .bg-auto {
-        background-color: #1a202c;
+        background-color: #0a0a0f;
       }
 
       .text-auto {
-        color: #e5e7eb;
+        color: #00ff41;
+        text-shadow: 0 0 10px rgba(0, 255, 65, 0.5),
+                     0 0 20px rgba(0, 255, 65, 0.3),
+                     0 0 30px rgba(0, 255, 65, 0.1);
+      }
+
+      .text-dim {
+        color: #1a3a1a;
       }
     }
 
     @media (prefers-color-scheme: light) {
       .bg-auto {
-        background-color: #ffffff;
+        background-color: #f5f5f0;
       }
 
       .text-auto {
-        color: #1a202c;
+        color: #1a1a1a;
       }
+
+      .text-dim {
+        color: #cccccc;
+      }
+    }
+
+    /* Modern button styles */
+    .icon-btn {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+      font-size: 2.5rem;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.95);
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-start:hover {
+      box-shadow: 0 6px 20px rgba(34, 197, 94, 0.6);
+    }
+
+    .btn-stop {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-stop:hover {
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    }
+
+    .btn-reset {
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+      box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+    }
+
+    .btn-reset:hover {
+      box-shadow: 0 6px 20px rgba(107, 114, 128, 0.5);
+    }
+
+    /* Mute button - top right corner */
+    .mute-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.8rem;
+      transition: all 0.2s ease;
+      z-index: 100;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .mute-btn {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    .mute-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* Status indicator */
+    .status-pill {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      background: rgba(128, 128, 128, 0.15);
+      backdrop-filter: blur(5px);
     }
   </style>
 </head>
 
-<body class="h-screen flex flex-col justify-center items-center bg-auto text-auto">
+<body class="h-screen flex flex-col justify-center items-center bg-auto overflow-hidden">
 
-  <div id="app" class="container text-center">
-    <div id="elapsed" class="stopwatch text-9xl mb-5 font-mono inline-block">{{ formattedTime }}</div>
-    <div class="button-group flex justify-center mb-5">
-      <button id="start" @click="startStop"
-        class="text-4xl px-5 py-3 mr-4 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-500">{{ buttonLabel
-        }}</button>
-      <button id="reset" @click="reset"
-        class="text-4xl px-5 py-3 mr-4 bg-red-600 text-white rounded cursor-pointer hover:bg-red-500">Reset</button>
-      <button id="mute" @click="toggleMute"
-        class="text-4xl px-5 py-3 bg-gray-600 text-white rounded cursor-pointer hover:bg-gray-500">{{ muteLabel }}</button>
+  <!-- Mute Button - Fixed Top Right -->
+  <button id="mute" @click="toggleMute" class="mute-btn" :title="muted ? 'Unmute' : 'Mute'">
+    {{ muteLabel }}
+  </button>
+
+  <div id="app" class="w-full h-full flex flex-col justify-center items-center px-4">
+    <!-- Main Time Display - Full Width -->
+    <div class="time-display digital-font text-auto mb-8 select-none" aria-live="polite">
+      {{ formattedTime }}
     </div>
-    <div v-if="wakeLockSupported" class="text-sm text-gray-500 mt-2">
-      Screen will stay awake while running
+
+    <!-- Control Buttons -->
+    <div class="button-group flex justify-center items-center gap-6 mb-6">
+      <button id="start" @click="startStop"
+        :class="running ? 'btn-stop' : 'btn-start'"
+        class="icon-btn text-white"
+        :title="running ? 'Stop' : 'Start'">
+        {{ running ? '&#9724;' : '&#9654;' }}
+      </button>
+      <button id="reset" @click="reset"
+        class="icon-btn btn-reset text-white"
+        title="Reset">
+        &#8634;
+      </button>
+    </div>
+
+    <!-- Status Indicators -->
+    <div class="flex flex-col items-center gap-2">
+      <div v-if="wakeLockSupported" class="status-pill text-dim">
+        &#9733; Screen stays awake
+      </div>
+      <div v-if="running" class="status-pill text-dim">
+        &#9679; Running
+      </div>
     </div>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
 
   <script>
-
     new Vue({
       el: '#app',
       data: {
@@ -58,37 +194,29 @@
         tickAudioFile: "clock-tick.mp3",
         muted: false,
         wakeLock: null,
-        wakeLockSupported: 'wakeLock' in navigator
+        wakeLockSupported: 'wakeLock' in navigator,
+        // Timestamp-based timing
+        startTime: null,
+        lastSecond: -1
       },
       computed: {
-        elapsedTime() {
-          if (this.startTime) {
-            const diff = this.currentTime - this.startTime;
-            return Math.floor(diff / 1000);
-          } else {
-            return 0;
-          }
-        },
         formattedTime() {
-          const hours = Math.floor(this.time / 60 / 60);
-          const minutes = Math.floor(this.time / 60);
+          const hours = Math.floor(this.time / 3600);
+          const minutes = Math.floor((this.time % 3600) / 60);
           const seconds = this.time % 60;
           return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         },
-        buttonLabel() {
-          return this.running ? 'Stop' : 'Start';
-        },
         muteLabel() {
-          return this.muted ? '🔇' : '🔊';
+          return this.muted ? '&#128263;' : '&#128266;';
         }
       },
       mounted() {
-        // Re-acquire wake lock when page becomes visible again
         document.addEventListener('visibilitychange', this.handleVisibilityChange);
       },
       beforeDestroy() {
         document.removeEventListener('visibilitychange', this.handleVisibilityChange);
         this.releaseWakeLock();
+        cancelAnimationFrame(this.timer);
       },
       methods: {
         async requestWakeLock() {
@@ -110,6 +238,7 @@
           }
         },
         handleVisibilityChange() {
+          // When becoming visible again, re-acquire wake lock if running
           if (document.visibilityState === 'visible' && this.running) {
             this.requestWakeLock();
           }
@@ -119,40 +248,75 @@
         },
         playTick() {
           if (this.muted) return;
+
+          // Pre-load audio on first use
           if (this.tick == null) {
             this.tick = new Audio(this.tickAudioFile);
+            this.tick.load();
           }
-          this.tick.src = this.tickAudioFile;
-          this.tick.currentTime = 0;
-          this.tick.play().catch(err => {
-            // Audio play failed (common if user hasn't interacted yet)
-            console.log('Audio play failed:', err.message);
+
+          // Clone audio node for overlapping sounds
+          const tickClone = this.tick.cloneNode();
+          tickClone.currentTime = 0;
+          tickClone.volume = 0.7;
+
+          // Play with error handling
+          const playPromise = tickClone.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(err => {
+              console.log('Audio play failed:', err.message);
+            });
+          }
+
+          // Auto-cleanup
+          tickClone.addEventListener('ended', () => {
+            tickClone.remove();
           });
+        },
+        // Precision timing loop using requestAnimationFrame + Date.now()
+        tickLoop() {
+          if (!this.running) return;
+
+          const now = Date.now();
+          const elapsedMs = now - this.startTime;
+          const elapsedSeconds = Math.floor(elapsedMs / 1000);
+
+          // Update time display
+          this.time = elapsedSeconds;
+
+          // Play tick exactly when second boundary crosses
+          if (elapsedSeconds !== this.lastSecond) {
+            this.lastSecond = elapsedSeconds;
+            this.playTick();
+          }
+
+          // Continue loop - check every frame for precision
+          this.timer = requestAnimationFrame(() => this.tickLoop());
         },
         async startStop() {
           if (!this.running) {
+            // START
             this.running = true;
+            this.startTime = Date.now() - (this.time * 1000);
+            this.lastSecond = this.time;
             await this.requestWakeLock();
-            this.timer = setInterval(() => {
-              this.time++;
-              this.playTick();
-            }, 1000);
+            this.tickLoop();
           } else {
+            // STOP
             this.running = false;
-            clearInterval(this.timer);
+            cancelAnimationFrame(this.timer);
             this.releaseWakeLock();
-            if (this.tick) {
-              this.tick.pause();
-            }
           }
         },
         reset() {
           this.running = false;
           this.time = 0;
-          clearInterval(this.timer);
+          this.startTime = null;
+          this.lastSecond = -1;
+          cancelAnimationFrame(this.timer);
           this.releaseWakeLock();
-        },
-      },
+        }
+      }
     });
   </script>
 
