@@ -3,6 +3,8 @@
     const resultsEl = document.getElementById('results');
     const hintEl = document.getElementById('hint');
 
+    const MIN_QUERY_LENGTH = 3;
+
     let apps = [];
     let matches = [];
     let activeIndex = -1;
@@ -12,7 +14,10 @@
     }
 
     function filterApps(query) {
-        const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+        const trimmed = query.trim();
+        if (trimmed.length < MIN_QUERY_LENGTH) return [];
+
+        const tokens = trimmed.toLowerCase().split(/\s+/).filter(Boolean);
         if (tokens.length === 0) return [];
 
         return apps.filter(function (app) {
@@ -28,9 +33,14 @@
         activeIndex = -1;
 
         if (matches.length === 0) {
-            hintEl.textContent = searchInput.value.trim()
-                ? 'No matching apps'
-                : 'Type to search apps';
+            const trimmed = searchInput.value.trim();
+            if (trimmed.length === 0) {
+                hintEl.textContent = 'Type at least 3 characters to search';
+            } else if (trimmed.length < MIN_QUERY_LENGTH) {
+                hintEl.textContent = 'Type at least 3 characters to search';
+            } else {
+                hintEl.textContent = 'No matching apps';
+            }
             hintEl.hidden = false;
             return;
         }

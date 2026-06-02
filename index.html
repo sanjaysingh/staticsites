@@ -27,9 +27,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 2rem 1rem 4rem;
+            min-height: 100dvh;
+            padding: max(18vh, 5rem) 1rem 2rem;
         }
         .home-title {
             font-size: 1.75rem;
@@ -38,8 +37,12 @@
             text-align: center;
         }
         .search-wrap {
+            position: relative;
             width: 100%;
             max-width: 584px;
+        }
+        .search-field {
+            position: relative;
         }
         #search {
             width: 100%;
@@ -60,18 +63,23 @@
         }
         #hint {
             margin-top: 1.5rem;
+            min-height: 1.4em;
             color: #70757a;
             font-size: 0.9rem;
             text-align: center;
         }
         #results {
-            margin-top: 0.5rem;
-            width: 100%;
-            max-width: 584px;
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0;
+            right: 0;
+            z-index: 10;
+            max-height: min(50dvh, 20rem);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(32, 33, 36, 0.12);
-            overflow: hidden;
         }
         #results:empty {
             display: none;
@@ -105,19 +113,21 @@
     <main class="home">
         <h1 class="home-title">Utility Web Applications</h1>
         <div class="search-wrap">
-            <input
-                type="search"
-                id="search"
-                disabled
-                placeholder="Loading…"
-                autocomplete="off"
-                spellcheck="false"
-                aria-label="Search apps"
-                aria-autocomplete="list"
-                aria-controls="results"
-            />
-            <div id="results" role="listbox"></div>
-            <p id="hint">Type to search apps</p>
+            <div class="search-field">
+                <input
+                    type="search"
+                    id="search"
+                    disabled
+                    placeholder="Loading…"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search apps"
+                    aria-autocomplete="list"
+                    aria-controls="results"
+                />
+                <div id="results" role="listbox"></div>
+            </div>
+            <p id="hint">Type at least 3 characters to search</p>
         </div>
     </main>
 
