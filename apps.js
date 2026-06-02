@@ -31,6 +31,11 @@ window.APPS = [
         keywords: ['domain', 'dns', 'name', 'finder', 'availability', 'whois', 'register', 'hostname', 'website name']
     },
     {
+        title: 'Encoding Tool',
+        url: 'https://encoding.sanjaysingh.net',
+        keywords: ['encoding', 'decoding', 'encode', 'decode', 'base64', 'base62', 'url encode', 'url decode', 'xml entities', 'convert text', 'escape']
+    },
+    {
         title: 'Ethereum Unit Converter',
         url: '/ethunitconverter',
         keywords: ['ethereum', 'eth', 'wei', 'gwei', 'ether', 'unit', 'converter', 'crypto', 'gas', 'finney', 'szabo']
@@ -111,9 +116,19 @@ window.APPS = [
         keywords: ['stopwatch', 'timer', 'clock', 'tick', 'ticking', 'elapsed', 'countdown', 'lap']
     },
     {
+        title: 'Todo',
+        url: 'https://todo.sanjaysingh.net',
+        keywords: ['todo', 'task', 'tasks', 'checklist', 'list', 'passkey', 'webauthn', 'passwordless', 'notes']
+    },
+    {
         title: 'Timed Locker',
         url: 'https://ethlock.sanjaysingh.net',
         keywords: ['timed', 'locker', 'lock', 'time lock', 'ethereum', 'escrow', 'vault', 'delay', 'release']
+    },
+    {
+        title: 'Unit Converter',
+        url: 'https://converter.sanjaysingh.net',
+        keywords: ['unit', 'converter', 'convert', 'length', 'weight', 'temperature', 'area', 'timestamp', 'unix', 'celsius', 'fahrenheit', 'meter', 'kilogram', 'feet', 'inches']
     },
     {
         title: 'UUID Generator',
