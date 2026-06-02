@@ -57,7 +57,7 @@
         }
 
         .app-container {
-            max-width: 820px;
+            max-width: 960px;
             margin: 2rem auto;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
@@ -160,6 +160,37 @@
 
         .output-section {
             margin-top: 1.75rem;
+        }
+
+        .case-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .case-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .case-group-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .output-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .output-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         .output-card {
@@ -281,7 +312,7 @@
         <div class="app-container">
             <header class="app-header">
                 <h1 class="app-title">Casing</h1>
-                <p class="app-subtitle">Convert text to upper case, lower case, or sentence case</p>
+                <p class="app-subtitle">Convert text between upper, lower, title, camelCase, snake_case, kebab-case, and more</p>
             </header>
 
             <main class="content-area">
@@ -300,52 +331,7 @@
                 <textarea class="form-control" id="inputText"
                     placeholder="Paste or type your text here…" spellcheck="true" autofocus></textarea>
 
-                <section class="output-section" aria-label="Converted text">
-                    <div class="output-card">
-                        <div class="output-header">
-                            <h2 class="case-label">
-                                Upper case
-                                <span class="case-badge">UPPERCASE</span>
-                            </h2>
-                            <div class="output-actions">
-                                <button type="button" class="copy-btn" data-target="upper" title="Copy upper case" aria-label="Copy upper case">
-                                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="output-text empty" id="output-upper">Converted text will appear here</div>
-                    </div>
-
-                    <div class="output-card">
-                        <div class="output-header">
-                            <h2 class="case-label">
-                                Lower case
-                                <span class="case-badge">lowercase</span>
-                            </h2>
-                            <div class="output-actions">
-                                <button type="button" class="copy-btn" data-target="lower" title="Copy lower case" aria-label="Copy lower case">
-                                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="output-text empty" id="output-lower">Converted text will appear here</div>
-                    </div>
-
-                    <div class="output-card">
-                        <div class="output-header">
-                            <h2 class="case-label">
-                                Sentence case
-                                <span class="case-badge">Sentence case</span>
-                            </h2>
-                            <div class="output-actions">
-                                <button type="button" class="copy-btn" data-target="sentence" title="Copy sentence case" aria-label="Copy sentence case">
-                                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="output-text empty" id="output-sentence">Converted text will appear here</div>
-                    </div>
-                </section>
+                <section class="output-section" id="outputSection" aria-label="Converted text"></section>
             </main>
         </div>
     </div>
@@ -355,26 +341,193 @@
         const charCount = document.getElementById('charCount');
         const wordCount = document.getElementById('wordCount');
         const clearBtn = document.getElementById('clearBtn');
-
-        const outputs = {
-            upper: document.getElementById('output-upper'),
-            lower: document.getElementById('output-lower'),
-            sentence: document.getElementById('output-sentence')
-        };
-
-        const converted = {
-            upper: '',
-            lower: '',
-            sentence: ''
-        };
+        const outputSection = document.getElementById('outputSection');
 
         const clipboardIcon = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>';
         const checkIcon = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg>';
 
+        const AP_SMALL_WORDS = new Set([
+            'a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to',
+            'from', 'by', 'in', 'of', 'as', 'yet', 'so', 'if', 'per', 'via', 'vs', 'vs.'
+        ]);
+
+        const outputs = {};
+        const converted = {};
+
+        function splitIntoWords(text) {
+            return text
+                .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+                .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+                .split(/[\s_\-.\\/]+/)
+                .filter(Boolean);
+        }
+
+        function capitalizeWord(word) {
+            if (!word) return '';
+            return word.charAt(0).toLocaleUpperCase() + word.slice(1).toLocaleLowerCase();
+        }
+
+        function joinWords(text, separator, transform) {
+            const words = splitIntoWords(text);
+            if (!words.length) return '';
+            return words.map(transform).join(separator);
+        }
+
         function toSentenceCase(text) {
             return text
-                .toLowerCase()
-                .replace(/(^|[.!?]\s+|\n\s*)([a-z])/g, (_, prefix, letter) => prefix + letter.toUpperCase());
+                .toLocaleLowerCase()
+                .replace(/(^|[.!?]\s+|\n\s*)([a-z])/g, (_, prefix, letter) => prefix + letter.toLocaleUpperCase())
+                .replace(/\bi\b/g, 'I');
+        }
+
+        function toTitleCase(text) {
+            return joinWords(text, ' ', capitalizeWord);
+        }
+
+        function toApTitleCase(text) {
+            const words = splitIntoWords(text);
+            if (!words.length) return '';
+            return words.map((word, index) => {
+                const lower = word.toLocaleLowerCase();
+                if (index !== 0 && index !== words.length - 1 && AP_SMALL_WORDS.has(lower)) {
+                    return lower;
+                }
+                return capitalizeWord(word);
+            }).join(' ');
+        }
+
+        function toCamelCase(text) {
+            const words = splitIntoWords(text);
+            if (!words.length) return '';
+            return words.map((word, index) => {
+                const lower = word.toLocaleLowerCase();
+                return index === 0 ? lower : capitalizeWord(lower);
+            }).join('');
+        }
+
+        function toPascalCase(text) {
+            return joinWords(text, '', capitalizeWord);
+        }
+
+        function toCapitalize(text) {
+            if (!text) return '';
+            return text.charAt(0).toLocaleUpperCase() + text.slice(1).toLocaleLowerCase();
+        }
+
+        function toInverseCase(text) {
+            return text.split('').map(char => {
+                const upper = char.toLocaleUpperCase();
+                const lower = char.toLocaleLowerCase();
+                if (char === upper && char !== lower) return lower;
+                if (char === lower && char !== upper) return upper;
+                return char;
+            }).join('');
+        }
+
+        function toAlternatingCase(text) {
+            let letterIndex = 0;
+            return text.split('').map(char => {
+                if (!/[a-zA-Z]/.test(char)) return char;
+                const result = letterIndex % 2 === 0
+                    ? char.toLocaleLowerCase()
+                    : char.toLocaleUpperCase();
+                letterIndex += 1;
+                return result;
+            }).join('');
+        }
+
+        function toSpongeBobCase(text) {
+            return text.split(/(\s+)/).map(part => {
+                if (/^\s+$/.test(part)) return part;
+                let letterIndex = 0;
+                return part.split('').map(char => {
+                    if (!/[a-zA-Z]/.test(char)) return char;
+                    const result = letterIndex % 2 === 0
+                        ? char.toLocaleLowerCase()
+                        : char.toLocaleUpperCase();
+                    letterIndex += 1;
+                    return result;
+                }).join('');
+            }).join('');
+        }
+
+        const CASE_GROUPS = [
+            {
+                title: 'Basic',
+                cases: [
+                    { id: 'upper', label: 'Upper case', badge: 'UPPERCASE', convert: text => text.toLocaleUpperCase() },
+                    { id: 'lower', label: 'Lower case', badge: 'lowercase', convert: text => text.toLocaleLowerCase() },
+                    { id: 'sentence', label: 'Sentence case', badge: 'Sentence case', convert: toSentenceCase },
+                    { id: 'capitalize', label: 'Capitalize', badge: 'Hello world', convert: toCapitalize }
+                ]
+            },
+            {
+                title: 'Title',
+                cases: [
+                    { id: 'title', label: 'Title Case', badge: 'Hello World', convert: toTitleCase },
+                    { id: 'titleAp', label: 'AP Title Case', badge: 'The Lord of the Rings', convert: toApTitleCase }
+                ]
+            },
+            {
+                title: 'Developer',
+                cases: [
+                    { id: 'camel', label: 'camelCase', badge: 'helloWorld', convert: toCamelCase },
+                    { id: 'pascal', label: 'PascalCase', badge: 'HelloWorld', convert: toPascalCase },
+                    { id: 'snake', label: 'snake_case', badge: 'hello_world', convert: text => joinWords(text, '_', w => w.toLocaleLowerCase()) },
+                    { id: 'screamingSnake', label: 'SCREAMING_SNAKE', badge: 'HELLO_WORLD', convert: text => joinWords(text, '_', w => w.toLocaleUpperCase()) },
+                    { id: 'kebab', label: 'kebab-case', badge: 'hello-world', convert: text => joinWords(text, '-', w => w.toLocaleLowerCase()) },
+                    { id: 'train', label: 'Train-Case', badge: 'Hello-World', convert: text => joinWords(text, '-', capitalizeWord) },
+                    { id: 'dot', label: 'dot.case', badge: 'hello.world', convert: text => joinWords(text, '.', w => w.toLocaleLowerCase()) },
+                    { id: 'path', label: 'path/case', badge: 'hello/world', convert: text => joinWords(text, '/', w => w.toLocaleLowerCase()) }
+                ]
+            },
+            {
+                title: 'Transform',
+                cases: [
+                    { id: 'inverse', label: 'Inverse case', badge: 'hELLO wORLD', convert: toInverseCase },
+                    { id: 'alternating', label: 'Alternating case', badge: 'hElLo WoRlD', convert: toAlternatingCase },
+                    { id: 'spongebob', label: 'SpongeBob case', badge: 'hElLo WoRlD', convert: toSpongeBobCase }
+                ]
+            }
+        ];
+
+        function renderOutputCards() {
+            outputSection.innerHTML = CASE_GROUPS.map(group => `
+                <div class="case-group">
+                    <h2 class="case-group-title">${group.title}</h2>
+                    <div class="output-grid">
+                        ${group.cases.map(caseType => `
+                            <div class="output-card">
+                                <div class="output-header">
+                                    <h3 class="case-label">
+                                        ${caseType.label}
+                                        <span class="case-badge">${caseType.badge}</span>
+                                    </h3>
+                                    <div class="output-actions">
+                                        <button type="button" class="copy-btn" data-target="${caseType.id}" title="Copy ${caseType.label}" aria-label="Copy ${caseType.label}">
+                                            ${clipboardIcon}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="output-text empty" id="output-${caseType.id}">Converted text will appear here</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            for (const group of CASE_GROUPS) {
+                for (const caseType of group.cases) {
+                    outputs[caseType.id] = document.getElementById(`output-${caseType.id}`);
+                    converted[caseType.id] = '';
+                }
+            }
+
+            outputSection.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    copyText(converted[btn.dataset.target], btn.dataset.target);
+                });
+            });
         }
 
         function countWords(text) {
@@ -385,22 +538,24 @@
 
         function updateOutputs() {
             const text = inputText.value;
+            const words = countWords(text);
 
             charCount.textContent = `${text.length} character${text.length === 1 ? '' : 's'}`;
-            wordCount.textContent = `${countWords(text)} word${countWords(text) === 1 ? '' : 's'}`;
+            wordCount.textContent = `${words} word${words === 1 ? '' : 's'}`;
 
-            converted.upper = text.toUpperCase();
-            converted.lower = text.toLowerCase();
-            converted.sentence = text ? toSentenceCase(text) : '';
+            for (const group of CASE_GROUPS) {
+                for (const caseType of group.cases) {
+                    const el = outputs[caseType.id];
+                    if (!text) {
+                        converted[caseType.id] = '';
+                        el.textContent = 'Converted text will appear here';
+                        el.classList.add('empty');
+                        continue;
+                    }
 
-            for (const [key, el] of Object.entries(outputs)) {
-                const value = converted[key];
-                if (text) {
-                    el.textContent = value;
+                    converted[caseType.id] = caseType.convert(text);
+                    el.textContent = converted[caseType.id];
                     el.classList.remove('empty');
-                } else {
-                    el.textContent = 'Converted text will appear here';
-                    el.classList.add('empty');
                 }
             }
         }
@@ -447,6 +602,8 @@
             document.body.removeChild(textarea);
         }
 
+        renderOutputCards();
+
         inputText.addEventListener('input', updateOutputs);
         inputText.addEventListener('paste', () => setTimeout(updateOutputs, 0));
 
@@ -454,13 +611,6 @@
             inputText.value = '';
             updateOutputs();
             inputText.focus();
-        });
-
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const target = btn.dataset.target;
-                copyText(converted[target], target);
-            });
         });
 
         updateOutputs();
