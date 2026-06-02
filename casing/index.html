@@ -11,13 +11,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
         integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
-        integrity="sha512-dNVP7+vCtD+z1Jd/2jIInYMRM1zG4/9i2vBHiIn9+7f/RK3eNRq2FB5/eZzg/7Q4Rn8QW4G0F/ghGj2X4w=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         :root {
-            color-scheme: light dark;
+            color-scheme: light;
             --primary-color: #4361ee;
             --primary-light: #eef2ff;
             --secondary-color: #3f37c9;
@@ -25,6 +21,7 @@
             --header-text: #2b5797;
             --text-dark: #2b2d42;
             --text-muted: #6c757d;
+            --placeholder-color: #6c757d;
             --bg-light: #f8f9fa;
             --white: #ffffff;
             --success: #28a745;
@@ -37,11 +34,13 @@
 
         @media (prefers-color-scheme: dark) {
             :root {
+                color-scheme: dark;
                 --primary-light: #1e2a4a;
                 --header-bg: #1a2744;
                 --header-text: #a8c7fa;
                 --text-dark: #e8eaed;
                 --text-muted: #9aa0a6;
+                --placeholder-color: #9aa0a6;
                 --bg-light: #121212;
                 --white: #1e1e1e;
                 --border-color: #3c4043;
@@ -113,6 +112,11 @@
             border-color: var(--primary-color);
             background-color: var(--output-bg);
             color: var(--text-dark);
+        }
+
+        .form-control::placeholder {
+            color: var(--placeholder-color);
+            opacity: 1;
         }
 
         #inputText {
@@ -212,22 +216,36 @@
         .copy-btn {
             cursor: pointer;
             transition: var(--transition);
-            font-size: 1.25rem;
-            padding: 0.25rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.4rem 0.75rem;
             color: var(--primary-color);
-            background: none;
-            border: none;
+            background-color: var(--primary-light);
+            border: 1px solid rgba(67, 97, 238, 0.25);
             line-height: 1;
             border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .copy-btn svg {
+            width: 1rem;
+            height: 1rem;
+            flex-shrink: 0;
         }
 
         .copy-btn:hover {
             color: var(--secondary-color);
             background-color: var(--primary-light);
+            border-color: var(--primary-color);
         }
 
         .copy-btn.copied {
             color: var(--success);
+            border-color: var(--success);
+            background-color: rgba(40, 167, 69, 0.12);
         }
 
         .inline-notification {
@@ -252,7 +270,7 @@
         }
 
         .output-text.empty {
-            color: var(--text-muted);
+            color: var(--placeholder-color);
             font-style: italic;
         }
 
@@ -290,7 +308,7 @@
                             <span id="wordCount">0 words</span>
                         </div>
                         <button type="button" class="btn btn-sm btn-clear" id="clearBtn" title="Clear input">
-                            <i class="bi bi-x-lg me-1"></i>Clear
+                            Clear
                         </button>
                     </div>
                 </div>
@@ -307,7 +325,8 @@
                             <div class="output-actions">
                                 <span class="inline-notification" data-for="upper">Copied</span>
                                 <button type="button" class="copy-btn" data-target="upper" title="Copy upper case">
-                                    <i class="bi bi-clipboard"></i>
+                                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
+                                    <span class="copy-label">Copy</span>
                                 </button>
                             </div>
                         </div>
@@ -323,7 +342,8 @@
                             <div class="output-actions">
                                 <span class="inline-notification" data-for="lower">Copied</span>
                                 <button type="button" class="copy-btn" data-target="lower" title="Copy lower case">
-                                    <i class="bi bi-clipboard"></i>
+                                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
+                                    <span class="copy-label">Copy</span>
                                 </button>
                             </div>
                         </div>
@@ -339,7 +359,8 @@
                             <div class="output-actions">
                                 <span class="inline-notification" data-for="sentence">Copied</span>
                                 <button type="button" class="copy-btn" data-target="sentence" title="Copy sentence case">
-                                    <i class="bi bi-clipboard"></i>
+                                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
+                                    <span class="copy-label">Copy</span>
                                 </button>
                             </div>
                         </div>
@@ -407,16 +428,16 @@
 
             const notify = document.querySelector(`.inline-notification[data-for="${target}"]`);
             const btn = document.querySelector(`.copy-btn[data-target="${target}"]`);
-            const icon = btn.querySelector('i');
+            const label = btn.querySelector('.copy-label');
 
             const onSuccess = () => {
                 notify.classList.add('show');
-                icon.className = 'bi bi-check-lg';
+                label.textContent = 'Copied';
                 btn.classList.add('copied');
 
                 setTimeout(() => {
                     notify.classList.remove('show');
-                    icon.className = 'bi bi-clipboard';
+                    label.textContent = 'Copy';
                     btn.classList.remove('copied');
                 }, 2000);
             };
