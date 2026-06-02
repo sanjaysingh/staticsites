@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title>Casing</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>Aa</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+        integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
+        integrity="sha512-dNVP7+vCtD+z1Jd/2jIInYMRM1zG4/9i2vBHiIn9+7f/RK3eNRq2FB5/eZzg/7Q4Rn8QW4G0F/ghGj2X4w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            color-scheme: light dark;
+            --primary-color: #4361ee;
+            --primary-light: #eef2ff;
+            --secondary-color: #3f37c9;
+            --header-bg: #d4e4ff;
+            --header-text: #2b5797;
+            --text-dark: #2b2d42;
+            --text-muted: #6c757d;
+            --bg-light: #f8f9fa;
+            --white: #ffffff;
+            --success: #28a745;
+            --border-color: #e9ecef;
+            --output-bg: #ffffff;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary-light: #1e2a4a;
+                --header-bg: #1a2744;
+                --header-text: #a8c7fa;
+                --text-dark: #e8eaed;
+                --text-muted: #9aa0a6;
+                --bg-light: #121212;
+                --white: #1e1e1e;
+                --border-color: #3c4043;
+                --output-bg: #2d2d2d;
+                --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+            }
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 820px;
+            margin: 2rem auto;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            background-color: var(--white);
+            overflow: hidden;
+        }
+
+        .app-header {
+            padding: 1.25rem 1.5rem;
+            text-align: center;
+            background: var(--header-bg);
+            color: var(--header-text);
+            border-bottom: 1px solid rgba(67, 97, 238, 0.1);
+        }
+
+        .app-title {
+            margin-bottom: 0.25rem;
+            color: var(--header-text);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            font-size: 1.75rem;
+        }
+
+        .app-subtitle {
+            color: var(--text-muted);
+            font-weight: 400;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+
+        .content-area {
+            padding: 2rem 2.5rem 2.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            background-color: var(--output-bg);
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+            border-color: var(--primary-color);
+            background-color: var(--output-bg);
+            color: var(--text-dark);
+        }
+
+        #inputText {
+            min-height: 160px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .input-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .stats {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .stats span + span::before {
+            content: "·";
+            margin: 0 0.4rem;
+        }
+
+        .btn-clear {
+            font-size: 0.85rem;
+            padding: 0.35rem 0.75rem;
+            color: var(--text-muted);
+            border-color: var(--border-color);
+            background: transparent;
+        }
+
+        .btn-clear:hover {
+            color: var(--text-dark);
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+        }
+
+        .output-section {
+            margin-top: 1.75rem;
+        }
+
+        .output-card {
+            background-color: var(--output-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.125rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .output-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .output-card:hover {
+            border-color: rgba(67, 97, 238, 0.35);
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.625rem;
+        }
+
+        .case-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--primary-color);
+            margin-bottom: 0;
+        }
+
+        .case-badge {
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            text-transform: none;
+            letter-spacing: 0;
+            margin-left: 0.5rem;
+        }
+
+        .output-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .copy-btn {
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.25rem;
+            padding: 0.25rem;
+            color: var(--primary-color);
+            background: none;
+            border: none;
+            line-height: 1;
+            border-radius: 6px;
+        }
+
+        .copy-btn:hover {
+            color: var(--secondary-color);
+            background-color: var(--primary-light);
+        }
+
+        .copy-btn.copied {
+            color: var(--success);
+        }
+
+        .inline-notification {
+            font-size: 0.8rem;
+            color: var(--success);
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .inline-notification.show {
+            opacity: 1;
+        }
+
+        .output-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            word-break: break-word;
+            white-space: pre-wrap;
+            min-height: 1.6em;
+            color: var(--text-dark);
+        }
+
+        .output-text.empty {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        @media (max-width: 576px) {
+            .app-container {
+                margin: 1rem;
+                border-radius: 8px;
+            }
+
+            .content-area {
+                padding: 1.25rem 1.25rem 1.75rem;
+            }
+
+            .app-title {
+                font-size: 1.45rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container px-0 px-sm-3">
+        <div class="app-container">
+            <header class="app-header">
+                <h1 class="app-title">Casing</h1>
+                <p class="app-subtitle">Convert text to upper case, lower case, or sentence case</p>
+            </header>
+
+            <main class="content-area">
+                <div class="input-toolbar">
+                    <label for="inputText" class="form-label mb-0">Input text</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="stats" aria-live="polite">
+                            <span id="charCount">0 characters</span>
+                            <span id="wordCount">0 words</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-clear" id="clearBtn" title="Clear input">
+                            <i class="bi bi-x-lg me-1"></i>Clear
+                        </button>
+                    </div>
+                </div>
+                <textarea class="form-control" id="inputText"
+                    placeholder="Paste or type your text here…" spellcheck="true" autofocus></textarea>
+
+                <section class="output-section" aria-label="Converted text">
+                    <div class="output-card">
+                        <div class="output-header">
+                            <h2 class="case-label">
+                                Upper case
+                                <span class="case-badge">UPPERCASE</span>
+                            </h2>
+                            <div class="output-actions">
+                                <span class="inline-notification" data-for="upper">Copied</span>
+                                <button type="button" class="copy-btn" data-target="upper" title="Copy upper case">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="output-text empty" id="output-upper">Converted text will appear here</div>
+                    </div>
+
+                    <div class="output-card">
+                        <div class="output-header">
+                            <h2 class="case-label">
+                                Lower case
+                                <span class="case-badge">lowercase</span>
+                            </h2>
+                            <div class="output-actions">
+                                <span class="inline-notification" data-for="lower">Copied</span>
+                                <button type="button" class="copy-btn" data-target="lower" title="Copy lower case">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="output-text empty" id="output-lower">Converted text will appear here</div>
+                    </div>
+
+                    <div class="output-card">
+                        <div class="output-header">
+                            <h2 class="case-label">
+                                Sentence case
+                                <span class="case-badge">Sentence case</span>
+                            </h2>
+                            <div class="output-actions">
+                                <span class="inline-notification" data-for="sentence">Copied</span>
+                                <button type="button" class="copy-btn" data-target="sentence" title="Copy sentence case">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="output-text empty" id="output-sentence">Converted text will appear here</div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const inputText = document.getElementById('inputText');
+        const charCount = document.getElementById('charCount');
+        const wordCount = document.getElementById('wordCount');
+        const clearBtn = document.getElementById('clearBtn');
+
+        const outputs = {
+            upper: document.getElementById('output-upper'),
+            lower: document.getElementById('output-lower'),
+            sentence: document.getElementById('output-sentence')
+        };
+
+        const converted = {
+            upper: '',
+            lower: '',
+            sentence: ''
+        };
+
+        function toSentenceCase(text) {
+            return text
+                .toLowerCase()
+                .replace(/(^|[.!?]\s+|\n\s*)([a-z])/g, (_, prefix, letter) => prefix + letter.toUpperCase());
+        }
+
+        function countWords(text) {
+            const trimmed = text.trim();
+            if (!trimmed) return 0;
+            return trimmed.split(/\s+/).length;
+        }
+
+        function updateOutputs() {
+            const text = inputText.value;
+
+            charCount.textContent = `${text.length} character${text.length === 1 ? '' : 's'}`;
+            wordCount.textContent = `${countWords(text)} word${countWords(text) === 1 ? '' : 's'}`;
+
+            converted.upper = text.toUpperCase();
+            converted.lower = text.toLowerCase();
+            converted.sentence = text ? toSentenceCase(text) : '';
+
+            for (const [key, el] of Object.entries(outputs)) {
+                const value = converted[key];
+                if (text) {
+                    el.textContent = value;
+                    el.classList.remove('empty');
+                } else {
+                    el.textContent = 'Converted text will appear here';
+                    el.classList.add('empty');
+                }
+            }
+        }
+
+        function copyText(text, target) {
+            if (!text) return;
+
+            const notify = document.querySelector(`.inline-notification[data-for="${target}"]`);
+            const btn = document.querySelector(`.copy-btn[data-target="${target}"]`);
+            const icon = btn.querySelector('i');
+
+            const onSuccess = () => {
+                notify.classList.add('show');
+                icon.className = 'bi bi-check-lg';
+                btn.classList.add('copied');
+
+                setTimeout(() => {
+                    notify.classList.remove('show');
+                    icon.className = 'bi bi-clipboard';
+                    btn.classList.remove('copied');
+                }, 2000);
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(onSuccess).catch(() => fallbackCopy(text, onSuccess));
+            } else {
+                fallbackCopy(text, onSuccess);
+            }
+        }
+
+        function fallbackCopy(text, onSuccess) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                onSuccess();
+            } catch (e) {
+                /* ignore */
+            }
+            document.body.removeChild(textarea);
+        }
+
+        inputText.addEventListener('input', updateOutputs);
+        inputText.addEventListener('paste', () => setTimeout(updateOutputs, 0));
+
+        clearBtn.addEventListener('click', () => {
+            inputText.value = '';
+            updateOutputs();
+            inputText.focus();
+        });
+
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.target;
+                copyText(converted[target], target);
+            });
+        });
+
+        updateOutputs();
+    </script>
+</body>
+
+</html>
