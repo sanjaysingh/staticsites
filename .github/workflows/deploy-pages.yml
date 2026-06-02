@@ -24,10 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generate index
+      - name: Stamp cache-bust id
         run: |
-          chmod +x ./generate_index.sh
-          ./generate_index.sh
+          SHORT="${GITHUB_SHA:0:7}"
+          sed -i "s/__BUILD_ID__/${SHORT}/g" index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

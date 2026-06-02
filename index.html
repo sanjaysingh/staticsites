@@ -6,108 +6,122 @@
     <title>Utility Web Applications</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" integrity="sha512-dPXYcDub/aeb08c63jRq/k6GaKccl256JQy/AnOq7CAnEZ9FzSL9wSbcZkMp4R26vBsMLFYH4kQ67/bbV8XaCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
     <style>
         body {
             background-color: #f8f9fa;
             color: #212529;
+            min-height: 100vh;
         }
-        .header {
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,.1);
-            padding: 0.3rem 0;
-            margin-bottom: 1rem;
+        .github-link {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.75rem;
+            color: #212529;
+            text-decoration: none;
         }
-        .app-list {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,.1);
-            padding: 1rem;
+        .github-link:hover {
+            color: #000;
         }
-        .app-list ol {
-            list-style-position: inside;
-            padding-left: 0;
+        .home {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem 1rem 4rem;
         }
-        .app-list li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
+        .home-title {
+            font-size: 1.75rem;
+            font-weight: 400;
+            margin-bottom: 2rem;
+            text-align: center;
         }
-        .app-list li:last-child {
+        .search-wrap {
+            width: 100%;
+            max-width: 584px;
+        }
+        #search {
+            width: 100%;
+            padding: 0.85rem 1.25rem;
+            font-size: 1.1rem;
+            border: 1px solid #dfe1e5;
+            border-radius: 24px;
+            outline: none;
+            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.08);
+            transition: box-shadow 0.2s;
+        }
+        #search:focus {
+            border-color: transparent;
+            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.15), 0 0 0 1px rgba(32, 33, 36, 0.08);
+        }
+        #search:disabled {
+            background: #f1f3f4;
+        }
+        #hint {
+            margin-top: 1.5rem;
+            color: #70757a;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        #results {
+            margin-top: 0.5rem;
+            width: 100%;
+            max-width: 584px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(32, 33, 36, 0.12);
+            overflow: hidden;
+        }
+        #results:empty {
+            display: none;
+        }
+        .result-item {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-bottom: 1px solid #f1f3f4;
+            background: #fff;
+            text-align: left;
+            font-size: 1rem;
+            color: #202124;
+            cursor: pointer;
+        }
+        .result-item:last-child {
             border-bottom: none;
         }
-        .app-list a {
-            color: #0d6efd;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .app-list a:hover {
-            color: #0a58ca;
-        }
-        .github-icon {
-            font-size: 2rem;
-            padding: 0.25rem 0.5rem;
-            color: #212529;
-            border: none;
-        }
-        .github-icon:hover {
-            color: #000;
-            background: none;
+        .result-item:hover,
+        .result-item.active {
+            background: #f1f3f4;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-0">Utility Web Applications</h1>
-                </div>
-                <div>
-                    <a href="https://github.com/sanjaysingh/staticsites" class="btn github-icon" target="_blank" rel="noopener" title="View on GitHub">
-                        <i class="bi bi-github"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <a href="https://github.com/sanjaysingh/staticsites" class="github-link" target="_blank" rel="noopener" title="View on GitHub" aria-label="View on GitHub">
+        <i class="bi bi-github"></i>
+    </a>
 
-    <div class="container">
-        <!-- WARNING: The following section is automatically generated. Do not edit manually.
-             Changes will be overwritten by the pre-commit hook. -->
-        <div class="row">
-            <div class="col-md-12 mb-4">
-                <div class="app-list">
-                    <h4 class="mb-3">Apps</h4>
-                    <ol id="pages">
-                        <li><a href="/sas" target="_blank" rel="noopener">Azure SAS Generator</a></li>
-                        <li><a href="https://btcwallet.sanjaysingh.net" target="_blank" rel="noopener">Bitcoin Wallet (Testing Only)</a></li>
-                        <li><a href="/casing" target="_blank" rel="noopener">Casing</a></li>
-                        <li><a href="/cert" target="_blank" rel="noopener">Cert Utils</a></li>
-                        <li><a href="/scanner" target="_blank" rel="noopener">Document Scanner</a></li>
-                        <li><a href="https://domainfinder.meilt.com/" target="_blank" rel="noopener">Domain Finder</a></li>
-                        <li><a href="/ethunitconverter" target="_blank" rel="noopener">Ethereum Unit Converter</a></li>
-                        <li><a href="https://ethwallet.sanjaysingh.net" target="_blank" rel="noopener">Ethereum Wallet (Testing Only)</a></li>
-                        <li><a href="https://gql.sanjaysingh.net" target="_blank" rel="noopener">GraphQL Playground</a></li>
-                        <li><a href="/hash" target="_blank" rel="noopener">Hash Generator</a></li>
-                        <li><a href="https://housedirection.sanjaysingh.net" target="_blank" rel="noopener">House Facing Direction Finder</a></li>
-                        <li><a href="/imageoptimizer" target="_blank" rel="noopener">Image Optimizer</a></li>
-                        <li><a href="https://imprint.meilt.com" target="_blank" rel="noopener">Imprint — Text on images</a></li>
-                        <li><a href="/jsongrid" target="_blank" rel="noopener">JSON Grid Viewer</a></li>
-                        <li><a href="/jwt" target="_blank" rel="noopener">JWT Viewer</a></li>
-                        <li><a href="https://editor.sanjaysingh.net" target="_blank" rel="noopener">Offline Code Editor</a></li>
-                        <li><a href="/sheet" target="_blank" rel="noopener">Offline Spreadsheet</a></li>
-                        <li><a href="https://pdftools.sanjaysingh.net" target="_blank" rel="noopener">PDF Tools</a></li>
-                        <li><a href="https://passportphoto.meilt.com" target="_blank" rel="noopener">Passport Photo Studio</a></li>
-                        <li><a href="https://qrcode.sanjaysingh.net" target="_blank" rel="noopener">QR Code Generator</a></li>
-                        <li><a href="https://splitexp.sanjaysingh.net" target="_blank" rel="noopener">Split Expenses</a></li>
-                        <li><a href="/tickingstopwatch" target="_blank" rel="noopener">Ticking Stopwatch</a></li>
-                        <li><a href="https://ethlock.sanjaysingh.net" target="_blank" rel="noopener">Timed Locker</a></li>
-                        <li><a href="/uuid" target="_blank" rel="noopener">UUID Generator</a></li>
-                        <li><a href="https://time.sanjaysingh.net" target="_blank" rel="noopener">World Time Dashboard</a></li>
-                    </ol>
-                </div>
-            </div>
+    <main class="home">
+        <h1 class="home-title">Utility Web Applications</h1>
+        <div class="search-wrap">
+            <input
+                type="search"
+                id="search"
+                disabled
+                placeholder="Loading…"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Search apps"
+                aria-autocomplete="list"
+                aria-controls="results"
+            />
+            <div id="results" role="listbox"></div>
+            <p id="hint">Type to search apps</p>
         </div>
-    </div>
+    </main>
+
+    <script src="apps.js?v=__BUILD_ID__"></script>
+    <script src="home.js?v=__BUILD_ID__"></script>
 </body>
 </html>
