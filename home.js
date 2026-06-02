@@ -3,7 +3,9 @@
     const resultsEl = document.getElementById('results');
     const hintEl = document.getElementById('hint');
 
-    const MIN_QUERY_LENGTH = 3;
+    const MIN_QUERY_LENGTH = 2;
+    const HINT_EXAMPLES = 'Examples: case, jwt, pdf, hash, uuid';
+    const HINT_MIN_LENGTH = 'Type at least 2 characters — ' + HINT_EXAMPLES;
 
     let apps = [];
     let matches = [];
@@ -35,9 +37,9 @@
         if (matches.length === 0) {
             const trimmed = searchInput.value.trim();
             if (trimmed.length === 0) {
-                hintEl.textContent = 'Type at least 3 characters to search';
+                hintEl.textContent = HINT_EXAMPLES;
             } else if (trimmed.length < MIN_QUERY_LENGTH) {
-                hintEl.textContent = 'Type at least 3 characters to search';
+                hintEl.textContent = HINT_MIN_LENGTH;
             } else {
                 hintEl.textContent = 'No matching apps';
             }
