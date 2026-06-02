@@ -218,21 +218,18 @@
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            padding: 0.4rem 0.75rem;
+            justify-content: center;
+            padding: 0.5rem;
             color: var(--primary-color);
             background-color: var(--primary-light);
             border: 1px solid rgba(67, 97, 238, 0.25);
             line-height: 1;
             border-radius: 6px;
-            white-space: nowrap;
         }
 
         .copy-btn svg {
-            width: 1rem;
-            height: 1rem;
+            width: 1.15rem;
+            height: 1.15rem;
             flex-shrink: 0;
         }
 
@@ -246,18 +243,6 @@
             color: var(--success);
             border-color: var(--success);
             background-color: rgba(40, 167, 69, 0.12);
-        }
-
-        .inline-notification {
-            font-size: 0.8rem;
-            color: var(--success);
-            font-weight: 500;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .inline-notification.show {
-            opacity: 1;
         }
 
         .output-text {
@@ -323,10 +308,8 @@
                                 <span class="case-badge">UPPERCASE</span>
                             </h2>
                             <div class="output-actions">
-                                <span class="inline-notification" data-for="upper">Copied</span>
-                                <button type="button" class="copy-btn" data-target="upper" title="Copy upper case">
+                                <button type="button" class="copy-btn" data-target="upper" title="Copy upper case" aria-label="Copy upper case">
                                     <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
-                                    <span class="copy-label">Copy</span>
                                 </button>
                             </div>
                         </div>
@@ -340,10 +323,8 @@
                                 <span class="case-badge">lowercase</span>
                             </h2>
                             <div class="output-actions">
-                                <span class="inline-notification" data-for="lower">Copied</span>
-                                <button type="button" class="copy-btn" data-target="lower" title="Copy lower case">
+                                <button type="button" class="copy-btn" data-target="lower" title="Copy lower case" aria-label="Copy lower case">
                                     <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
-                                    <span class="copy-label">Copy</span>
                                 </button>
                             </div>
                         </div>
@@ -357,10 +338,8 @@
                                 <span class="case-badge">Sentence case</span>
                             </h2>
                             <div class="output-actions">
-                                <span class="inline-notification" data-for="sentence">Copied</span>
-                                <button type="button" class="copy-btn" data-target="sentence" title="Copy sentence case">
+                                <button type="button" class="copy-btn" data-target="sentence" title="Copy sentence case" aria-label="Copy sentence case">
                                     <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
-                                    <span class="copy-label">Copy</span>
                                 </button>
                             </div>
                         </div>
@@ -388,6 +367,9 @@
             lower: '',
             sentence: ''
         };
+
+        const clipboardIcon = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>';
+        const checkIcon = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg>';
 
         function toSentenceCase(text) {
             return text
@@ -426,19 +408,18 @@
         function copyText(text, target) {
             if (!text) return;
 
-            const notify = document.querySelector(`.inline-notification[data-for="${target}"]`);
             const btn = document.querySelector(`.copy-btn[data-target="${target}"]`);
-            const label = btn.querySelector('.copy-label');
+            const defaultLabel = btn.getAttribute('aria-label');
 
             const onSuccess = () => {
-                notify.classList.add('show');
-                label.textContent = 'Copied';
+                btn.innerHTML = checkIcon;
                 btn.classList.add('copied');
+                btn.setAttribute('aria-label', 'Copied');
 
                 setTimeout(() => {
-                    notify.classList.remove('show');
-                    label.textContent = 'Copy';
+                    btn.innerHTML = clipboardIcon;
                     btn.classList.remove('copied');
+                    btn.setAttribute('aria-label', defaultLabel);
                 }, 2000);
             };
 
