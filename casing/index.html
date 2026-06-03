@@ -224,6 +224,8 @@
             letter-spacing: 0.06em;
             color: var(--primary-color);
             margin-bottom: 0;
+            min-width: 0;
+            flex: 1 1 auto;
         }
 
         .case-badge {
@@ -242,6 +244,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            flex-shrink: 0;
         }
 
         .copy-btn {
@@ -262,6 +265,7 @@
             width: 1.15rem;
             height: 1.15rem;
             flex-shrink: 0;
+            pointer-events: none;
         }
 
         .copy-btn:hover {
@@ -522,12 +526,13 @@
                     converted[caseType.id] = '';
                 }
             }
+        }
 
-            outputSection.querySelectorAll('.copy-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    copyText(converted[btn.dataset.target], btn.dataset.target);
-                });
-            });
+        function getCopyText(id) {
+            const el = outputs[id];
+            if (!el || el.classList.contains('empty')) return '';
+            const value = converted[id];
+            return value !== undefined && value !== '' ? value : el.textContent;
         }
 
         function countWords(text) {
@@ -560,10 +565,9 @@
             }
         }
 
-        function copyText(text, target) {
-            if (!text) return;
+        function copyText(text, btn) {
+            if (!text || !btn) return;
 
-            const btn = document.querySelector(`.copy-btn[data-target="${target}"]`);
             const defaultLabel = btn.getAttribute('aria-label');
 
             const onSuccess = () => {
@@ -603,6 +607,14 @@
         }
 
         renderOutputCards();
+
+        outputSection.addEventListener('click', (e) => {
+            const btn = e.target.closest('.copy-btn');
+            if (!btn) return;
+            const id = btn.dataset.target;
+            if (!id) return;
+            copyText(getCopyText(id), btn);
+        });
 
         inputText.addEventListener('input', updateOutputs);
         inputText.addEventListener('paste', () => setTimeout(updateOutputs, 0));
