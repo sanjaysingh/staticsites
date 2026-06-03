@@ -144,20 +144,6 @@
             margin: 0 0.4rem;
         }
 
-        .btn-clear {
-            font-size: 0.85rem;
-            padding: 0.35rem 0.75rem;
-            color: var(--text-muted);
-            border-color: var(--border-color);
-            background: transparent;
-        }
-
-        .btn-clear:hover {
-            color: var(--text-dark);
-            background-color: var(--primary-light);
-            border-color: var(--primary-color);
-        }
-
         .output-section {
             margin-top: 1.75rem;
         }
@@ -247,7 +233,7 @@
             flex-shrink: 0;
         }
 
-        .copy-btn {
+        .icon-btn {
             cursor: pointer;
             transition: var(--transition);
             display: inline-flex;
@@ -261,20 +247,20 @@
             border-radius: 6px;
         }
 
-        .copy-btn svg {
+        .icon-btn svg {
             width: 1.15rem;
             height: 1.15rem;
             flex-shrink: 0;
             pointer-events: none;
         }
 
-        .copy-btn:hover {
+        .icon-btn:hover {
             color: var(--secondary-color);
             background-color: var(--primary-light);
             border-color: var(--primary-color);
         }
 
-        .copy-btn.copied {
+        .icon-btn.copied {
             color: var(--success);
             border-color: var(--success);
             background-color: rgba(40, 167, 69, 0.12);
@@ -327,8 +313,8 @@
                             <span id="charCount">0 characters</span>
                             <span id="wordCount">0 words</span>
                         </div>
-                        <button type="button" class="btn btn-sm btn-clear" id="clearBtn" title="Clear input">
-                            Clear
+                        <button type="button" class="icon-btn" id="clearBtn" title="Clear input" aria-label="Clear input">
+                            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>
                         </button>
                     </div>
                 </div>
@@ -508,7 +494,7 @@
                                         <span class="case-badge">${caseType.badge}</span>
                                     </h3>
                                     <div class="output-actions">
-                                        <button type="button" class="copy-btn" data-target="${caseType.id}" title="Copy ${caseType.label}" aria-label="Copy ${caseType.label}">
+                                        <button type="button" class="icon-btn copy-btn" data-target="${caseType.id}" title="Copy ${caseType.label}" aria-label="Copy ${caseType.label}">
                                             ${clipboardIcon}
                                         </button>
                                     </div>
