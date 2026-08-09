@@ -36,6 +36,11 @@ window.APPS = [
         keywords: ['encoding', 'decoding', 'encode', 'decode', 'base64', 'base62', 'url encode', 'url decode', 'xml entities', 'convert text', 'escape']
     },
     {
+        title: 'Eth Faucet',
+        url: 'https://ethfaucet.sanjaysingh.net',
+        keywords: ['ethereum', 'eth', 'faucet', 'testnet', 'sepolia', 'crypto', 'blockchain', 'test eth', 'drip', 'claim']
+    },
+    {
         title: 'Ethereum Unit Converter',
         url: '/ethunitconverter',
         keywords: ['ethereum', 'eth', 'wei', 'gwei', 'ether', 'unit', 'converter', 'crypto', 'gas', 'finney', 'szabo']
