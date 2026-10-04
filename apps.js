@@ -82,7 +82,7 @@ window.APPS = [
     },
     {
         title: 'JWT Viewer',
-        url: '/jwt',
+        url: 'https://jwt.sanjaysingh.net',
         keywords: ['jwt', 'json web token', 'token', 'decode', 'bearer', 'oauth', 'claims', 'header', 'payload', 'signature']
     },
     {
