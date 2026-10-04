@@ -111,6 +111,11 @@ window.APPS = [
         keywords: ['split', 'expense', 'expenses', 'bill', 'share', 'group', 'cost', 'divide', 'roommate', 'settle']
     },
     {
+        title: 'Sol Faucet',
+        url: 'https://solfaucet.sanjaysingh.net',
+        keywords: ['solana', 'sol', 'faucet', 'testnet', 'crypto', 'blockchain', 'test sol', 'drip', 'claim', 'airdrop']
+    },
+    {
         title: 'Solana Wallet (Testing Only)',
         url: 'https://solwallet.sanjaysingh.net',
         keywords: ['solana', 'sol', 'wallet', 'crypto', 'cryptocurrency', 'blockchain', 'spl', 'token', 'airdrop']
