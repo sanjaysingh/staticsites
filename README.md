@@ -39,4 +39,3 @@ Open http://localhost:8080.
 - `index.html` — search page
 - `home.js` — search, keyboard navigation, and recent apps
 - `apps.js` — catalog
-- `CNAME` — `apps.sanjaysingh.net`
