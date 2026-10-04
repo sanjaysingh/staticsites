@@ -117,7 +117,7 @@ window.APPS = [
     },
     {
         title: 'Ticking Stopwatch',
-        url: '/tickingstopwatch',
+        url: 'https://tickingstopwatch.sanjaysingh.net',
         keywords: ['stopwatch', 'timer', 'clock', 'tick', 'ticking', 'elapsed', 'countdown', 'lap']
     },
     {
