@@ -1,28 +1,23 @@
 // App catalog for home page search. Add entries with title, url, and keywords.
 window.APPS = [
     {
-        title: 'Azure SAS Generator',
-        url: '/sas',
-        keywords: ['azure', 'sas', 'storage', 'blob', 'shared access', 'signature', 'token', 'cloud', 'microsoft']
-    },
-    {
         title: 'Bitcoin Wallet (Testing Only)',
         url: 'https://btcwallet.sanjaysingh.net',
         keywords: ['bitcoin', 'btc', 'wallet', 'crypto', 'cryptocurrency', 'satoshi', 'blockchain']
     },
     {
         title: 'Casing',
-        url: '/casing',
+        url: 'https://casing.sanjaysingh.net',
         keywords: ['casing', 'case', 'uppercase', 'lowercase', 'camelcase', 'camel case', 'snake case', 'kebab', 'title case', 'text transform', 'convert case', 'capitalize']
     },
     {
         title: 'Cert Utils',
-        url: '/cert',
+        url: 'https://cert.sanjaysingh.net',
         keywords: ['cert', 'certificate', 'ssl', 'tls', 'pem', 'x509', 'csr', 'pki', 'public key', 'private key', 'openssl']
     },
     {
         title: 'Document Scanner',
-        url: '/scanner',
+        url: 'https://scanner.sanjaysingh.net',
         keywords: ['document', 'scanner', 'scan', 'camera', 'photo', 'pdf', 'crop', 'deskew', 'mobile scan']
     },
     {
@@ -42,7 +37,7 @@ window.APPS = [
     },
     {
         title: 'Ethereum Unit Converter',
-        url: '/ethunitconverter',
+        url: 'https://ethunitconverter.sanjaysingh.net',
         keywords: ['ethereum', 'eth', 'wei', 'gwei', 'ether', 'unit', 'converter', 'crypto', 'gas', 'finney', 'szabo']
     },
     {
@@ -57,7 +52,7 @@ window.APPS = [
     },
     {
         title: 'Hash Generator',
-        url: '/hash',
+        url: 'https://hash.sanjaysingh.net',
         keywords: ['hash', 'md5', 'sha', 'sha1', 'sha256', 'sha512', 'checksum', 'digest', 'fingerprint', 'cryptographic hash']
     },
     {
@@ -67,7 +62,7 @@ window.APPS = [
     },
     {
         title: 'Image Optimizer',
-        url: '/imageoptimizer',
+        url: 'https://imageoptimizer.sanjaysingh.net',
         keywords: ['image', 'optimize', 'optimizer', 'compress', 'compression', 'resize', 'webp', 'jpeg', 'jpg', 'png', 'file size', 'shrink']
     },
     {
@@ -77,7 +72,7 @@ window.APPS = [
     },
     {
         title: 'JSON Grid Viewer',
-        url: '/jsongrid',
+        url: 'https://jsongrid.sanjaysingh.net',
         keywords: ['json', 'grid', 'table', 'viewer', 'spreadsheet', 'data', 'parse', 'tree', 'tabular']
     },
     {
@@ -92,7 +87,7 @@ window.APPS = [
     },
     {
         title: 'Offline Spreadsheet',
-        url: '/sheet',
+        url: 'https://sheet.sanjaysingh.net',
         keywords: ['spreadsheet', 'excel', 'csv', 'sheet', 'cells', 'formula', 'table', 'grid', 'workbook', 'offline']
     },
     {
@@ -137,7 +132,7 @@ window.APPS = [
     },
     {
         title: 'UUID Generator',
-        url: '/uuid',
+        url: 'https://uuid.sanjaysingh.net',
         keywords: ['uuid', 'guid', 'unique id', 'identifier', 'v4', 'random id', 'universally unique']
     },
     {
