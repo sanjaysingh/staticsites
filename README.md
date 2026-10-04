@@ -1,108 +1,42 @@
-# Static Web Apps
+# Apps Index
 
-Collection of static web applications hosted at [apps.sanjaysingh.net](https://apps.sanjaysingh.net).
+Search index for the utility web apps at [apps.sanjaysingh.net](https://apps.sanjaysingh.net).
 
-## How It Works
+Each app lives in its own repository and is deployed to its own URL. This repository is only the home page: a search box that finds an app and opens it.
 
-- Put your static web app in a directory with an `index.html`
-- Register the app in `apps.js` so it appears in the home page search
-- The home page is a search box — type keywords (title, synonyms, related terms) to find and open an app
+## How it works
 
-## Adding an App
+- `index.html` and `home.js` are the search page. Search matches the title and keywords, and the page keeps a short list of recently opened apps in the browser.
+- `apps.js` is the catalog, exposed as `window.APPS`. Each entry has a title, an absolute URL, and search keywords.
+- A push to `master` deploys the site with GitHub Pages. The workflow replaces `__BUILD_ID__` in the script URLs with the commit SHA so browsers load a fresh catalog.
 
-1. Create app directory and add files:
-   ```bash
-   mkdir my-app
-   cd my-app
-   # Add your index.html and other files
-   ```
+## Add an app
 
-2. Add an entry to the `window.APPS` array in `apps.js`:
-   ```javascript
-   {
-     title: 'My App',
-     url: '/my-app',
-     keywords: ['my app', 'synonym', 'related term']
-   },
-   ```
+Add an entry to `window.APPS` in `apps.js`:
 
-   Use many `keywords` so users can find the app by different words (e.g. `uppercase`, `lowercase`, and `case` for a text casing tool).
+```javascript
+{
+  title: 'My App',
+  url: 'https://example.sanjaysingh.net',
+  keywords: ['my app', 'synonym', 'related term']
+}
+```
 
-3. Commit:
-   ```bash
-   git add .
-   git commit -m "Add new app"
-   ```
+Use several keywords so the app can be found by different words. The URL is the app's own site.
 
-Your app will be available at `apps.sanjaysingh.net/my-app` and discoverable from the home page search.
+## Local setup
 
-For apps hosted outside this repo, set `url` to the full URL (e.g. `https://example.com`).
-
-## Local Setup
-
-1. Clone and setup:
-   ```bash
-   git clone https://github.com/sanjaysingh/staticsites.git
-   cd staticsites
-   ```
-
-2. Test locally:
-   - Open in VS Code
-   - Install "Live Server" extension
-   - Click "Go Live" in the bottom right
-   - Site will open in your default browser
-
-Alternatively, use Python's built-in server:
 ```bash
+git clone https://github.com/sanjaysingh/apps-index.git
+cd apps-index
 python -m http.server 8080
 ```
 
-## Structure
+Open http://localhost:8080.
 
-```
-.
-├── index.html          # Home page search UI
-├── home.js             # Client-side search logic
-├── apps.js             # App titles, URLs, and search keywords (window.APPS)
-├── app1/               # Your first app
-│   └── index.html
-├── app2/               # Another app
-│   └── index.html
-└── ...
-```
+## Files
 
-## Notes
-
-- Each app needs an `index.html` with a `<title>` (for the app itself; the home page uses `apps.js`)
-- On deploy, CI replaces `__BUILD_ID__` in `index.html` script URLs with the git commit SHA so browsers fetch fresh `apps.js` and `home.js`
-- Works on Windows, Linux, and macOS
-
-## Making Apps Work Offline
-
-A PowerShell script `offlineify.ps1` is included to help make HTML applications work offline by:
-
-1. Finding external resources (CSS, JS) loaded from CDNs
-2. Downloading them to a local `libs` folder
-3. Updating HTML to reference local copies
-4. Downloading secondary resources like fonts referenced in CSS files
-5. Cleaning up integrity and crossorigin attributes
-
-### Usage
-
-```powershell
-# Basic usage
-.\offlineify.ps1 -HtmlFilePath path\to\your\index.html
-
-# For example, to make the UUID generator work offline
-.\offlineify.ps1 -HtmlFilePath .\uuid\index.html
-```
-
-### Features
-
-- Downloads JS and CSS files from CDN links
-- Preserves version numbers in filenames where possible
-- Processes CSS files to find and download referenced fonts, images, etc.
-- Creates a clean HTML with minimal attributes for offline use
-- Works with ES6 module imports
-
-This tool is especially useful when you need to ensure apps work without internet connectivity.
+- `index.html` — search page
+- `home.js` — search, keyboard navigation, and recent apps
+- `apps.js` — catalog
+- `CNAME` — `apps.sanjaysingh.net`
