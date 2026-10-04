@@ -111,6 +111,11 @@ window.APPS = [
         keywords: ['split', 'expense', 'expenses', 'bill', 'share', 'group', 'cost', 'divide', 'roommate', 'settle']
     },
     {
+        title: 'Solana Wallet (Testing Only)',
+        url: 'https://solwallet.sanjaysingh.net',
+        keywords: ['solana', 'sol', 'wallet', 'crypto', 'cryptocurrency', 'blockchain', 'spl', 'token', 'airdrop']
+    },
+    {
         title: 'Ticking Stopwatch',
         url: 'https://tickingstopwatch.sanjaysingh.net',
         keywords: ['stopwatch', 'timer', 'clock', 'tick', 'ticking', 'elapsed', 'countdown', 'lap']
