@@ -215,7 +215,8 @@
 
     function openApp(app) {
         saveRecentApp(app);
-        window.location.href = app.url;
+        renderRecentApps();
+        window.open(app.url, '_blank', 'noopener,noreferrer');
     }
 
     function onSearchInput() {
