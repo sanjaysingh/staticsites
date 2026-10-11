@@ -136,6 +136,11 @@ window.APPS = [
         keywords: ['timed', 'locker', 'lock', 'time lock', 'ethereum', 'escrow', 'vault', 'delay', 'release']
     },
     {
+        title: 'Twinweather',
+        url: 'https://twinweather.sanjaysingh.net',
+        keywords: ['twinweather', 'weather', 'forecast', 'temperature', 'celsius', 'fahrenheit', 'degrees', 'rain', 'humidity', 'wind', 'uv', 'city']
+    },
+    {
         title: 'Unit Converter',
         url: 'https://converter.sanjaysingh.net',
         keywords: ['unit', 'converter', 'convert', 'length', 'weight', 'temperature', 'area', 'timestamp', 'unix', 'celsius', 'fahrenheit', 'meter', 'kilogram', 'feet', 'inches']
